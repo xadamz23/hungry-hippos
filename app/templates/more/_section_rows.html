@@ -1,0 +1,9 @@
+<div id="section-rows" data-sortable="/more/sections/order">
+  {% for s in sections %}
+  <form class="ord" data-id="{{ s.id }}" hx-post="/more/sections/{{ s.id }}" hx-trigger="change" hx-swap="none">
+    <input class="sw" type="color" name="color" value="{{ s.color|lower }}" aria-label="Color for {{ s.name }}">
+    <input class="nm" name="name" value="{{ s.name }}" aria-label="Section name" autocomplete="off">
+    <svg class="handle" width="22" height="22" aria-label="Drag to reorder"><use href="#i-grip"/></svg>
+  </form>
+  {% endfor %}
+</div>

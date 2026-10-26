@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Section order · Hungry Hippos{% endblock %}
+{% block main_class %}narrow-on-desktop{% endblock %}
+{% block main %}
+<div class="top">
+  <a class="back" href="/more"><svg><use href="#i-back"/></svg>More</a>
+  <h1 style="margin-top:10px">Section order</h1>
+  <p class="meta">Drag to match how you walk through the store. Tap a color or name to change it.</p>
+</div>
+{% include "more/_section_rows.html" %}
+<form class="body" hx-post="/more/sections" hx-target="#section-rows" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
+  <div class="add"><label class="sr-only" for="new-section">New section</label><input id="new-section" name="name" placeholder="Add a section, e.g. Pharmacy" autocomplete="off"><button type="submit">Add</button></div>
+</form>
+{% endblock %}

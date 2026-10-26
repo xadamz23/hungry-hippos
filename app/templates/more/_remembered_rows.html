@@ -1,0 +1,14 @@
+<div id="remembered-rows">
+  {% for r in rows %}
+  <div class="ord">
+    <span style="flex:1">{{ r.name_key|cap }}</span>
+    <span class="small muted" style="display:flex;align-items:center;gap:6px"><span class="dot" style="background:{{ r.section.color }}"></span>{{ r.section.name }}</span>
+    <form hx-post="/more/remembered/delete" hx-target="#remembered-rows" hx-swap="outerHTML">
+      <input type="hidden" name="key" value="{{ r.name_key }}">
+      <button class="icon-btn" type="submit" aria-label="Forget {{ r.name_key }}"><svg><use href="#i-x"/></svg></button>
+    </form>
+  </div>
+  {% else %}
+  <div class="empty"><div class="art"><svg><use href="#i-pin"/></svg></div><h2>Nothing remembered yet</h2><p>When you move an item to a different section on the list, the app remembers it here.</p></div>
+  {% endfor %}
+</div>

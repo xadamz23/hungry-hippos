@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Remembered sections · Hungry Hippos{% endblock %}
+{% block main_class %}narrow-on-desktop{% endblock %}
+{% block main %}
+<div class="top">
+  <a class="back" href="/more"><svg><use href="#i-back"/></svg>More</a>
+  <h1 style="margin-top:10px">Remembered sections</h1>
+  <p class="meta">Where items go when they’re added to the list. Remove one to go back to the app’s guess.</p>
+</div>
+{% include "more/_remembered_rows.html" %}
+{% endblock %}
