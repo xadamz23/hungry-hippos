@@ -33,10 +33,13 @@ async def reject_cross_site(request: Request, call_next):
     if request.method in UNSAFE_METHODS:
         site = request.headers.get("sec-fetch-site")
         origin = request.headers.get("origin")
-        if site and site not in ("same-origin", "none"):
-            return PlainTextResponse("Cross-site request blocked.", status_code=403)
-        if origin and urlsplit(origin).netloc != request.headers.get("host"):
-            return PlainTextResponse("Cross-site request blocked.", status_code=403)
+        if site is not None:
+            if site not in ("same-origin", "none"):
+                return PlainTextResponse("Cross-site request blocked.", status_code=403)
+        elif origin:
+            hosts = {request.headers.get("host"), request.headers.get("x-forwarded-host")}
+            if urlsplit(origin).netloc not in hosts:
+                return PlainTextResponse("Cross-site request blocked.", status_code=403)
     return await call_next(request)
 
 

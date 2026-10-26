@@ -43,3 +43,15 @@ async def test_events_share_one_listener(seeded):
     assert broker.connections_opened == 1
     await a.aclose()
     await b.aclose()
+
+
+def test_same_origin_allowed_when_proxy_rewrites_host(client, seeded):
+    r = client.post("/list/add", data={"text": "milk"},
+                    headers={"Origin": "https://hippos.example.com", "Sec-Fetch-Site": "same-origin"})
+    assert r.status_code == 200
+
+
+def test_origin_matching_forwarded_host_allowed(client, seeded):
+    r = client.post("/list/add", data={"text": "milk"},
+                    headers={"Origin": "https://hippos.example.com", "X-Forwarded-Host": "hippos.example.com"})
+    assert r.status_code == 200
