@@ -150,3 +150,41 @@ def test_unchanged_guess_is_not_remembered(client, seeded):
     dairy = section(seeded, "Dairy & Eggs").id
     client.post("/meals", data={"name": "A", "ingredient_lines": ["2 cups heavy cream"], "section_0": dairy, "guess_0": dairy})
     assert seeded.scalars(select(ItemSectionMap)).all() == []
+
+
+def test_fetch_rejects_large_content_length(monkeypatch):
+    monkeypatch.setattr(importer, "MAX_BYTES", 100)
+    t = httpx.MockTransport(lambda r: httpx.Response(200, headers={"content-length": "5000"}, content=b"x" * 5000))
+    with pytest.raises(importer.RecipeImportError, match="too big"):
+        importer.fetch_html(URL, transport=t)
+
+
+def test_fetch_stops_reading_past_cap(monkeypatch):
+    monkeypatch.setattr(importer, "MAX_BYTES", 100)
+
+    def chunks():
+        for _ in range(50):
+            yield b"x" * 64
+
+    t = httpx.MockTransport(lambda r: httpx.Response(200, content=chunks()))
+    with pytest.raises(importer.RecipeImportError, match="too big"):
+        importer.fetch_html(URL, transport=t)
+
+
+class _Stream:
+    def __init__(self, ip):
+        self.ip = ip
+
+    def get_extra_info(self, name):
+        return (self.ip, 443) if name == "server_addr" else None
+
+
+def test_fetch_rejects_private_peer_after_connect():
+    t = httpx.MockTransport(lambda r: httpx.Response(200, text="<p>hi</p>", extensions={"network_stream": _Stream("10.1.2.3")}))
+    with pytest.raises(importer.RecipeImportError, match="private address"):
+        importer.fetch_html(URL, transport=t)
+
+
+def test_fetch_allows_public_peer():
+    t = httpx.MockTransport(lambda r: httpx.Response(200, text="<p>hi</p>", extensions={"network_stream": _Stream("93.184.215.14")}))
+    assert importer.fetch_html(URL, transport=t) == "<p>hi</p>"

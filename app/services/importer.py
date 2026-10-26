@@ -69,6 +69,27 @@ def _check_url(url: str) -> None:
             raise RecipeImportError("That link points to a private address, so it can’t be imported.")
 
 
+def _check_peer(response: httpx.Response) -> None:
+    """Re-check the address we actually connected to (guards against DNS rebinding)."""
+    stream = response.extensions.get("network_stream")
+    addr = stream.get_extra_info("server_addr") if stream is not None else None
+    if addr and not ipaddress.ip_address(str(addr[0]).split("%")[0]).is_global:
+        raise RecipeImportError("That link points to a private address, so it can’t be imported.")
+
+
+def _read_capped(response: httpx.Response) -> bytes:
+    too_big = RecipeImportError("That page is too big to import. Add the recipe by hand instead.")
+    length = response.headers.get("content-length", "")
+    if length.isdigit() and int(length) > MAX_BYTES:
+        raise too_big
+    body = bytearray()
+    for chunk in response.iter_bytes():
+        body.extend(chunk)
+        if len(body) > MAX_BYTES:
+            raise too_big
+    return bytes(body)
+
+
 def fetch_html(url: str, transport: httpx.BaseTransport | None = None) -> str:
     url = url.strip()
     with httpx.Client(
@@ -78,17 +99,19 @@ def fetch_html(url: str, transport: httpx.BaseTransport | None = None) -> str:
         for _ in range(MAX_REDIRECTS + 1):
             _check_url(url)
             try:
-                response = client.get(url)
+                with client.stream("GET", url) as response:
+                    _check_peer(response)
+                    if response.is_redirect and "location" in response.headers:
+                        url = urljoin(url, response.headers["location"])
+                        continue
+                    if response.status_code >= 400:
+                        raise RecipeImportError(f"Couldn’t load that page (HTTP {response.status_code}).")
+                    body = _read_capped(response)
+                    return body.decode(response.encoding or "utf-8", errors="replace")
             except httpx.TimeoutException:
                 raise RecipeImportError("That page took too long to load. Try again in a bit.") from None
             except httpx.HTTPError:
                 raise RecipeImportError("Couldn’t load that page. Check the link and try again.") from None
-            if response.is_redirect and "location" in response.headers:
-                url = urljoin(url, response.headers["location"])
-                continue
-            if response.status_code >= 400:
-                raise RecipeImportError(f"Couldn’t load that page (HTTP {response.status_code}).")
-            return response.content[:MAX_BYTES].decode(response.encoding or "utf-8", errors="replace")
     raise RecipeImportError("That link redirects too many times.")
 
 
