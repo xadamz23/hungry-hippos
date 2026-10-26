@@ -71,6 +71,12 @@ def index(
     return templates.TemplateResponse(request, "meals/index.html", {"active": "meals", **ctx})
 
 
+def _http_url(value) -> str:
+    """Only keep http(s) links; anything else (javascript:, data:) becomes empty."""
+    url = str(value or "").strip()
+    return url if url.lower().startswith(("http://", "https://")) else ""
+
+
 def _form_kwargs(form) -> dict:
     # section_<i> overrides line i's section; when guess_<i> is sent too, only a changed value counts
     overrides = {}
@@ -90,8 +96,8 @@ def _form_kwargs(form) -> dict:
         servings=_int_or_none(form.get("servings")),
         total_minutes=_int_or_none(form.get("total_minutes")),
         favorite=bool(form.get("favorite")),
-        source_url=str(form.get("source_url", "")) if "source_url" in form else None,
-        image_url=str(form.get("image_url", "")) if "image_url" in form else None,
+        source_url=_http_url(form.get("source_url")) if "source_url" in form else None,
+        image_url=_http_url(form.get("image_url")) if "image_url" in form else None,
         section_overrides=overrides,
     )
 

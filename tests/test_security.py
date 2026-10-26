@@ -55,3 +55,23 @@ def test_origin_matching_forwarded_host_allowed(client, seeded):
     r = client.post("/list/add", data={"text": "milk"},
                     headers={"Origin": "https://hippos.example.com", "X-Forwarded-Host": "hippos.example.com"})
     assert r.status_code == 200
+
+
+def test_source_url_must_be_http(client, seeded):
+    from sqlalchemy import select
+
+    from app.models import Meal
+
+    client.post("/meals", data={"name": "X", "ingredients": "salt", "source_url": "javascript:alert(1)"})
+    meal = seeded.scalar(select(Meal))
+    assert meal.source_url is None
+    assert "javascript:" not in client.get(f"/meals/{meal.id}").text
+
+
+def test_image_url_must_be_http(client, seeded):
+    from sqlalchemy import select
+
+    from app.models import Meal
+
+    client.post("/meals", data={"name": "X", "ingredients": "salt", "image_url": "data:text/html,hi"})
+    assert seeded.scalar(select(Meal)).image_url is None
