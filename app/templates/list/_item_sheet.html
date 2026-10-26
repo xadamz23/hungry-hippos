@@ -1,8 +1,5 @@
-<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title"
-     x-data="{ sec: '{{ item.section.name if item.section else 'Other' }}', amt: '{{ item.amounts|amounts }}',
-               bump(d) { const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
-                         if (m) { const n = Math.max(0, parseFloat(m[1]) + d); this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2]; }
-                         else if (!this.amt.trim() && d > 0) { this.amt = '1'; } } }">
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title" x-data="itemSheet"
+     data-section="{{ item.section.name if item.section else 'Other' }}" data-amount="{{ item.amounts|amounts }}">
   <div class="scrim" onclick="closeSheet()"></div>
   <form class="sheet" hx-post="/list/{{ item.id }}" hx-target="#list-body">
     <div class="grab"></div>
@@ -21,7 +18,7 @@
     <span class="label">Section</span>
     <div class="secgrid">
       {% for s in sections %}
-      <label><input type="radio" name="section_id" value="{{ s.id }}" {% if s.id == item.section_id %}checked{% endif %} @change="sec = '{{ s.name }}'"><span><i class="dot" style="background:{{ s.color }}"></i>{{ s.name }}</span></label>
+      <label><input type="radio" name="section_id" value="{{ s.id }}" {% if s.id == item.section_id %}checked{% endif %} data-name="{{ s.name }}" @change="sec = $el.dataset.name"><span><i class="dot" style="background:{{ s.color }}"></i>{{ s.name }}</span></label>
       {% endfor %}
     </div>
     <label class="check"><input type="checkbox" name="remember" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span><span>Always put {{ item.name }} in <b x-text="sec">{{ item.section.name if item.section else 'Other' }}</b></span></label>

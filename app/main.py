@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.db import SessionLocal
@@ -16,9 +17,26 @@ async def lifespan(app: FastAPI):
     with SessionLocal() as session:
         ensure_seed(session)
     yield
+    await events.broker.stop()
 
 
 app = FastAPI(title="Hungry Hippos", lifespan=lifespan, docs_url=None, redoc_url=None)
+
+
+UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+@app.middleware("http")
+async def reject_cross_site(request: Request, call_next):
+    """CSRF guard: state-changing requests must come from this site."""
+    if request.method in UNSAFE_METHODS:
+        site = request.headers.get("sec-fetch-site")
+        origin = request.headers.get("origin")
+        if site and site not in ("same-origin", "none"):
+            return PlainTextResponse("Cross-site request blocked.", status_code=403)
+        if origin and urlsplit(origin).netloc != request.headers.get("host"):
+            return PlainTextResponse("Cross-site request blocked.", status_code=403)
+    return await call_next(request)
 
 
 @app.middleware("http")

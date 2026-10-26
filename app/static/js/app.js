@@ -51,3 +51,24 @@ function initSortables(root) {
 }
 document.addEventListener("DOMContentLoaded", () => initSortables(document));
 document.addEventListener("htmx:load", (e) => initSortables(e.detail.elt));
+
+document.addEventListener("alpine:init", () => {
+  // List item sheet: amount stepper and the "Always put X in <section>" label.
+  Alpine.data("itemSheet", () => ({
+    sec: "",
+    amt: "",
+    init() {
+      this.sec = this.$el.dataset.section || "";
+      this.amt = this.$el.dataset.amount || "";
+    },
+    bump(delta) {
+      const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
+      if (m) {
+        const n = Math.max(0, parseFloat(m[1]) + delta);
+        this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2];
+      } else if (!this.amt.trim() && delta > 0) {
+        this.amt = "1";
+      }
+    },
+  }));
+});
