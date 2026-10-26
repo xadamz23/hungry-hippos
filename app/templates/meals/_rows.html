@@ -1,0 +1,36 @@
+{% if rows %}
+{% for r in rows %}
+<div class="ml" {% if selected == r.meal.id %}aria-current="true"{% endif %}>
+  <a href="/meals/{{ r.meal.id }}" style="display:contents">
+    <span class="ph" style="background:{{ r.meal|meal_bg }}" aria-hidden="true"></span>
+    <span class="txt">
+      <h3>{{ r.meal.name }}{% if r.meal.favorite %} <svg class="star on" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}</h3>
+      <p>{% if r.planned_on and r.planned_on.day %}Planned for {{ r.planned_on.day.strftime('%a') }}{% elif r.planned_on %}Planned this week{% elif r.last_made %}Last made {{ r.last_made|ago }}{% else %}Never made yet{% endif %}</p>
+      {% if r.meal.tags %}<span class="tags">{% for t in r.meal.tags %}<span class="tag">{{ t.name }}</span>{% endfor %}</span>{% endif %}
+    </span>
+  </a>
+  {% if pick is not none %}
+  <form class="go" hx-post="/plan/entries" hx-target="body" hx-push-url="true">
+    <input type="hidden" name="meal_id" value="{{ r.meal.id }}">
+    <input type="hidden" name="week" value="{{ week }}">
+    <input type="hidden" name="day" value="{{ '' if pick == 'none' else pick }}">
+    <button class="btn sm" type="submit">Plan</button>
+  </form>
+  {% elif r.planned_on %}
+  <span class="go chip soft">Planned</span>
+  {% else %}
+  <button class="go btn ghost sm" hx-get="/meals/{{ r.meal.id }}/plan" hx-target="#sheet">+ Plan</button>
+  {% endif %}
+</div>
+{% endfor %}
+{% elif filtered %}
+<div class="empty"><h2>No matches</h2><p>Try a different word, or clear the filters.</p><a class="btn ghost" href="/meals">Show all meals</a></div>
+{% else %}
+<div class="empty">
+  <div class="art"><svg><use href="#i-bowl"/></svg></div>
+  <h2>No meals yet</h2>
+  <p>Add the dinners your family eats, by hand or from a recipe link.</p>
+  <a class="btn" href="/meals/new">Add a meal</a>
+  <a class="btn ghost" href="/meals/new?mode=link" style="margin-top:8px">Import from a link</a>
+</div>
+{% endif %}

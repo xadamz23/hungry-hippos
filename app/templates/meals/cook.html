@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Cooking {{ meal.name }}{% endblock %}
+{% block main %}
+<div class="cook" x-data="cookMode" data-count="{{ steps|length }}">
+  <div class="row">
+    <a class="back" href="/meals/{{ meal.id }}"><svg><use href="#i-back"/></svg>Done</a>
+    <span class="awake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen stays on</span>
+  </div>
+  <h2 style="margin-top:16px;font-size:20px">{{ meal.name }}</h2>
+  <div class="serv">
+    Servings
+    <a href="?servings={{ [servings - 1, 1]|max }}" aria-label="Fewer servings">−</a><b>{{ servings }}</b><a href="?servings={{ servings + 1 }}" aria-label="More servings">+</a>
+    {% if servings != base %}<span>scaled from {{ base }}</span>{% endif %}
+  </div>
+  {% if steps %}
+  <div class="prog">{% for s in steps %}<i :class="i >= {{ loop.index0 }} && 'on'" class="{{ 'on' if loop.first }}"></i>{% endfor %}</div>
+  {% for s in steps %}
+  <section x-show="i === {{ loop.index0 }}" {% if not loop.first %}x-cloak{% endif %}>
+    <div class="stepn">Step {{ loop.index }} of {{ steps|length }}</div>
+    <p class="step">{{ s.text }}</p>
+    {% if s.uses %}<div class="uses">{% for name, amt in s.uses %}<div><span>{{ name }}</span><span>{{ amt }}</span></div>{% endfor %}</div>{% endif %}
+  </section>
+  {% endfor %}
+  <details class="all"><summary>All ingredients</summary>
+    <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
+  </details>
+  <div class="ctl">
+    <button class="btn ghost" type="button" @click="prev()" :disabled="i === 0">Back</button>
+    <button class="btn" type="button" @click="next()" x-text="i === count - 1 ? 'Finish' : 'Next step'">Next step</button>
+  </div>
+  {% else %}
+  <p class="stepn" style="margin-top:20px">No steps saved for this meal. Here’s what goes in it:</p>
+  <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
+  {% endif %}
+</div>
+{% endblock %}

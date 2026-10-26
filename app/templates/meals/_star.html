@@ -1,0 +1,4 @@
+<button class="star-btn{% if meal.favorite %} on{% endif %}" hx-post="/meals/{{ meal.id }}/favorite" hx-swap="outerHTML"
+        aria-pressed="{{ 'true' if meal.favorite else 'false' }}" aria-label="Kids like it" title="Kids like it">
+  <svg><use href="#i-star"/></svg>
+</button>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit ' ~ meal.name if meal else 'New meal' }} · Hungry Hippos{% endblock %}
+{% block main_class %}narrow-on-desktop{% endblock %}
+{% block main %}
+<div class="top">
+  <div class="row">
+    <a class="back" href="{{ '/meals/%d' % meal.id if meal else '/meals' }}"><svg><use href="#i-back"/></svg>Cancel</a>
+    {% if mode == 'manual' %}<button class="link" type="submit" form="meal-form">Save</button>{% endif %}
+  </div>
+  <h1 style="margin-top:10px">{{ 'Edit meal' if meal else 'New meal' }}</h1>
+  {% if not meal %}
+  <nav class="seg" aria-label="How to add">
+    <a href="/meals/new" aria-current="{{ 'true' if mode == 'manual' else 'false' }}">Type it in</a>
+    <a href="/meals/new?mode=link" aria-current="{{ 'true' if mode == 'link' else 'false' }}">From a link</a>
+  </nav>
+  {% endif %}
+</div>
+<div class="body">
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  {% if mode == 'link' %}
+  <form method="post" action="/meals/import">
+    <div class="field">
+      <label for="url">Recipe link</label>
+      <input id="url" class="input" type="url" name="url" value="{{ v.url or '' }}" placeholder="https://www.allrecipes.com/recipe/…" required inputmode="url" autocomplete="off">
+      <p class="hint">Paste a link to a recipe page. You can check everything before it’s saved.</p>
+    </div>
+    <button class="btn" type="submit">Get recipe</button>
+  </form>
+  {% else %}
+  <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}">
+    <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required autocomplete="off"></div>
+    <div class="field">
+      <label for="ingredients">Ingredients</label>
+      <textarea id="ingredients" class="input" name="ingredients" rows="7" placeholder="2 lb ground beef&#10;1 yellow onion, diced&#10;2 cans black beans">{{ v.ingredients or '' }}</textarea>
+      <p class="hint">One per line. Amounts are optional.</p>
+    </div>
+    <div class="field"><label for="steps">Steps</label><textarea id="steps" class="input" name="steps" rows="5" placeholder="Optional. One step per line.">{{ v.steps or '' }}</textarea></div>
+    <div class="field"><label for="notes">Notes</label><textarea id="notes" class="input" name="notes" rows="2" style="min-height:64px" placeholder="Kids want the cheese on the side">{{ v.notes or '' }}</textarea></div>
+    <div class="field">
+      <label for="tags">Tags</label>
+      <input id="tags" class="input" name="tags" value="{{ v.tags or '' }}" placeholder="Crockpot, 30 min" autocomplete="off">
+      {% if tags %}<div class="chips" style="margin-top:8px">{% for t in tags %}<button type="button" class="chip soft" data-name="{{ t }}" onclick="addTag(this)">+ {{ t }}</button>{% endfor %}</div>{% endif %}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><label for="servings">Serves</label><input id="servings" class="input" name="servings" inputmode="numeric" value="{{ v.servings or '' }}" placeholder="4"></div>
+      <div class="field"><label for="total_minutes">Minutes</label><input id="total_minutes" class="input" name="total_minutes" inputmode="numeric" value="{{ v.total_minutes or '' }}" placeholder="30"></div>
+    </div>
+    <label class="check"><input type="checkbox" name="favorite" value="1" {% if v.favorite %}checked{% endif %}><span class="cb"><svg><use href="#i-check"/></svg></span>Kids like it</label>
+    <button class="btn" type="submit">Save meal</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

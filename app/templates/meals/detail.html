@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ meal.name }} · Hungry Hippos{% endblock %}
+{% block body_class %}meals-split has-actions{% endblock %}
+{% block main %}
+<div class="hero" style="background:{{ meal|meal_bg }}">
+  <a class="back" href="/meals"><svg><use href="#i-back"/></svg>Meals</a>
+  <a class="edit" href="/meals/{{ meal.id }}/edit">Edit</a>
+</div>
+<div class="body">
+  <div class="row" style="align-items:flex-start">
+    <div>
+      <h1>{{ meal.name }}</h1>
+      <p class="meta">
+        {% if last_made %}Last made {{ last_made|ago }}. Made {{ times_made }} time{{ 's' if times_made != 1 }}.{% else %}Never made yet.{% endif %}
+        {% if meal.servings %}Serves {{ meal.servings }}.{% endif %}
+        {% if meal.total_minutes %}{{ meal.total_minutes }} min.{% endif %}
+      </p>
+    </div>
+    {% include "meals/_star.html" %}
+  </div>
+  {% if meal.tags %}<div class="chips" style="margin-top:10px">{% for t in meal.tags %}<a class="chip soft" href="/meals?tag={{ t.name|urlencode }}">{{ t.name }}</a>{% endfor %}</div>{% endif %}
+  {% if meal.notes %}<div class="note">{{ meal.notes }}</div>{% endif %}
+
+  <div class="detail-actions">
+    <button class="btn ghost" hx-get="/meals/{{ meal.id }}/plan" hx-target="#sheet">+ Plan</button>
+    <button class="btn ghost" hx-post="/meals/{{ meal.id }}/to-list" hx-swap="none">Add to list</button>
+    <a class="btn" href="/meals/{{ meal.id }}/cook">Cook</a>
+  </div>
+
+  <div class="two" style="margin-top:6px">
+    <div>
+      <div class="section-title"><h2>Ingredients</h2></div>
+      {% for ing in meal.ingredients %}
+      {% set sec = sections.get(ing.section_id) %}
+      <div class="ing">
+        <span class="dot" style="background:{{ sec.color if sec else '#757575' }}" title="{{ sec.name if sec else 'Other' }}"></span>
+        <span class="amt">{{ ing.amounts|amounts }}</span>{{ ing.name|cap }}
+      </div>
+      {% else %}
+      <p class="muted">No ingredients yet. <a class="link" href="/meals/{{ meal.id }}/edit">Add some</a></p>
+      {% endfor %}
+    </div>
+    <div>
+      <div class="section-title"><h2>Steps</h2></div>
+      {% if meal.step_list %}
+      <ol class="steps">{% for s in meal.step_list %}<li>{{ s }}</li>{% endfor %}</ol>
+      {% else %}<p class="muted">No steps saved.</p>{% endif %}
+      {% if meal.source_url %}<p class="small" style="margin-top:12px"><a class="link" href="{{ meal.source_url }}" target="_blank" rel="noopener noreferrer">View the original recipe</a></p>{% endif %}
+    </div>
+  </div>
+
+  <form method="post" action="/meals/{{ meal.id }}/delete" hx-boost="false" style="margin-top:28px"
+        data-confirm="Delete {{ meal.name }}? This can’t be undone." onsubmit="return confirm(this.dataset.confirm)">
+    <button class="link quiet" type="submit" style="color:var(--warn)">Delete this meal</button>
+  </form>
+</div>
+{% endblock %}
+{% block aside %}{% include "meals/_list_pane.html" %}{% endblock %}

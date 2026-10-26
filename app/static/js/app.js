@@ -72,3 +72,46 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 });
+
+window.addTag = (btn) => {
+  const input = document.getElementById("tags");
+  const names = input.value.split(",").map((t) => t.trim()).filter(Boolean);
+  if (!names.some((n) => n.toLowerCase() === btn.dataset.name.toLowerCase())) names.push(btn.dataset.name);
+  input.value = names.join(", ");
+};
+
+document.addEventListener("alpine:init", () => {
+  // Cook mode: one step at a time, and keep the screen awake while open.
+  Alpine.data("cookMode", () => ({
+    i: 0,
+    count: 0,
+    awake: false,
+    lock: null,
+    async init() {
+      this.count = parseInt(this.$el.dataset.count || "0", 10);
+      await this.keepAwake();
+      this._onVisible = () => document.visibilityState === "visible" && this.keepAwake();
+      document.addEventListener("visibilitychange", this._onVisible);
+    },
+    destroy() {
+      document.removeEventListener("visibilitychange", this._onVisible);
+      if (this.lock) this.lock.release();
+    },
+    async keepAwake() {
+      try {
+        this.lock = await navigator.wakeLock.request("screen");
+        this.awake = true;
+        this.lock.addEventListener("release", () => (this.awake = false));
+      } catch {
+        this.awake = false;
+      }
+    },
+    next() {
+      if (this.i < this.count - 1) this.i++;
+      else window.location.href = window.location.pathname.replace(/\/cook$/, "");
+    },
+    prev() {
+      if (this.i > 0) this.i--;
+    },
+  }));
+});

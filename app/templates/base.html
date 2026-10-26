@@ -20,7 +20,7 @@
 <script src="{{ static_url('vendor/alpine.min.js') }}" defer></script>
 </head>
 {% set aside_html %}{% block aside %}{% endblock %}{% endset %}
-<body class="{% block body_class %}{% endblock %}" hx-boost="true">
+<body class="{% block body_class %}{% endblock %}{% if bare %} bare{% endif %}" hx-boost="true">
 {% include "_icons.html" %}
 <div class="shell{% if aside_html|trim %} has-aside{% endif %}">
   <nav class="side" aria-label="Main">
