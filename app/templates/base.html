@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10291C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hippos">
+<title>{% block title %}Hungry Hippos{% endblock %}</title>
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<link rel="icon" type="image/png" href="{{ static_url('icons/favicon-64.png') }}">
+<link rel="apple-touch-icon" href="{{ static_url('icons/apple-touch-icon.png') }}">
+<link rel="preload" href="{{ static_url('fonts/figtree-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{ static_url('css/app.css') }}">
+<script src="{{ static_url('vendor/htmx.min.js') }}" defer></script>
+<script src="{{ static_url('vendor/sse.js') }}" defer></script>
+<script src="{{ static_url('vendor/sortable.min.js') }}" defer></script>
+<script src="{{ static_url('js/app.js') }}" defer></script>
+<script src="{{ static_url('vendor/alpine.min.js') }}" defer></script>
+</head>
+{% set aside_html %}{% block aside %}{% endblock %}{% endset %}
+<body class="{% block body_class %}{% endblock %}" hx-boost="true">
+{% include "_icons.html" %}
+<div class="shell{% if aside_html|trim %} has-aside{% endif %}">
+  <nav class="side" aria-label="Main">
+    <a class="brand" href="/list"><img src="{{ static_url('icons/icon-192.png') }}" alt="">Hungry Hippos</a>
+    {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}
+    <a class="nav" href="/{{ key }}" {% if active == key %}aria-current="page"{% endif %}><svg class="i"><use href="#i-{{ key }}"/></svg>{{ label }}</a>
+    {% endfor %}
+  </nav>
+  <main class="main {% block main_class %}{% endblock %}" id="main">{% block main %}{% endblock %}</main>
+  {% if aside_html|trim %}<aside class="aside" id="aside">{{ aside_html }}</aside>{% endif %}
+</div>
+{% block after_shell %}{% endblock %}
+<nav class="tabs" aria-label="Main">
+  {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}
+  <a href="/{{ key }}" {% if active == key %}aria-current="page"{% endif %}><span class="pill"><svg class="i"><use href="#i-{{ key }}"/></svg></span>{{ label }}</a>
+  {% endfor %}
+</nav>
+<div id="sheet"></div>
+<div id="toast-root"></div>
+</body>
+</html>
