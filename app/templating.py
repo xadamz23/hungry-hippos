@@ -1,11 +1,10 @@
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from fastapi.templating import Jinja2Templates
 
 from app.assets import AssetManifest
-from app.config import get_settings
+from app.clock import today, week_label
 from app.services import amounts
 from app.services.sections import text_color
 
@@ -14,10 +13,6 @@ STATIC_DIR = APP_DIR / "static"
 
 manifest = AssetManifest(STATIC_DIR)
 static_url = manifest.url
-
-
-def today() -> date:
-    return datetime.now(ZoneInfo(get_settings().tz)).date()
 
 
 def ago(d: date | None) -> str:
@@ -62,13 +57,6 @@ def cap(s: str) -> str:
 
 def nice_day(d: date) -> str:
     return f"{d:%a} {d.day}"
-
-
-def week_label(ws: date) -> str:
-    we = date.fromordinal(ws.toordinal() + 6)
-    if ws.month == we.month:
-        return f"{ws:%b} {ws.day} to {we.day}"
-    return f"{ws:%b} {ws.day} to {we:%b} {we.day}"
 
 
 templates = Jinja2Templates(directory=APP_DIR / "templates")

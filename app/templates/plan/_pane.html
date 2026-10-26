@@ -1,0 +1,11 @@
+<div class="top">
+  <div class="row">
+    <h1>Plan</h1>
+    <div class="weeknav">
+      <a href="/plan?week={{ prev_week }}" aria-label="Previous week"><svg><use href="#i-back"/></svg></a>
+      <span>{{ view.start|week_label }}</span>
+      <a href="/plan?week={{ next_week }}" aria-label="Next week"><svg><use href="#i-chev"/></svg></a>
+    </div>
+  </div>
+</div>
+{% include "plan/_week.html" %}

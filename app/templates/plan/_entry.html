@@ -1,0 +1,15 @@
+<div class="entry{% if e.kind != 'meal' %} alt{% endif %}{% if e.cooked_on %} cooked{% endif %}">
+  {% if e.kind == 'meal' and e.meal %}
+  <a class="m" href="/meals/{{ e.meal.id }}">{{ e.meal.name }}{% if e.meal.favorite %} <svg class="star on" style="width:16px;height:16px;vertical-align:-2px" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}
+    <small>{% if e.cooked_on %}Cooked{% elif e.added_to_list %}On the list{% endif %}</small></a>
+  {% else %}
+  <span class="m">{{ kind_labels.get(e.kind, e.kind) }}</span>
+  {% endif %}
+  <span class="acts">
+    {% if e.kind == 'meal' %}
+    <button class="icon-btn{% if e.cooked_on %} on{% endif %}" hx-post="/plan/entries/{{ e.id }}/cooked" hx-target="#plan-week" hx-swap="outerHTML"
+            aria-pressed="{{ 'true' if e.cooked_on else 'false' }}" aria-label="Mark {{ e.meal.name if e.meal else 'meal' }} cooked" title="Mark cooked"><svg><use href="#i-done"/></svg></button>
+    {% endif %}
+    <button class="icon-btn" hx-get="/plan/entries/{{ e.id }}/sheet" hx-target="#sheet" aria-label="Move or remove" title="Move or remove"><svg><use href="#i-more"/></svg></button>
+  </span>
+</div>

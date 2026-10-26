@@ -1,0 +1,18 @@
+<div hx-ext="sse" sse-connect="/events">
+  <div class="top static">
+    <div class="row">
+      <h1>List</h1>
+      <button class="link quiet" hx-post="/list/clear-checked" hx-target="#list-body">Clear checked</button>
+    </div>
+    {% include "list/_progress.html" %}
+    <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()">
+      <label class="sr-only" for="add-text">Add an item</label>
+      <input id="add-text" name="text" placeholder="Add item, e.g. 2 lb apples" autocomplete="off" enterkeyhint="done">
+      <button type="submit">Add</button>
+    </form>
+    {% include "list/_staples.html" %}
+  </div>
+  <div id="list-body" hx-get="/list/items" hx-trigger="sse:list, visibilitychange[document.visibilityState=='visible'] from:document">
+    {% include "list/_sections.html" %}
+  </div>
+</div>

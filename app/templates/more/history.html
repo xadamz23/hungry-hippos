@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}History · Hungry Hippos{% endblock %}
+{% block main_class %}narrow-on-desktop{% endblock %}
+{% block main %}
+<div class="top">
+  <a class="back" href="/more"><svg><use href="#i-back"/></svg>More</a>
+  <h1 style="margin-top:10px">History</h1>
+</div>
+{% for label, rows in groups %}
+<div class="hwk">{{ label }}</div>
+{% for d, meal, n in rows %}
+<a class="hrow" href="/meals/{{ meal.id }}">
+  <div class="dt">{{ d.strftime('%a') }}<b>{{ d.day }}</b></div>
+  <div class="nm">{{ meal.name }}<small>{% if n == 1 %}First time{% else %}Made {{ n }} times{% endif %}</small></div>
+  {% if meal.favorite %}<svg class="star on" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}
+</a>
+{% endfor %}
+{% else %}
+<div class="empty"><div class="art"><svg><use href="#i-clock"/></svg></div><h2>No history yet</h2><p>Meals show up here when you mark them cooked on the Plan tab.</p></div>
+{% endfor %}
+{% endblock %}

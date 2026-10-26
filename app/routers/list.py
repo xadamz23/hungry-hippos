@@ -36,7 +36,11 @@ def items_response(request: Request, session: Session, *, toast: str | None = No
 
 @router.get("")
 def list_page(request: Request, session: Session = Depends(get_session)):
-    return templates.TemplateResponse(request, "list/page.html", {"active": "list", **list_context(session)})
+    from app.routers.plan import plan_context
+    from app.services.planning import current_week
+
+    ctx = {"active": "list", **list_context(session), **plan_context(session, current_week())}
+    return templates.TemplateResponse(request, "list/page.html", ctx)
 
 
 @router.get("/items")

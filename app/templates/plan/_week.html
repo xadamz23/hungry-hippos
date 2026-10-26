@@ -1,0 +1,39 @@
+<div id="plan-week">
+{% if view.is_empty %}
+<div class="empty">
+  <div class="art"><svg><use href="#i-cal"/></svg></div>
+  <h2>Nothing planned yet</h2>
+  <p>Pick a few meals for the week. Kid favorites you haven’t made in a while show up first.</p>
+  <a class="btn" href="/meals?pick=none&amp;week={{ view.start }}">Choose meals</a>
+  {% if has_prev_entries %}
+  <form hx-post="/plan/copy-last?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML" style="margin-top:8px">
+    <button class="btn ghost" type="submit">Copy last week</button>
+  </form>
+  {% endif %}
+</div>
+{% else %}
+{% for day, entries in view.days %}
+{% set is_today = day == today() %}
+<div class="d{% if is_today %} today{% endif %}">
+  <div class="dn">{{ day.strftime('%a') }}<small>{{ 'Today' if is_today else day.day }}</small></div>
+  <div class="entries">
+    {% for e in entries %}{% include "plan/_entry.html" %}{% endfor %}
+    {% if not entries %}<button class="add-meal" style="text-align:left" hx-get="/plan/day-sheet?day={{ day }}" hx-target="#sheet">+ Add a meal</button>{% endif %}
+  </div>
+  <span>{% if entries %}<button class="icon-btn" hx-get="/plan/day-sheet?day={{ day }}" hx-target="#sheet" aria-label="Add another on {{ day.strftime('%A') }}">+</button>{% endif %}</span>
+</div>
+{% endfor %}
+<div class="ql"><span>Not on a day yet</span><span>{{ view.unscheduled|length or '' }}</span></div>
+{% for e in view.unscheduled %}
+<div class="d"><div class="dn muted">Any</div><div class="entries">{% include "plan/_entry.html" %}</div><span></span></div>
+{% endfor %}
+<div class="d"><div class="dn muted">Any</div><div class="entries"><button class="add-meal" style="text-align:left" hx-get="/plan/day-sheet?day=none&amp;week={{ view.start }}" hx-target="#sheet">+ Add a meal</button></div><span></span></div>
+<div class="plan-cta">
+  {% if view.pending_count %}
+  <button class="btn" hx-post="/plan/to-list?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML">Add ingredients for {{ view.pending_count }} meal{{ 's' if view.pending_count != 1 }}</button>
+  {% else %}
+  <p class="muted small" style="text-align:center">Everything planned this week is on the list.</p>
+  {% endif %}
+</div>
+{% endif %}
+</div>

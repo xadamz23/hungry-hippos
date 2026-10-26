@@ -1,0 +1,21 @@
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="scrim" onclick="closeSheet()"></div>
+  <form class="sheet" hx-post="/plan/entries">
+    <div class="grab"></div>
+    <h2 id="sheet-title" style="font-size:20px">Plan {{ meal.name }}</h2>
+    <div class="row" style="margin-top:2px">
+      <p class="meta" style="margin:0">{{ view.start|week_label }}</p>
+      {% if view.start == this_week %}
+      <button type="button" class="link" hx-get="/meals/{{ meal.id }}/plan?week={{ next_week }}" hx-target="#sheet">Next week</button>
+      {% else %}
+      <button type="button" class="link" hx-get="/meals/{{ meal.id }}/plan?week={{ this_week }}" hx-target="#sheet">This week</button>
+      {% endif %}
+    </div>
+    {% with selected=None, current_id=None %}{% include "plan/_day_options.html" %}{% endwith %}
+    <input type="hidden" name="meal_id" value="{{ meal.id }}">
+    <input type="hidden" name="week" value="{{ view.start }}">
+    <input type="hidden" name="next" value="stay">
+    <label class="check"><input type="checkbox" name="add_to_list" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span>Also add ingredients to the list</label>
+    <button class="btn" type="submit">Plan it</button>
+  </form>
+</div>

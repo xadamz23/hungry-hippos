@@ -1,0 +1,16 @@
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="scrim" onclick="closeSheet()"></div>
+  <form class="sheet" hx-post="/plan/entries/{{ entry.id }}/move" hx-target="#plan-week" hx-swap="outerHTML">
+    <div class="grab"></div>
+    <div class="row">
+      <h2 id="sheet-title" style="font-size:20px">{{ entry.meal.name if entry.meal else kind_labels.get(entry.kind, '') }}</h2>
+      {% if entry.meal %}<a class="link" href="/meals/{{ entry.meal.id }}">Open meal</a>{% endif %}
+    </div>
+    <p class="meta">Move it to another day</p>
+    {% with selected=(entry.day or 'none'), current_id=entry.id %}{% include "plan/_day_options.html" %}{% endwith %}
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+      <button type="button" class="btn danger" hx-post="/plan/entries/{{ entry.id }}/delete" hx-target="#plan-week" hx-swap="outerHTML">Remove</button>
+      <button type="submit" class="btn">Move</button>
+    </div>
+  </form>
+</div>
