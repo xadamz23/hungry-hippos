@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://hh:hh@127.0.0.1:5433/hungry_hippos"
     anthropic_api_key: str | None = None
-    anthropic_model: str = "claude-haiku-5-5"
+    anthropic_model: str = "claude-opus-5-5"
     tz: str = "America/Detroit"
     backup_dir: str = "/backups"
 

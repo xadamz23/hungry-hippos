@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.db import SessionLocal
 from app.routers import events
 from app.routers import list as list_router
-from app.routers import meals, plan
+from app.routers import importer, meals, plan
 from app.seed import ensure_seed
 from app.templating import STATIC_DIR, static_url
 
@@ -55,6 +55,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(list_router.router)
 app.include_router(events.router)
 app.include_router(plan.router)
+app.include_router(importer.router)
 app.include_router(meals.router)
 
 

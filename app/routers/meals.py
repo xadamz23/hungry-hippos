@@ -63,13 +63,18 @@ def index(
 
 
 def _form_kwargs(form) -> dict:
+    # section_<i> overrides line i's section; when guess_<i> is sent too, only a changed value counts
     overrides = {}
     for key, value in form.items():
         if key.startswith("section_") and key[8:].isdigit() and str(value).isdigit():
-            overrides[int(key[8:])] = int(value)
+            i = key[8:]
+            if form.get(f"guess_{i}") != value:
+                overrides[int(i)] = int(value)
+    lines = form.getlist("ingredient_lines")
+    ingredients = "\n".join(str(x) for x in lines) if lines else str(form.get("ingredients", ""))
     return dict(
         name=str(form.get("name", "")),
-        ingredients_text=str(form.get("ingredients", "")),
+        ingredients_text=ingredients,
         steps_text=str(form.get("steps", "")),
         notes=str(form.get("notes", "")),
         tags=[t for t in str(form.get("tags", "")).split(",")],
