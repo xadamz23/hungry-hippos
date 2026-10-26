@@ -1,0 +1,33 @@
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title"
+     x-data="{ sec: '{{ item.section.name if item.section else 'Other' }}', amt: '{{ item.amounts|amounts }}',
+               bump(d) { const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
+                         if (m) { const n = Math.max(0, parseFloat(m[1]) + d); this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2]; }
+                         else if (!this.amt.trim() && d > 0) { this.amt = '1'; } } }">
+  <div class="scrim" onclick="closeSheet()"></div>
+  <form class="sheet" hx-post="/list/{{ item.id }}" hx-target="#list-body">
+    <div class="grab"></div>
+    <div class="row">
+      <h2 id="sheet-title" style="font-size:20px">{{ item.name|cap }}</h2>
+      {% if item.sources %}<span class="muted small">From {{ item.sources|map(attribute='meal_name')|join(', ') }}</span>{% endif %}
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label for="amt">Amount</label>
+      <div class="add">
+        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(-1)" aria-label="Less">−</button>
+        <input id="amt" name="amount" x-model="amt" placeholder="e.g. 2 lb" style="text-align:center;font-weight:700">
+        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
+      </div>
+    </div>
+    <span class="label">Section</span>
+    <div class="secgrid">
+      {% for s in sections %}
+      <label><input type="radio" name="section_id" value="{{ s.id }}" {% if s.id == item.section_id %}checked{% endif %} @change="sec = '{{ s.name }}'"><span><i class="dot" style="background:{{ s.color }}"></i>{{ s.name }}</span></label>
+      {% endfor %}
+    </div>
+    <label class="check"><input type="checkbox" name="remember" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span><span>Always put {{ item.name }} in <b x-text="sec">{{ item.section.name if item.section else 'Other' }}</b></span></label>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+      <button type="button" class="btn danger" hx-post="/list/{{ item.id }}/delete" hx-target="#list-body">Remove</button>
+      <button type="submit" class="btn">Save</button>
+    </div>
+  </form>
+</div>

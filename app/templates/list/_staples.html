@@ -1,0 +1,8 @@
+<div id="list-staples" class="staples" {% if oob %}hx-swap-oob="true"{% endif %}>
+  {% if staples %}
+  <span class="lbl">Staples</span>
+  {% for s in staples %}
+  <button type="button" hx-post="/list/staple/{{ s.id }}" hx-target="#list-body" aria-label="Add {{ s.name }}">{{ s.name }}</button>
+  {% endfor %}
+  {% endif %}
+</div>

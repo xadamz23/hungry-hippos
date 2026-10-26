@@ -85,6 +85,7 @@ svg.i { width: 24px; height: 24px; flex: none; }
 }
 
 /* ---------- page header ---------- */
+.top.static { position: static; }
 .top {
   position: sticky; top: 0; z-index: 10; background: var(--paper);
   padding: calc(14px + var(--safe-t)) 18px 12px; border-bottom: 1px solid var(--rule);

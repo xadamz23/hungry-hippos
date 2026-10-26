@@ -1,0 +1,31 @@
+{% if groups %}
+{% for section, items in groups %}
+<section aria-label="{{ section.name }}">
+  <div class="sign" style="background:{{ section.color }};color:{{ section.color|text_color }}">{{ section.name }}</div>
+  {% for item in items %}
+  <div class="it{% if item.checked %} done{% endif %}">
+    <button class="tick" hx-post="/list/{{ item.id }}/toggle" hx-target="#list-body"
+            hx-on:click="this.closest('.it').classList.toggle('done')"
+            aria-label="{% if item.checked %}Uncheck{% else %}Check off{% endif %} {{ item.name }}">
+      <span class="cb"><svg><use href="#i-check"/></svg></span>
+    </button>
+    <button class="what" hx-get="/list/{{ item.id }}/edit" hx-target="#sheet">
+      <span>
+        <span class="n" style="display:block">{{ item.name|cap }}</span>
+        {% if item.sources %}<span class="f" style="display:block">{{ item.sources|map(attribute='meal_name')|join(', ') }}</span>{% endif %}
+      </span>
+      {% set a = item.amounts|amounts %}{% if a %}<span class="q">{{ a }}</span>{% endif %}
+    </button>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+{% else %}
+<div class="empty">
+  <div class="art"><svg><use href="#i-bag"/></svg></div>
+  <h2>Your list is empty</h2>
+  <p>Add this week’s meals from the Plan tab, or type an item to get started.</p>
+  <form hx-post="/plan/to-list" hx-target="#list-body"><button class="btn" type="submit">Add ingredients from the plan</button></form>
+  <a class="btn ghost" href="/more/staples">Manage staples</a>
+</div>
+{% endif %}

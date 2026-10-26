@@ -41,6 +41,10 @@ def ago(d: date | None) -> str:
     return "over a year ago"
 
 
+def cap(s: str) -> str:
+    return s[:1].upper() + s[1:]
+
+
 def nice_day(d: date) -> str:
     return f"{d:%a} {d.day}"
 
@@ -55,5 +59,5 @@ def week_label(ws: date) -> str:
 templates = Jinja2Templates(directory=APP_DIR / "templates")
 templates.env.globals.update(static_url=static_url, today=today)
 templates.env.filters.update(
-    amounts=amounts.fmt, text_color=text_color, ago=ago, nice_day=nice_day, week_label=week_label
+    amounts=amounts.fmt, text_color=text_color, cap=cap, ago=ago, nice_day=nice_day, week_label=week_label
 )

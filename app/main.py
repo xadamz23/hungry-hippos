@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.db import SessionLocal
+from app.routers import events
 from app.routers import list as list_router
 from app.seed import ensure_seed
 from app.templating import STATIC_DIR, static_url
@@ -33,6 +34,7 @@ async def cache_headers(request: Request, call_next):
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(list_router.router)
+app.include_router(events.router)
 
 
 @app.get("/")
