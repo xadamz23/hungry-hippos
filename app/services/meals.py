@@ -123,11 +123,17 @@ def search(
     rows = [MealRow(meal=m, last_made=last, times_made=n or 0) for m, last, n in session.execute(stmt)]
     if week_start is not None and rows:
         planned = session.scalars(
-            select(PlanEntry).where(PlanEntry.week_start == week_start, PlanEntry.meal_id.in_([r.meal.id for r in rows]))
+            select(PlanEntry)
+            .where(PlanEntry.week_start == week_start, PlanEntry.meal_id.in_([r.meal.id for r in rows]))
+            .order_by(PlanEntry.day.asc().nulls_last(), PlanEntry.id)
         ).all()
-        by_meal = {p.meal_id: p for p in planned}
+        by_meal: dict[int, PlanEntry] = {}
+        for p in planned:
+            by_meal.setdefault(p.meal_id, p)
         for r in rows:
             r.planned_on = by_meal.get(r.meal.id)
+        if pick_mode:  # already planned this week: least useful suggestions
+            rows.sort(key=lambda r: r.planned_on is not None)
     return rows
 
 

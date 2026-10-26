@@ -156,3 +156,30 @@ def test_edit_form_prefilled(client, seeded):
     assert "1 lb ground beef" in html and 'value="Tacos"' in html and "Quick" in html
 
 
+
+
+def test_pick_mode_puts_planned_meals_last(seeded):
+    from app.services.planning import add_entry
+
+    a = make_meal(seeded, "Alfredo", "x", favorite=True)
+    make_meal(seeded, "Tacos", "x", favorite=True)
+    add_entry(seeded, date(2026, 10, 26), None, "meal", a.id)
+    names = [r.meal.name for r in meals.search(seeded, pick_mode=True, week_start=date(2026, 10, 26))]
+    assert names == ["Tacos", "Alfredo"]
+
+
+def test_pick_banner_shows_day_name(client, seeded):
+    make_meal(seeded, "Tacos", "x")
+    html = client.get("/meals?pick=2026-10-28&week=2026-10-26").text
+    assert "Choose a meal for Wednesday, Oct 28" in html
+
+
+def test_planned_on_shows_earliest_day(seeded):
+    from app.services.planning import add_entry
+
+    tacos = make_meal(seeded, "Tacos", "x")
+    add_entry(seeded, date(2026, 10, 26), date(2026, 10, 26), "meal", tacos.id)
+    add_entry(seeded, date(2026, 10, 26), date(2026, 11, 1), "meal", tacos.id)
+    add_entry(seeded, date(2026, 10, 26), None, "meal", tacos.id)
+    row = meals.search(seeded, week_start=date(2026, 10, 26))[0]
+    assert row.planned_on.day == date(2026, 10, 26)

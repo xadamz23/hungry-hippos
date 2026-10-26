@@ -31,6 +31,14 @@ def _int_or_none(value) -> int | None:
         return None
 
 
+def _pick_label(pick: str | None) -> str:
+    try:
+        d = date.fromisoformat(pick or "")
+    except ValueError:
+        return "sometime this week"
+    return f"{d:%A}, {d:%b} {d.day}"
+
+
 def list_context(session: Session, q=None, fav=False, tag=None, pick=None, week=None, selected=None) -> dict:
     ws = week or week_start(today())
     return {
@@ -42,6 +50,7 @@ def list_context(session: Session, q=None, fav=False, tag=None, pick=None, week=
         "pick": pick,
         "week": ws,
         "selected": selected,
+        "pick_label": _pick_label(pick),
         "filtered": bool(q or fav or tag),
     }
 

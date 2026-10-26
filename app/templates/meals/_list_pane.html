@@ -4,7 +4,7 @@
     <a class="btn sm" href="/meals/new">+ New meal</a>
   </div>
   {% if pick is not none %}
-  <div class="note" style="margin:12px 0 0">Choose a meal for {% if pick == 'none' %}sometime this week{% else %}{{ pick }}{% endif %}. <a class="link" href="/plan?week={{ week }}">Cancel</a></div>
+  <div class="note" style="margin:12px 0 0">Choose a meal for {{ pick_label }}. <a class="link" href="/plan?week={{ week }}">Cancel</a></div>
   {% endif %}
   <form style="margin-top:12px" hx-get="/meals" hx-target="#meal-rows" hx-trigger="input changed delay:250ms from:input, submit" hx-push-url="true">
     <label class="sr-only" for="meal-q">Search meals</label>

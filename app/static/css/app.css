@@ -1,10 +1,4 @@
-@font-face {
-  font-family: "Figtree";
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url("../fonts/figtree-latin.woff2") format("woff2");
-}
+/* @font-face lives in base.html so the font URL carries its content hash. */
 
 :root {
   --paper: #fff;
@@ -297,8 +291,8 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 @keyframes rise { from { transform: translateY(40px); opacity: 0; } }
 @keyframes fade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sheet, .scrim { animation: none; } }
-.days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
-.dy { position: relative; }
+.days { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.dy { position: relative; min-width: 0; }
 .dy input { position: absolute; opacity: 0; }
 .dy span {
   display: block; border: 2px solid var(--rule); border-radius: 10px; padding: 8px 4px; text-align: center;
@@ -349,7 +343,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .ord .sw::-webkit-color-swatch-wrapper { padding: 0; }
 .ord .sw::-webkit-color-swatch { border: 0; border-radius: 6px; }
 .ord .nm { flex: 1; min-width: 0; border: 0; font-weight: 600; font-size: 16.5px; padding: 6px 0; background: transparent; }
-.ord .handle { color: #9aaaa0; cursor: grab; padding: 6px; touch-action: none; }
+.ord .handle { color: #9aaaa0; cursor: grab; width: 36px; height: 36px; padding: 6px; margin-right: -6px; touch-action: none; flex: none; }
 .sortable-ghost { opacity: .35; }
 .sortable-chosen { box-shadow: 0 10px 24px rgba(16, 41, 28, .22); }
 .hwk { font-size: 13.5px; font-weight: 700; color: var(--ink-2); padding: 14px 18px 6px; background: var(--wash); }

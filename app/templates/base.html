@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#10291C">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Hippos">
@@ -12,6 +13,7 @@
 <link rel="icon" type="image/png" href="{{ static_url('icons/favicon-64.png') }}">
 <link rel="apple-touch-icon" href="{{ static_url('icons/apple-touch-icon.png') }}">
 <link rel="preload" href="{{ static_url('fonts/figtree-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+<style>@font-face { font-family: "Figtree"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("{{ static_url('fonts/figtree-latin.woff2') }}") format("woff2"); }</style>
 <link rel="stylesheet" href="{{ static_url('css/app.css') }}">
 <script src="{{ static_url('vendor/htmx.min.js') }}" defer></script>
 <script src="{{ static_url('vendor/sse.js') }}" defer></script>

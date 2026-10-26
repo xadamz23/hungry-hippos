@@ -62,3 +62,12 @@ def test_pages_use_versioned_assets(client):
     html = client.get("/list").text
     assert re.search(r'/static/css/app\.css\?v=[0-9a-f]{10}', html)
     assert re.search(r'/static/vendor/htmx\.min\.js\?v=[0-9a-f]{10}', html)
+
+
+def test_font_is_loaded_through_versioned_url(client):
+    from app.templating import static_url
+
+    html = client.get("/list").text
+    css = client.get("/static/css/app.css").text
+    assert "url(\"../fonts" not in css and "url(../fonts" not in css
+    assert f'url("{static_url("fonts/figtree-latin.woff2")}")' in html
