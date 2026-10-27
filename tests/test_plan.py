@@ -52,8 +52,8 @@ def test_add_week_to_list_only_pending(seeded):
     planning.add_entry(seeded, MON, None, "eat_out")
     assert planning.add_week_to_list(seeded, MON) == 2
     assert planning.add_week_to_list(seeded, MON) == 0
-    item = seeded.scalar(select(ListItem))
-    assert item.amounts == [{"qty": 3, "unit": "lb"}]
+    items = seeded.scalars(select(ListItem).order_by(ListItem.id)).all()
+    assert [i.amounts for i in items] == [[{"qty": 1, "unit": "lb"}], [{"qty": 2, "unit": "lb"}]]
     assert planning.week(seeded, MON).pending_count == 0
 
 

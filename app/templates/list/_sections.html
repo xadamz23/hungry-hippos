@@ -1,9 +1,4 @@
-{% if groups %}
-{% if not left %}<p class="muted small all-checked">All checked off. Tap the eye to see them.</p>{% endif %}
-{% for section, items in groups %}
-<section aria-label="{{ section.name }}">
-  <div class="sign" style="background:{{ section.color }};color:{{ section.color|text_color }}">{{ section.name }}</div>
-  {% for item in items %}
+{% macro row(item, aisle=False) %}
   <div class="it{% if item.checked %} done{% endif %}">
     <button class="tick" hx-post="/list/{{ item.id }}/toggle" hx-target="#list-body"
             hx-on:click="this.closest('.it').classList.toggle('done')"
@@ -13,14 +8,38 @@
     <button class="what" hx-get="/list/{{ item.id }}/edit" hx-target="#sheet">
       <span>
         <span class="n" style="display:block">{{ item.name|cap }}{% if item.note %}<svg class="note-ic" role="img" aria-label="Has a note"><title>{{ item.note }}</title><use href="#i-note"/></svg>{% endif %}</span>
-        {% if item.sources %}<span class="f" style="display:block">{{ item.sources|map(attribute='meal_name')|join(', ') }}</span>{% endif %}
+        {% if aisle and item.section %}<span class="aisle"><i style="background:{{ item.section.color }}"></i>{{ item.section.name }}</span>{% endif %}
       </span>
       {% set a = item.amounts|amounts %}{% if a %}<span class="q">{{ a }}</span>{% endif %}
     </button>
   </div>
+{% endmacro %}
+{% if meal_groups or groups %}
+{% if not left %}<p class="muted small all-checked">All checked off. Tap the eye to see them.</p>{% endif %}
+{% set labels = meal_groups and groups %}
+{% macro part_class(groups) %}list-part{% if not (groups|map(attribute=1)|sum(start=[])|rejectattr('checked')|list) %} all-done{% endif %}{% endmacro %}
+{% if meal_groups %}
+<div class="{{ part_class(meal_groups) }}">
+  {% if labels %}<h2 class="grp">Meals</h2>{% endif %}
+  {% for meal_name, items in meal_groups %}
+  <section aria-label="{{ meal_name }}">
+    <div class="sign meal"><svg><use href="#i-meals"/></svg>{{ meal_name }}<span class="cnt">{{ items|rejectattr('checked')|list|length }} left</span></div>
+    {% for item in items %}{{ row(item, aisle=True) }}{% endfor %}
+  </section>
   {% endfor %}
-</section>
-{% endfor %}
+</div>
+{% endif %}
+{% if groups %}
+<div class="{{ part_class(groups) }}">
+  {% if labels %}<h2 class="grp">Everything else</h2>{% endif %}
+  {% for section, items in groups %}
+  <section aria-label="{{ section.name }}">
+    <div class="sign" style="background:{{ section.color }};color:{{ section.color|text_color }}">{{ section.name }}</div>
+    {% for item in items %}{{ row(item) }}{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endif %}
 {% else %}
 <div class="empty">
   <div class="art"><svg><use href="#i-bag"/></svg></div>

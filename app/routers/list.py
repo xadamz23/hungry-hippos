@@ -13,6 +13,7 @@ router = APIRouter(prefix="/list")
 def list_context(session: Session) -> dict:
     left, total = shopping.progress(session)
     return {
+        "meal_groups": shopping.meal_groups(session),
         "groups": shopping.grouped(session),
         "left": left,
         "total": total,

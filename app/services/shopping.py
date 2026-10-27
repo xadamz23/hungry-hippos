@@ -31,10 +31,18 @@ def get_item(session: Session, item_id: int) -> ListItem:
     return item
 
 
+def _from_meal(item: ListItem, meal: Meal | None) -> bool:
+    if meal is None:
+        return not item.sources
+    return any(s.meal_id == meal.id for s in item.sources)
+
+
 def _add(session, name, key, amounts, section_id=None, source: Meal | None = None) -> ListItem:
-    item = session.scalar(
-        select(ListItem).where(ListItem.name_key == key, ListItem.checked.is_(False)).limit(1)
-    )
+    # Each meal keeps its own rows, and typed items never merge into a meal's rows.
+    candidates = session.scalars(
+        select(ListItem).where(ListItem.name_key == key, ListItem.checked.is_(False)).order_by(ListItem.id)
+    ).all()
+    item = next((i for i in candidates if _from_meal(i, source)), None)
     if item is None:
         if section_id is None:
             section_id = sections.guess_section(session, key).id
@@ -124,8 +132,29 @@ def clear_all(session: Session) -> int:
     return n
 
 
+def _list_items(session: Session) -> list[ListItem]:
+    return session.scalars(select(ListItem).order_by(ListItem.checked, ListItem.created_at, ListItem.id)).all()
+
+
+def meal_groups(session: Session) -> list[tuple[str, list[ListItem]]]:
+    """Items added from a meal, one group per meal (oldest first), each in walk order."""
+    by_meal: dict[object, tuple[str, list[ListItem]]] = {}
+    for item in _list_items(session):
+        if not item.sources:
+            continue
+        src = item.sources[0]  # older lists may have merged several meals into one row
+        key = src.meal_id if src.meal_id is not None else src.meal_name  # the meal may have been deleted
+        by_meal.setdefault(key, (src.meal_name, []))[1].append(item)
+    out = []
+    for name, items in sorted(by_meal.values(), key=lambda g: min(i.id for i in g[1])):
+        items.sort(key=lambda i: (i.checked, i.section.position if i.section else 1_000_000))
+        out.append((name, items))
+    return out
+
+
 def grouped(session: Session) -> list[tuple[Section, list[ListItem]]]:
-    items = session.scalars(select(ListItem).order_by(ListItem.checked, ListItem.created_at, ListItem.id)).all()
+    """Items not from a meal, grouped by store section in walk order."""
+    items = [i for i in _list_items(session) if not i.sources]
     all_sections = session.scalars(select(Section).order_by(Section.position, Section.id)).all()
     by_section: dict[int | None, list[ListItem]] = {}
     for item in items:

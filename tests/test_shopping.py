@@ -8,17 +8,28 @@ from app.services import shopping
 from tests.factories import make_meal
 
 
-def test_merge_on_add(seeded):
+def test_each_meal_keeps_its_own_rows(seeded):
     tacos = make_meal(seeded, "Tacos", "1 yellow onion\n1 lb ground beef")
-    chili = make_meal(seeded, "Chili", "2 yellow onions, diced\n2 lb ground beef")
+    chili = make_meal(seeded, "Chili", "2 yellow onions, diced")
     shopping.add_meal(seeded, tacos)
     shopping.add_meal(seeded, chili)
-    items = seeded.scalars(select(ListItem).order_by(ListItem.id)).all()
-    assert len(items) == 2
-    onion = items[0]
-    assert onion.amounts == [{"qty": 3, "unit": None}]
-    assert [s.meal_name for s in onion.sources] == ["Tacos", "Chili"]
-    assert items[1].amounts == [{"qty": 3, "unit": "lb"}]
+    shopping.add_meal(seeded, tacos)
+    onions = seeded.scalars(select(ListItem).where(ListItem.name_key == "yellow onion").order_by(ListItem.id)).all()
+    assert [(o.sources[0].meal_name, o.amounts) for o in onions] == [
+        ("Tacos", [{"qty": 2, "unit": None}]),
+        ("Chili", [{"qty": 2, "unit": None}]),
+    ]
+
+
+def test_typed_items_and_meal_items_stay_apart(seeded):
+    shopping.add_text(seeded, "1 yellow onion")
+    shopping.add_meal(seeded, make_meal(seeded, "Tacos", "1 yellow onion"))
+    shopping.add_text(seeded, "2 yellow onions")
+    onions = seeded.scalars(select(ListItem).order_by(ListItem.id)).all()
+    assert [(bool(o.sources), o.amounts) for o in onions] == [
+        (False, [{"qty": 3, "unit": None}]),
+        (True, [{"qty": 1, "unit": None}]),
+    ]
 
 
 def test_checked_not_merged(seeded):
@@ -45,6 +56,22 @@ def test_grouped_walk_order(seeded):
     groups = shopping.grouped(seeded)
     assert [s.name for s, _ in groups] == ["Produce", "Meat & Seafood", "Dairy & Eggs"]
     assert [i.name for i in groups[0][1]] == ["cilantro", "garlic", "bananas"]
+
+
+def test_meal_groups(seeded):
+    shopping.add_text(seeded, "milk")
+    shopping.add_meal(seeded, make_meal(seeded, "Chili", "1 lb ground beef\n1 cup sour cream\n1 yellow onion"))
+    tacos = make_meal(seeded, "Tacos", "12 corn tortillas\n1 lime")
+    shopping.add_meal(seeded, tacos)
+    seeded.delete(tacos)
+    seeded.commit()
+    seeded.expire_all()
+    groups = shopping.meal_groups(seeded)
+    assert [(name, [i.name for i in items]) for name, items in groups] == [
+        ("Chili", ["yellow onion", "ground beef", "sour cream"]),
+        ("Tacos", ["lime", "corn tortillas"]),
+    ]
+    assert [s.name for s, _ in shopping.grouped(seeded)] == ["Dairy & Eggs"]
 
 
 def test_progress(seeded):

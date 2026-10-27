@@ -194,9 +194,19 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it.done .q { background: var(--wash); color: var(--faint); }
 .it.done .cb { background: var(--go); border-color: var(--go); }
 .it.done .cb svg { visibility: visible; }
-/* Checked items are hidden unless the List's "Show checked" toggle is on. */
+/* Meal sections: an ink heading, and each item names its store section. */
+.sign.meal { background: var(--ink); color: #fff; display: flex; align-items: center; gap: 9px; }
+.sign.meal svg { width: 18px; height: 18px; color: var(--go-light); flex: none; }
+.sign.meal .cnt { margin-left: auto; font-size: 13.5px; font-weight: 600; color: #a9c2b3; }
+.it .aisle { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--ink-2); }
+.it .aisle i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.it.done .aisle i { opacity: .45; }
+@media (min-width: 900px) { .list-part .grp { padding-left: 22px; padding-right: 22px; } }
+/* Checked items are hidden unless the List's "Show checked" toggle is on.
+   The "Meals" / "Everything else" labels go too once either part is all checked. */
 .list-view:not(.show-checked) #list-body .it.done,
 .list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done))),
+.list-view:not(.show-checked) #list-body:has(.all-done) .grp,
 .show-checked .all-checked { display: none; }
 .all-checked { padding: 16px 18px; margin: 0; }
 

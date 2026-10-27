@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.models import ListItem, Staple
 from app.services import shopping
+from tests.factories import make_meal
 
 
 def test_list_page_renders_sections_without_counts(client, seeded):
@@ -14,6 +15,22 @@ def test_list_page_renders_sections_without_counts(client, seeded):
     assert "All checked off" not in html
     sign = re.search(r'<div class="sign"[^>]*>(.*?)</div>', html, re.S).group(1)
     assert sign.strip() == "Produce"
+
+
+def test_group_labels_only_with_both_kinds(client, seeded):
+    shopping.add_meal(seeded, make_meal(seeded, "Tacos", "1 lime"))
+    html = client.get("/list/items").text
+    assert "Tacos" in html and "1 left" in html
+    assert 'class="grp"' not in html
+    shopping.add_text(seeded, "milk")
+    html = client.get("/list/items").text
+    assert re.findall(r'<h2 class="grp">(.*?)</h2>', html) == ["Meals", "Everything else"]
+    assert html.index("Tacos") < html.index("Dairy &amp; Eggs")
+    assert 'class="list-part all-done"' not in html
+    milk = seeded.scalar(select(ListItem).where(ListItem.name_key == "milk"))
+    shopping.toggle(seeded, milk.id)
+    html = client.get("/list/items").text
+    assert re.findall(r'class="(list-part[^"]*)"', html) == ["list-part", "list-part all-done"]
 
 
 def test_list_empty_state(client):
