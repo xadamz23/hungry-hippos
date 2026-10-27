@@ -1,10 +1,12 @@
-<div hx-ext="sse" sse-connect="/events">
+<div class="list-view" hx-ext="sse" sse-connect="/events" x-data="listView" :class="{ 'show-checked': showChecked }">
   <div class="top static" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
-      <button class="link quiet" hx-post="/list/clear-checked" hx-target="#list-body">Clear checked</button>
+      <div class="row" style="gap:16px">
+        <button class="link quiet" @click="toggle()" x-text="showChecked ? 'Hide checked' : 'Show checked'">Show checked</button>
+        <button class="link quiet" hx-post="/list/clear-checked" hx-target="#list-body">Clear checked</button>
+      </div>
     </div>
-    {% include "list/_progress.html" %}
     <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">
       <label class="sr-only" for="add-text">Add an item</label>
       <input id="add-text" name="text" placeholder="Add item, e.g. 2 lb apples" autocomplete="off" enterkeyhint="done" x-model="q">

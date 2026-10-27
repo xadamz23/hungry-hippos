@@ -72,6 +72,17 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
+  // List: checked items are hidden by default; the choice is remembered on this device.
+  Alpine.data("listView", () => ({
+    showChecked: (() => {
+      try { return localStorage.getItem("showChecked") === "1"; } catch { return false; }
+    })(),
+    toggle() {
+      this.showChecked = !this.showChecked;
+      try { localStorage.setItem("showChecked", this.showChecked ? "1" : "0"); } catch {}
+    },
+  }));
+
   // List quick-add: typing filters the staple chips. The last word typed is matched against the start
   // of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk.
   Alpine.data("quickAdd", () => ({

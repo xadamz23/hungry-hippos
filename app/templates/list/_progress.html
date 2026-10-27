@@ -1,6 +1,0 @@
-<div id="list-progress" {% if oob %}hx-swap-oob="true"{% endif %}>
-  {% if total %}
-  <div class="big" style="margin-top:6px">{{ left }}<small>of {{ total }} left</small></div>
-  <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ total }}" aria-valuenow="{{ total - left }}"><i style="width:{{ ((total - left) / total * 100)|round(1) }}%"></i></div>
-  {% endif %}
-</div>

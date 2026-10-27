@@ -9,7 +9,9 @@ from app.services import shopping
 def test_list_page_renders_sections_without_counts(client, seeded):
     shopping.add_text(seeded, "2 yellow onions")
     html = client.get("/list").text
-    assert "1<small>of 1 left" in html.replace("\n", "").replace(" <small>", "<small>")
+    assert "left</small>" not in html
+    assert "Show checked" in html
+    assert "All checked off" not in html
     sign = re.search(r'<div class="sign"[^>]*>(.*?)</div>', html, re.S).group(1)
     assert sign.strip() == "Produce"
 
@@ -35,6 +37,7 @@ def test_toggle_route(client, seeded):
     item = shopping.add_text(seeded, "milk")
     r = client.post(f"/list/{item.id}/toggle")
     assert 'class="it done"' in r.text
+    assert "All checked off" in r.text
 
 
 def test_staple_route(client, seeded):

@@ -160,10 +160,6 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .star.off { fill: none; stroke: var(--faint); stroke-width: 1.6; }
 
 /* ---------- list ---------- */
-.big { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-.big small { font-size: 16px; letter-spacing: 0; color: var(--ink-2); font-weight: 400; margin-left: 6px; }
-.bar { height: 8px; background: var(--wash); border-radius: 4px; margin-top: 10px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--go); transition: width .3s; }
 .staples { display: flex; align-items: center; gap: 6px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
 .staples::-webkit-scrollbar { display: none; }
 .staples .lbl { font-size: 14px; color: var(--ink-2); flex: none; margin-right: 2px; }
@@ -183,6 +179,11 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it.done .q { background: var(--wash); color: var(--faint); }
 .it.done .cb { background: var(--go); border-color: var(--go); }
 .it.done .cb svg { visibility: visible; }
+/* Checked items are hidden unless the List's "Show checked" toggle is on. */
+.list-view:not(.show-checked) #list-body .it.done,
+.list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done))),
+.show-checked .all-checked { display: none; }
+.all-checked { padding: 16px 18px; margin: 0; }
 
 /* ---------- plan ---------- */
 .weeknav { display: flex; align-items: center; gap: 4px; color: var(--ink-2); font-size: 15px; }
