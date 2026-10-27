@@ -130,10 +130,10 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .check { display: flex; align-items: center; gap: 10px; font-size: 15px; margin: 10px 0 14px; cursor: pointer; }
 .check input { position: absolute; opacity: 0; }
 .cb {
-  width: 26px; height: 26px; border: 2.5px solid var(--ink); border-radius: 6px; flex: none;
+  width: 28px; height: 28px; border: 2.5px solid var(--ink); border-radius: 50%; flex: none;
   display: grid; place-items: center; background: #fff;
 }
-.cb svg { width: 16px; height: 16px; visibility: hidden; }
+.cb svg { width: 17px; height: 17px; visibility: hidden; }
 .check input:checked + .cb, .cb.on { background: var(--go); border-color: var(--go); }
 .check input:checked + .cb svg, .cb.on svg { visibility: visible; }
 .check input:focus-visible + .cb { outline: 3px solid var(--go); outline-offset: 2px; }
@@ -185,8 +185,6 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it { display: flex; align-items: center; gap: 14px; padding: 11px 18px; border-bottom: 1px solid var(--rule); background: #fff; }
 @media (min-width: 900px) { .it { padding-left: 22px; padding-right: 22px; } }
 .it .tick { padding: 6px; margin: -6px; }
-.it .cb { width: 28px; height: 28px; border-radius: 50%; }
-.it .cb svg { width: 17px; height: 17px; }
 .it .what, .ord .what { flex: 1; min-width: 0; text-align: left; display: flex; align-items: center; gap: 10px; }
 .it .n { font-size: 18px; font-weight: 500; }
 .it .note-ic { width: 15px; height: 15px; color: var(--ink-2); vertical-align: -2px; margin-left: 6px; }
