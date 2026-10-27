@@ -84,7 +84,7 @@ def web_manifest():
     return JSONResponse(
         {
             "name": "Hungry Hippos",
-            "short_name": "Hippos",
+            "short_name": "Hungry Hippos",
             "start_url": "/list",
             "scope": "/",
             "display": "standalone",
