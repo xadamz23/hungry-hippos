@@ -46,11 +46,20 @@ def test_staple_route(client, seeded):
     assert "1 gal" in r.text
 
 
-def test_typing_filters_staple_chips(client, seeded):
+def test_typing_shows_staple_suggestions(client, seeded):
     html = client.get("/list").text
     assert 'x-data="quickAdd"' in html
-    assert 'x-model="q"' in html
-    assert 'data-name="Milk"' in html and 'x-show="matches($el.dataset.name)"' in html
+    assert 'x-model="q"' in html and 'role="combobox"' in html and 'aria-controls="add-suggest"' in html
+    suggest = re.search(r'<div id="add-suggest"[^>]*role="listbox".*?</div>\s*</div>', html, re.S).group(0)
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    assert 'data-name="Milk"' in suggest and f'hx-post="/list/staple/{milk.id}"' in suggest
+    assert "1 gal" in suggest
+
+
+def test_add_refreshes_staple_suggestions(client, seeded):
+    r = client.post("/list/add", data={"text": "milk"})
+    assert 'id="list-staples"' in r.text and 'hx-swap-oob="true"' in r.text
+    assert 'data-name="Milk"' not in r.text
 
 
 def test_edit_sheet_and_save(client, seeded):

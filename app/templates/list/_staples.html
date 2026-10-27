@@ -1,8 +1,22 @@
-<div id="list-staples" class="staples" x-show="anyMatch($el)" {% if oob %}hx-swap-oob="true"{% endif %}>
+<div id="list-staples" class="staples-wrap" {% if oob %}hx-swap-oob="true"{% endif %}>
   {% if staples %}
-  <span class="lbl">Staples</span>
-  {% for s in staples %}
-  <button type="button" hx-post="/list/staple/{{ s.id }}" hx-target="#list-body" aria-label="Add {{ s.name }}" data-name="{{ s.name }}" x-show="matches($el.dataset.name)" @click="q = ''">{{ s.name }}</button>
-  {% endfor %}
+  <div class="staples" x-show="!q">
+    <span class="lbl">Staples</span>
+    {% for s in staples %}
+    <button type="button" hx-post="/list/staple/{{ s.id }}" hx-target="#list-body" aria-label="Add {{ s.name }}">{{ s.name }}</button>
+    {% endfor %}
+  </div>
+  <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
+    {% for s in staples %}
+    <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}"
+            hx-post="/list/staple/{{ s.id }}" hx-target="#list-body"
+            :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
+            @mousedown.prevent @click="q = ''">
+      {% if s.section %}<span class="dot" style="background:{{ s.section.color }}"></span>{% endif %}
+      <span class="nm">{{ s.name }}</span>
+      {% if s.amounts|amounts %}<span class="amt">{{ s.amounts|amounts }}</span>{% endif %}
+    </button>
+    {% endfor %}
+  </div>
   {% endif %}
 </div>

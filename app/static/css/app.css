@@ -165,6 +165,20 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .staples .lbl { font-size: 14px; color: var(--ink-2); flex: none; margin-right: 2px; }
 .staples button { flex: none; font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; background: var(--wash); }
 .staples button:active { background: var(--go-faint); }
+.staples-wrap { position: relative; }
+.suggest {
+  position: absolute; top: 6px; left: 0; right: 0; z-index: 20; background: #fff;
+  border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px rgba(16, 41, 28, .16);
+  display: flex; flex-direction: column;
+}
+.suggest button {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; padding: 10px 14px;
+  font-size: 16px; text-align: left; border-top: 1px solid var(--rule); margin-top: -1px;
+}
+.suggest button.active, .suggest button:active { background: var(--go-faint); }
+.suggest[hidden], .suggest [hidden] { display: none; }
+.suggest .nm { flex: 1; font-weight: 600; }
+.suggest .amt { color: var(--ink-2); font-size: 14.5px; }
 
 .sign { padding: 9px 18px; font-size: 17px; font-weight: 700; position: sticky; top: var(--sign-top, 0); z-index: 5; }
 @media (min-width: 900px) { .sign { padding-left: 22px; padding-right: 22px; } }

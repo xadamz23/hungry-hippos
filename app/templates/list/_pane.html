@@ -12,7 +12,12 @@
     </div>
     <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">
       <label class="sr-only" for="add-text">Add an item</label>
-      <input id="add-text" name="text" placeholder="Add item, e.g. 2 lb apples" autocomplete="off" enterkeyhint="done" x-model="q">
+      <input id="add-text" name="text" placeholder="Add item, e.g. 2 lb apples" autocomplete="off" enterkeyhint="done" x-model="q"
+             role="combobox" aria-autocomplete="list" aria-controls="add-suggest" aria-expanded="false"
+             :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
+             @focus="open = true" @blur="open = false" @input="open = true"
+             @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+             @keydown.enter="pick($event)" @keydown.escape="open = false">
       <button type="submit">Add</button>
     </form>
     {% include "list/_staples.html" %}

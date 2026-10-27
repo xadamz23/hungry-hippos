@@ -83,20 +83,56 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
-  // List quick-add: typing filters the staple chips. The last word typed is matched against the start
-  // of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk.
+  // List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
+  // start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
+  // through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
   Alpine.data("quickAdd", () => ({
     q: "",
+    open: false,
+    active: -1,
+    limit: 6,
+    init() {
+      this.$watch("q", () => (this.active = -1));
+    },
     word() {
       const words = this.q.toLowerCase().split(/\s+/).filter((w) => w && !/^[\d.\/½¼¾⅓⅔-]+$/.test(w));
       return words.at(-1) || "";
     },
     matches(name) {
       const w = this.word();
-      return !w || name.toLowerCase().split(/\s+/).some((part) => part.startsWith(w));
+      return !!w && name.toLowerCase().split(/\s+/).some((part) => part.startsWith(w));
     },
-    anyMatch(row) {
-      return [...row.querySelectorAll("[data-name]")].some((b) => this.matches(b.dataset.name));
+    // Names of the staples to show, best first (server order), capped at `limit`.
+    hits() {
+      const names = [...this.$root.querySelectorAll("#add-suggest [data-name]")].map((b) => b.dataset.name);
+      return names.filter((n) => this.matches(n)).slice(0, this.limit);
+    },
+    shown(name) {
+      return this.hits().includes(name);
+    },
+    options() {
+      return [...this.$root.querySelectorAll("#add-suggest [data-name]")].filter((b) => this.shown(b.dataset.name));
+    },
+    isOpen() {
+      return this.open && this.hits().length > 0;
+    },
+    isActive(el) {
+      return this.active >= 0 && this.options()[this.active] === el;
+    },
+    activeId() {
+      return this.active >= 0 ? this.options()[this.active]?.id : null;
+    },
+    move(delta) {
+      const n = this.options().length;
+      if (!n) return;
+      this.open = true;
+      this.active = this.active < 0 && delta < 0 ? n - 1 : (this.active + delta + n) % n;
+    },
+    pick(e) {
+      const el = this.isOpen() && this.options()[this.active];
+      if (!el) return;
+      e.preventDefault();
+      el.click();
     },
   }));
 });
