@@ -73,6 +73,12 @@ def test_add_staple_appears_as_chip(client, seeded):
     assert 'aria-label="Add coffee"' in client.get("/list").text
 
 
+def test_staples_page_has_filter(client, seeded):
+    html = client.get("/more/staples").text
+    assert 'id="staple-q"' in html
+    assert 'data-name="Milk"' in html
+
+
 def test_delete_staple(client, seeded):
     milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
     client.post(f"/more/staples/{milk.id}/delete")

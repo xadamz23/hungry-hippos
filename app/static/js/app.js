@@ -83,6 +83,21 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
+  // Staples page: the filter box hides rows whose name doesn't contain the typed text. Drag handles hide
+  // while filtering, since reordering a partial list is confusing.
+  Alpine.data("stapleFilter", () => ({
+    q: "",
+    filtering() {
+      return this.q.trim() !== "";
+    },
+    shows(name) {
+      return !this.filtering() || name.toLowerCase().includes(this.q.trim().toLowerCase());
+    },
+    anyShown() {
+      return [...this.$root.querySelectorAll("#staple-rows [data-name]")].some((r) => this.shows(r.dataset.name));
+    },
+  }));
+
   // List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
   // start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
   // through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
