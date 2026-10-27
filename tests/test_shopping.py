@@ -70,6 +70,29 @@ def test_update_without_remember_does_not_learn(seeded):
     assert shopping.add_text(seeded, "tortilla").section.name == "International"
 
 
+def test_staples_ordered_by_times_added(seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    bananas = seeded.scalar(select(Staple).where(Staple.name_key == "banana"))
+    for _ in range(2):
+        shopping.add_staple(seeded, bananas.id)
+        shopping.clear_all(seeded)
+    shopping.add_text(seeded, "1 gal milk")
+    shopping.clear_all(seeded)
+    seeded.expire_all()
+    assert (bananas.add_count, milk.add_count) == (2, 1)
+    staples = shopping.available_staples(seeded)
+    assert staples[:2] == [bananas, milk]
+    rest = staples[2:]
+    assert rest == sorted(rest, key=lambda s: (s.position, s.id))
+
+
+def test_meal_ingredients_do_not_count_as_staple_adds(seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    shopping.add_meal(seeded, make_meal(seeded, "Pancakes", "1 cup milk"))
+    seeded.expire_all()
+    assert milk.add_count == 0
+
+
 def test_staple_chip_hidden_when_on_list(seeded):
     milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
     assert milk in shopping.available_staples(seeded)

@@ -156,5 +156,6 @@ class Staple(Base):
     amounts: Mapped[list] = mapped_column(JSONB, default=list)
     section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
     position: Mapped[int] = mapped_column(Integer, default=0)
+    add_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     section: Mapped[Section | None] = relationship()

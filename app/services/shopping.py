@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException
 from sqlalchemy import delete, select, text
+from sqlalchemy import update as sql_update
 from sqlalchemy.orm import Session
 
 from app.models import ListItem, ListItemSource, Meal, Section, Staple
@@ -52,11 +53,16 @@ def add_item(session, name: str, amounts: list, section_id: int | None = None, s
     return item
 
 
+def _count_staple_add(session: Session, key: str) -> None:
+    session.execute(sql_update(Staple).where(Staple.name_key == key).values(add_count=Staple.add_count + 1))
+
+
 def add_text(session: Session, text_: str) -> ListItem | None:
     parsed = parse_line(text_)
     name = parsed.name or parsed.raw
     if not name:
         return None
+    _count_staple_add(session, name_key(name))
     amounts = [{"qty": parsed.qty, "unit": parsed.unit}] if parsed.qty is not None else []
     return add_item(session, name, amounts)
 
@@ -70,7 +76,8 @@ def add_meal(session: Session, meal: Meal, factor: float = 1.0) -> int:
 
 def available_staples(session: Session) -> list[Staple]:
     on_list = set(session.scalars(select(ListItem.name_key).where(ListItem.checked.is_(False))))
-    staples = session.scalars(select(Staple).order_by(Staple.position, Staple.id)).all()
+    # Most-added first; the manual order on More > Staples breaks ties.
+    staples = session.scalars(select(Staple).order_by(Staple.add_count.desc(), Staple.position, Staple.id)).all()
     return [s for s in staples if s.name_key not in on_list]
 
 
@@ -78,6 +85,7 @@ def add_staple(session: Session, staple_id: int) -> ListItem:
     staple = session.get(Staple, staple_id)
     if staple is None:
         raise HTTPException(404, "That staple no longer exists.")
+    staple.add_count += 1
     item = _add(session, staple.name, staple.name_key, staple.amounts, staple.section_id)
     _commit(session)
     return item
