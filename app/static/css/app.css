@@ -355,6 +355,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .mrow.warn { color: var(--warn); }
 .ok { color: var(--go); font-weight: 700; }
 .ord { display: flex; align-items: center; gap: 12px; padding: 8px 18px; border-bottom: 1px solid var(--rule); font-size: 16.5px; font-weight: 600; background: #fff; }
+#staple-rows [hidden] { display: none; }
 .ord .sw { width: 34px; height: 28px; border-radius: 6px; border: 0; padding: 0; flex: none; cursor: pointer; }
 .ord .sw::-webkit-color-swatch-wrapper { padding: 0; }
 .ord .sw::-webkit-color-swatch { border: 0; border-radius: 6px; }
