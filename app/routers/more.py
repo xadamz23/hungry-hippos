@@ -1,7 +1,7 @@
 import json
 import re
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session, selectinload
 from app.db import get_session
 from app.models import ItemSectionMap, ListItem, Section, Staple
 from app.services import importer
-from app.services.ingredients import parse_line
+from app.services.amounts import parse_amount_text
+from app.services.ingredients import name_key, parse_line
 from app.services.sections import guess_section
 from app.templating import templates
 
@@ -90,7 +91,7 @@ def staples_page(request: Request, session: Session = Depends(get_session)):
 
 @router.post("/staples")
 def add_staple(request: Request, text: str = Form(""), session: Session = Depends(get_session)):
-    parsed = parse_line(text)
+    parsed = parse_line(text, strip_prep=False)
     name = parsed.name or parsed.raw
     if name:
         position = session.scalar(select(func.coalesce(func.max(Staple.position), -1))) + 1
@@ -114,13 +115,51 @@ def order_staples(ids: list[int] = Form(...), session: Session = Depends(get_ses
     return Response(status_code=204)
 
 
+def _get_staple(session: Session, staple_id: int) -> Staple:
+    staple = session.get(Staple, staple_id)
+    if staple is None:
+        raise HTTPException(404, "That staple no longer exists.")
+    return staple
+
+
+@router.get("/staples/{staple_id}/edit")
+def edit_staple_sheet(request: Request, staple_id: int, session: Session = Depends(get_session)):
+    ctx = {"staple": _get_staple(session, staple_id), "sections": _sections(session)}
+    return templates.TemplateResponse(request, "more/_staple_sheet.html", ctx)
+
+
+@router.post("/staples/{staple_id}")
+def edit_staple(
+    request: Request,
+    staple_id: int,
+    name: str = Form(""),
+    amount: str = Form(""),
+    section_id: int | None = Form(None),
+    session: Session = Depends(get_session),
+):
+    staple = _get_staple(session, staple_id)
+    name = name.strip()[:200]
+    if name:
+        staple.name = name
+        staple.name_key = name_key(name)
+    staple.amounts = parse_amount_text(amount)
+    if section_id is not None and session.get(Section, section_id) is not None:
+        staple.section_id = section_id
+    session.commit()
+    response = templates.TemplateResponse(request, "more/_staple_rows.html", {"staples": _staples(session)})
+    response.headers["HX-Trigger"] = json.dumps({"close-sheet": True, "toast": "Saved"})
+    return response
+
+
 @router.post("/staples/{staple_id}/delete")
 def delete_staple(request: Request, staple_id: int, session: Session = Depends(get_session)):
     staple = session.get(Staple, staple_id)
     if staple is not None:
         session.delete(staple)
         session.commit()
-    return templates.TemplateResponse(request, "more/_staple_rows.html", {"staples": _staples(session)})
+    response = templates.TemplateResponse(request, "more/_staple_rows.html", {"staples": _staples(session)})
+    response.headers["HX-Trigger"] = json.dumps({"close-sheet": True})
+    return response
 
 
 # ---------- remembered sections ----------

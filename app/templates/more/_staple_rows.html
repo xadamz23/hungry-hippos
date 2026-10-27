@@ -2,7 +2,7 @@
   {% for s in staples %}
   <div class="ord" data-id="{{ s.id }}">
     <span class="dot" style="background:{{ s.section.color if s.section else '#757575' }}" title="{{ s.section.name if s.section else 'Other' }}"></span>
-    <span style="flex:1">{{ s.name|cap }} {% set a = s.amounts|amounts %}{% if a %}<span class="q" style="margin-left:6px;font-size:14px">{{ a }}</span>{% endif %}</span>
+    <button class="what" hx-get="/more/staples/{{ s.id }}/edit" hx-target="#sheet" aria-label="Edit {{ s.name }}">{{ s.name|cap }} {% set a = s.amounts|amounts %}{% if a %}<span class="q" style="font-size:14px">{{ a }}</span>{% endif %}</button>
     <button class="icon-btn" hx-post="/more/staples/{{ s.id }}/delete" hx-target="#staple-rows" hx-swap="outerHTML" aria-label="Remove {{ s.name }}"><svg><use href="#i-x"/></svg></button>
     <svg class="handle" width="22" height="22" aria-label="Drag to reorder"><use href="#i-grip"/></svg>
   </div>

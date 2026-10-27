@@ -99,7 +99,7 @@ def name_key(name: str) -> str:
     return " ".join(out)
 
 
-def parse_line(line: str) -> ParsedIngredient:
+def parse_line(line: str, *, strip_prep: bool = True) -> ParsedIngredient:
     raw = " ".join(line.split())
     s = expand_fractions(raw)
     s = re.sub(r"\([^)]*\)", " ", s)
@@ -121,7 +121,7 @@ def parse_line(line: str) -> ParsedIngredient:
     name = TRAILING_PHRASES.sub("", name)
     name = re.sub(r"^of\s+", "", name.strip(), flags=re.I)
     words = name.split()
-    while words and words[0].lower() in PREP_WORDS:
+    while strip_prep and words and words[0].lower() in PREP_WORDS:
         words.pop(0)
     name = " ".join(words).strip(" .;:-/")
     return ParsedIngredient(raw=raw, name=name, name_key=name_key(name), qty=qty, unit=unit)

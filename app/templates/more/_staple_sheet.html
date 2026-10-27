@@ -1,0 +1,30 @@
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title" x-data="itemSheet"
+     data-section="{{ staple.section.name if staple.section else 'Other' }}" data-amount="{{ staple.amounts|amounts }}">
+  <div class="scrim" onclick="closeSheet()"></div>
+  <form class="sheet" hx-post="/more/staples/{{ staple.id }}" hx-target="#staple-rows" hx-swap="outerHTML">
+    <div class="grab"></div>
+    <h2 id="sheet-title" style="font-size:20px">Edit staple</h2>
+    <div class="field" style="margin-top:12px">
+      <label for="staple-name">Name</label>
+      <input id="staple-name" class="input" name="name" value="{{ staple.name }}" autocomplete="off" required>
+    </div>
+    <div class="field">
+      <label for="amt">Amount</label>
+      <div class="add">
+        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(-1)" aria-label="Less">−</button>
+        <input id="amt" name="amount" x-model="amt" placeholder="e.g. 1 jar" style="text-align:center;font-weight:700">
+        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
+      </div>
+    </div>
+    <span class="label">Section</span>
+    <div class="secgrid">
+      {% for s in sections %}
+      <label><input type="radio" name="section_id" value="{{ s.id }}" {% if s.id == staple.section_id %}checked{% endif %}><span><i class="dot" style="background:{{ s.color }}"></i>{{ s.name }}</span></label>
+      {% endfor %}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:12px">
+      <button type="button" class="btn danger" hx-post="/more/staples/{{ staple.id }}/delete" hx-target="#staple-rows" hx-swap="outerHTML">Remove</button>
+      <button type="submit" class="btn">Save</button>
+    </div>
+  </form>
+</div>

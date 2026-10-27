@@ -79,6 +79,41 @@ def test_delete_staple(client, seeded):
     assert seeded.scalar(select(Staple).where(Staple.name == "Milk")) is None
 
 
+def test_add_staple_keeps_descriptive_words(client, seeded):
+    client.post("/more/staples", data={"text": "1 jar Minced garlic"})
+    staple = seeded.scalar(select(Staple).where(Staple.name == "Minced garlic"))
+    assert staple.amounts == [{"qty": 1, "unit": "jar"}]
+    assert staple.name_key == "minced garlic"
+
+
+def test_edit_staple_sheet(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    html = client.get(f"/more/staples/{milk.id}/edit").text
+    assert 'value="Milk"' in html and "Dairy &amp; Eggs" in html and "Produce" in html
+
+
+def test_edit_staple(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    bakery = section(seeded, "Bakery").id
+    r = client.post(f"/more/staples/{milk.id}", data={"name": "Oat milks", "amount": "2 gal", "section_id": bakery})
+    assert "close-sheet" in r.headers["HX-Trigger"]
+    assert "Oat milks" in r.text
+    seeded.expire_all()
+    assert (milk.name, milk.name_key, milk.section_id) == ("Oat milks", "oat milk", bakery)
+    assert milk.amounts == [{"qty": 2, "unit": "gal"}]
+
+
+def test_edit_staple_blank_name_keeps_old(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    client.post(f"/more/staples/{milk.id}", data={"name": "  ", "amount": ""})
+    seeded.expire_all()
+    assert milk.name == "Milk" and milk.amounts == []
+
+
+def test_edit_missing_staple_404(client):
+    assert client.get("/more/staples/999999/edit").status_code == 404
+
+
 def test_delete_remembered(client, seeded):
     remember(seeded, "tortilla", section(seeded, "Bakery").id)
     seeded.commit()
