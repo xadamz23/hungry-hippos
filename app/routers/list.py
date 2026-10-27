@@ -1,11 +1,9 @@
 import json
 
 from fastapi import APIRouter, Depends, Form, Request
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.models import Section
 from app.services import shopping
 from app.templating import templates
 
@@ -82,8 +80,7 @@ def toggle(request: Request, item_id: int, session: Session = Depends(get_sessio
 @router.get("/{item_id}/edit")
 def edit_sheet(request: Request, item_id: int, session: Session = Depends(get_session)):
     item = shopping.get_item(session, item_id)
-    sections = session.scalars(select(Section).order_by(Section.position)).all()
-    return templates.TemplateResponse(request, "list/_item_sheet.html", {"item": item, "sections": sections})
+    return templates.TemplateResponse(request, "list/_item_sheet.html", {"item": item})
 
 
 @router.post("/{item_id}")
@@ -91,11 +88,10 @@ def save(
     request: Request,
     item_id: int,
     amount: str = Form(""),
-    section_id: int = Form(...),
-    remember: str | None = Form(None),
+    note: str = Form(""),
     session: Session = Depends(get_session),
 ):
-    shopping.update(session, item_id, amount, section_id, remember=bool(remember))
+    shopping.update(session, item_id, amount, note)
     return items_response(request, session, close_sheet=True)
 
 

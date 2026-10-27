@@ -11,8 +11,9 @@ def test_item_sheet_does_not_inline_values_into_js(client, seeded):
     item = shopping.add_text(seeded, "sauce")
     produce = section(seeded, "Produce")
     produce.name = "Pro'+alert(1)+'duce"
+    item.section_id = produce.id
     seeded.commit()
-    shopping.update(seeded, item.id, "2 x');alert(2);//", produce.id, remember=False)
+    shopping.update(seeded, item.id, "2 x');alert(2);//", "');alert(3);//")
     page = client.get(f"/list/{item.id}/edit").text
     js_attrs = [htmllib.unescape(a) for a in __import__("re").findall(r'(?:x-data|@change|@click|x-text)="([^"]*)"', page)]
     assert js_attrs, "sheet should still use Alpine"

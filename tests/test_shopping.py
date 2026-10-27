@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.models import ListItem, Meal, Staple
 from app.services import shopping
-from tests.factories import make_meal, section
+from tests.factories import make_meal
 
 
 def test_merge_on_add(seeded):
@@ -54,20 +54,13 @@ def test_progress(seeded):
     assert shopping.progress(seeded) == (1, 2)
 
 
-def test_update_remember_learns(seeded):
+def test_update_sets_amount_and_note(seeded):
     item = shopping.add_text(seeded, "tortillas")
-    bakery = section(seeded, "Bakery")
-    shopping.update(seeded, item.id, "2 pack", bakery.id, remember=True)
+    shopping.update(seeded, item.id, "2 pack", " soft taco size ")
     assert item.amounts == [{"qty": 2, "unit": "pkg"}]
-    shopping.remove(seeded, item.id)
-    assert shopping.add_text(seeded, "tortilla").section.name == "Bakery"
-
-
-def test_update_without_remember_does_not_learn(seeded):
-    item = shopping.add_text(seeded, "tortillas")
-    shopping.update(seeded, item.id, "", section(seeded, "Bakery").id, remember=False)
-    shopping.remove(seeded, item.id)
-    assert shopping.add_text(seeded, "tortilla").section.name == "International"
+    assert item.note == "soft taco size"
+    shopping.update(seeded, item.id, "2 pack", "")
+    assert item.note is None
 
 
 def test_staples_ordered_by_times_added(seeded):

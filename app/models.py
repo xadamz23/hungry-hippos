@@ -128,6 +128,7 @@ class ListItem(Base):
     name_key: Mapped[str] = mapped_column(String(200), index=True)
     amounts: Mapped[list] = mapped_column(JSONB, default=list)
     section_id: Mapped[int | None] = mapped_column(ForeignKey("sections.id", ondelete="SET NULL"))
+    note: Mapped[str | None] = mapped_column(Text)
     checked: Mapped[bool] = mapped_column(Boolean, default=False)
     checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

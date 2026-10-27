@@ -187,6 +187,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it .tick { padding: 6px; margin: -6px; }
 .it .what, .ord .what { flex: 1; min-width: 0; text-align: left; display: flex; align-items: center; gap: 10px; }
 .it .n { font-size: 18px; font-weight: 500; }
+.it .note-ic { width: 15px; height: 15px; color: var(--ink-2); vertical-align: -2px; margin-left: 6px; }
 .it .f { font-size: 13px; color: var(--ink-2); }
 .it .q { margin-left: auto; }
 .it.done .n { color: var(--faint); text-decoration: line-through; }

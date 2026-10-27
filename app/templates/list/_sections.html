@@ -12,7 +12,7 @@
     </button>
     <button class="what" hx-get="/list/{{ item.id }}/edit" hx-target="#sheet">
       <span>
-        <span class="n" style="display:block">{{ item.name|cap }}</span>
+        <span class="n" style="display:block">{{ item.name|cap }}{% if item.note %}<svg class="note-ic" role="img" aria-label="Has a note"><title>{{ item.note }}</title><use href="#i-note"/></svg>{% endif %}</span>
         {% if item.sources %}<span class="f" style="display:block">{{ item.sources|map(attribute='meal_name')|join(', ') }}</span>{% endif %}
       </span>
       {% set a = item.amounts|amounts %}{% if a %}<span class="q">{{ a }}</span>{% endif %}

@@ -99,13 +99,10 @@ def toggle(session: Session, item_id: int) -> ListItem:
     return item
 
 
-def update(session: Session, item_id: int, amount_text: str, section_id: int, remember: bool) -> ListItem:
+def update(session: Session, item_id: int, amount_text: str, note: str) -> ListItem:
     item = get_item(session, item_id)
     item.amounts = amt.parse_amount_text(amount_text)
-    if session.get(Section, section_id) is not None:
-        item.section_id = section_id
-        if remember:
-            sections.remember(session, item.name_key, section_id)
+    item.note = note.strip() or None
     _commit(session)
     return item
 

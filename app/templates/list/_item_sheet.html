@@ -1,5 +1,5 @@
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title" x-data="itemSheet"
-     data-section="{{ item.section.name if item.section else 'Other' }}" data-amount="{{ item.amounts|amounts }}">
+     data-amount="{{ item.amounts|amounts }}">
   <div class="scrim" onclick="closeSheet()"></div>
   <form class="sheet" hx-post="/list/{{ item.id }}" hx-target="#list-body">
     <div class="grab"></div>
@@ -15,13 +15,10 @@
         <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
       </div>
     </div>
-    <span class="label">Section</span>
-    <div class="secgrid">
-      {% for s in sections %}
-      <label><input type="radio" name="section_id" value="{{ s.id }}" {% if s.id == item.section_id %}checked{% endif %} data-name="{{ s.name }}" @change="sec = $el.dataset.name"><span><i class="dot" style="background:{{ s.color }}"></i>{{ s.name }}</span></label>
-      {% endfor %}
+    <div class="field">
+      <label for="note">Note</label>
+      <textarea id="note" name="note" class="input" style="min-height:70px" placeholder="e.g. the big tub, ripe ones">{{ item.note or '' }}</textarea>
     </div>
-    <label class="check"><input type="checkbox" name="remember" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span><span>Always put {{ item.name }} in <b x-text="sec">{{ item.section.name if item.section else 'Other' }}</b></span></label>
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
       <button type="button" class="btn danger" hx-post="/list/{{ item.id }}/delete" hx-target="#list-body">Remove</button>
       <button type="submit" class="btn">Save</button>

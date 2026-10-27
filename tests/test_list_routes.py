@@ -62,18 +62,22 @@ def test_add_refreshes_staple_suggestions(client, seeded):
     assert 'data-name="Milk"' not in r.text
 
 
-def test_edit_sheet_and_save(client, seeded):
+def test_edit_sheet_and_save_note(client, seeded):
     item = shopping.add_text(seeded, "tortillas")
     sheet = client.get(f"/list/{item.id}/edit").text
-    assert "Always put tortillas in" in sheet
-    bakery = seeded.scalar(select(ListItem)).section_id  # current (International)
-    from tests.factories import section
+    assert 'name="section_id"' not in sheet and 'name="note"' in sheet
 
-    r = client.post(f"/list/{item.id}", data={"amount": "2", "section_id": section(seeded, "Bakery").id, "remember": "1"})
-    assert r.status_code == 200
+    r = client.post(f"/list/{item.id}", data={"amount": "2", "note": "  the big pack "})
+    assert r.status_code == 200 and "#i-note" in r.text
     seeded.expire_all()
-    assert seeded.get(ListItem, item.id).section.name == "Bakery"
-    assert bakery != section(seeded, "Bakery").id
+    saved = seeded.get(ListItem, item.id)
+    assert saved.note == "the big pack" and saved.amounts
+    assert "the big pack" in client.get(f"/list/{item.id}/edit").text
+
+    r = client.post(f"/list/{item.id}", data={"amount": "2", "note": "  "})
+    assert "#i-note" not in r.text
+    seeded.expire_all()
+    assert seeded.get(ListItem, item.id).note is None
 
 
 def test_delete_route(client, seeded):
