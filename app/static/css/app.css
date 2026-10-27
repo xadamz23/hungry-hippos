@@ -185,6 +185,8 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it { display: flex; align-items: center; gap: 14px; padding: 11px 18px; border-bottom: 1px solid var(--rule); background: #fff; }
 @media (min-width: 900px) { .it { padding-left: 22px; padding-right: 22px; } }
 .it .tick { padding: 6px; margin: -6px; }
+.it .cb { width: 28px; height: 28px; border-radius: 50%; }
+.it .cb svg { width: 17px; height: 17px; }
 .it .what, .ord .what { flex: 1; min-width: 0; text-align: left; display: flex; align-items: center; gap: 10px; }
 .it .n { font-size: 18px; font-weight: 500; }
 .it .note-ic { width: 15px; height: 15px; color: var(--ink-2); vertical-align: -2px; margin-left: 6px; }
