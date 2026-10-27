@@ -71,6 +71,23 @@ document.addEventListener("alpine:init", () => {
       }
     },
   }));
+
+  // List quick-add: typing filters the staple chips. The last word typed is matched against the start
+  // of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk.
+  Alpine.data("quickAdd", () => ({
+    q: "",
+    word() {
+      const words = this.q.toLowerCase().split(/\s+/).filter((w) => w && !/^[\d.\/½¼¾⅓⅔-]+$/.test(w));
+      return words.at(-1) || "";
+    },
+    matches(name) {
+      const w = this.word();
+      return !w || name.toLowerCase().split(/\s+/).some((part) => part.startsWith(w));
+    },
+    anyMatch(row) {
+      return [...row.querySelectorAll("[data-name]")].some((b) => this.matches(b.dataset.name));
+    },
+  }));
 });
 
 window.addTag = (btn) => {

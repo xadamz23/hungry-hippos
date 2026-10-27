@@ -43,6 +43,13 @@ def test_staple_route(client, seeded):
     assert "1 gal" in r.text
 
 
+def test_typing_filters_staple_chips(client, seeded):
+    html = client.get("/list").text
+    assert 'x-data="quickAdd"' in html
+    assert 'x-model="q"' in html
+    assert 'data-name="Milk"' in html and 'x-show="matches($el.dataset.name)"' in html
+
+
 def test_edit_sheet_and_save(client, seeded):
     item = shopping.add_text(seeded, "tortillas")
     sheet = client.get(f"/list/{item.id}/edit").text
