@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 OUT = Path(__file__).resolve().parent.parent / "app" / "static" / "icons"
-GREEN, FACE, INK, MOUTH = "#178245", "#E3F2E8", "#10291C", "#FFD84A"
+GREEN, FACE, INK, MOUTH, EAR = "#178245", "#E3F2E8", "#10291C", "#FFD84A", "#A9D6B9"
 
 
 def hippo(size: int, scale: float, rounded: bool) -> Image.Image:
@@ -23,14 +23,16 @@ def hippo(size: int, scale: float, rounded: bool) -> Image.Image:
 
     d.ellipse(box(-30, -40, -14, -24), fill=FACE)  # ears
     d.ellipse(box(14, -40, 30, -24), fill=FACE)
-    d.ellipse(box(-26, -34, -18, -26), fill=INK)
-    d.ellipse(box(18, -34, 26, -26), fill=INK)
+    d.ellipse(box(-26, -36, -18, -28), fill=EAR)  # inner ears
+    d.ellipse(box(18, -36, 26, -28), fill=EAR)
     d.rounded_rectangle(box(-28, -30, 28, 6), radius=int(20 * u), fill=FACE)  # head
     d.rounded_rectangle(box(-36, -6, 36, 36), radius=int(20 * u), fill=FACE)  # snout
-    d.ellipse(box(-15, -18, -7, -10), fill=INK)  # eyes
-    d.ellipse(box(7, -18, 15, -10), fill=INK)
-    d.ellipse(box(-20, 2, -11, 9), fill=INK)  # nostrils
-    d.ellipse(box(11, 2, 20, 9), fill=INK)
+    d.ellipse(box(-15, -21, -7, -8), fill=INK)  # tall eyes, each with a glint
+    d.ellipse(box(7, -21, 15, -8), fill=INK)
+    d.ellipse(box(-12.5, -18, -9.5, -15), fill="#FFFFFF")
+    d.ellipse(box(9.5, -18, 12.5, -15), fill="#FFFFFF")
+    d.ellipse(box(-19, 3.5, -12, 7.5), fill=INK)  # flat nostrils
+    d.ellipse(box(12, 3.5, 19, 7.5), fill=INK)
     d.chord(box(-22, 6, 22, 32), 0, 180, fill=MOUTH, outline=INK, width=max(2, int(2.5 * u)))  # mouth
     return img
 

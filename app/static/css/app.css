@@ -360,7 +360,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .empty .art svg { width: 56px; height: 56px; color: var(--go); }
 .empty h2 { font-size: 21px; font-weight: 800; }
 .empty p { font-size: 15.5px; color: var(--ink-2); margin: 8px 0 18px; line-height: 1.45; }
-.empty .btn + .btn, .empty form + form { margin-top: 8px; }
+.empty :is(.btn, form) + :is(.btn, form) { margin-top: 8px; }
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 60;
   transform: translateX(-50%); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: 10px;
