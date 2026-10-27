@@ -2,8 +2,11 @@
   <div class="top static" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
-      <div class="row" style="gap:16px">
-        <button class="link quiet" @click="toggle()" x-text="showChecked ? 'Hide checked' : 'Show checked'">Show checked</button>
+      <div class="row" style="gap:8px">
+        <button class="icon-btn" @click="toggle()" :aria-pressed="showChecked" :aria-label="showChecked ? 'Hide checked items' : 'Show checked items'" aria-label="Show checked items" aria-pressed="false">
+          <svg x-show="showChecked" x-cloak><use href="#i-eye"/></svg>
+          <svg x-show="!showChecked"><use href="#i-eye-off"/></svg>
+        </button>
         <button class="link quiet" hx-post="/list/clear-checked" hx-target="#list-body">Clear checked</button>
       </div>
     </div>

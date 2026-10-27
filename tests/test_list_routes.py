@@ -10,7 +10,7 @@ def test_list_page_renders_sections_without_counts(client, seeded):
     shopping.add_text(seeded, "2 yellow onions")
     html = client.get("/list").text
     assert "left</small>" not in html
-    assert "Show checked" in html
+    assert "Show checked items" in html
     assert "All checked off" not in html
     sign = re.search(r'<div class="sign"[^>]*>(.*?)</div>', html, re.S).group(1)
     assert sign.strip() == "Produce"
