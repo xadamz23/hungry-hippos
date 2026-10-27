@@ -1,11 +1,6 @@
-import os
-import time
-from datetime import datetime
-
 from sqlalchemy import select
 
 from app.models import ItemSectionMap, Section, Staple
-from app.routers.more import last_backup
 from app.services import shopping
 from app.services.sections import remember
 from tests.factories import section
@@ -13,8 +8,9 @@ from tests.factories import section
 
 def test_more_index(client):
     html = client.get("/more").text
-    for text in ["Section order", "Staples", "Remembered sections", "History", "Clear checked items", "Backups"]:
+    for text in ["Section order", "Staples", "Remembered sections", "History", "Clear checked items"]:
         assert text in html
+    assert "Backups" not in html
 
 
 def test_more_shows_ai_status(client, monkeypatch):
@@ -91,13 +87,3 @@ def test_delete_remembered(client, seeded):
     seeded.expire_all()
     assert seeded.scalars(select(ItemSectionMap)).all() == []
 
-
-def test_last_backup(tmp_path):
-    assert last_backup(tmp_path) is None
-    assert last_backup(tmp_path / "missing") is None
-    old = tmp_path / "hh-2026-10-24.sql.gz"
-    new = tmp_path / "hh-2026-10-25.sql.gz"
-    old.write_bytes(b"x")
-    new.write_bytes(b"x")
-    os.utime(old, (time.time() - 86400, time.time() - 86400))
-    assert last_backup(tmp_path) == datetime.fromtimestamp(new.stat().st_mtime).astimezone()

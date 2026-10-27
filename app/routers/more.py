@@ -1,16 +1,11 @@
 import json
 import re
-from datetime import datetime
-from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.clock import today
-from app.config import get_settings
 from app.db import get_session
 from app.models import ItemSectionMap, ListItem, Section, Staple
 from app.services import importer
@@ -22,27 +17,6 @@ router = APIRouter(prefix="/more")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
-def last_backup(directory: Path) -> datetime | None:
-    try:
-        files = list(Path(directory).glob("*.sql.gz"))
-    except OSError:
-        return None
-    if not files:
-        return None
-    newest = max(f.stat().st_mtime for f in files)
-    return datetime.fromtimestamp(newest).astimezone()
-
-
-def backup_label() -> str:
-    when = last_backup(Path(get_settings().backup_dir))
-    if when is None:
-        return "No backups yet"
-    local = when.astimezone(ZoneInfo(get_settings().tz))
-    days = (today() - local.date()).days
-    day = "today" if days == 0 else "yesterday" if days == 1 else f"{local:%b} {local.day}"
-    return f"Last one {local:%-I:%M %p} {day}"
-
-
 @router.get("")
 def more(request: Request, session: Session = Depends(get_session)):
     ctx = {
@@ -52,7 +26,6 @@ def more(request: Request, session: Session = Depends(get_session)):
         "remembered_count": session.scalar(select(func.count()).select_from(ItemSectionMap)),
         "checked_count": session.scalar(select(func.count()).select_from(ListItem).where(ListItem.checked.is_(True))),
         "ai": importer.ai_enabled(),
-        "backup": backup_label(),
     }
     return templates.TemplateResponse(request, "more/index.html", ctx)
 

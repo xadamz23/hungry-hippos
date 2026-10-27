@@ -1,5 +1,5 @@
-# Production: docker compose up -d   (reads .env next to this file)
-# Local development only needs the database: docker compose up -d db
+# Local development: docker compose up -d db
+# The prod server doesn't use this file: scripts/update-app.sh writes its own docker-compose.yaml pinned to a release tag.
 services:
   app:
     image: ${IMAGE:-xadamz23/hungry-hippos:latest}
@@ -9,11 +9,8 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-hh}:${POSTGRES_PASSWORD:-hh}@db:5432/${POSTGRES_DB:-hungry_hippos}
-      BACKUP_DIR: /backups
     ports:
       - "${APP_PORT:-8000}:8000"
-    volumes:
-      - backups:/backups:ro
     depends_on:
       db:
         condition: service_healthy
@@ -35,38 +32,5 @@ services:
       timeout: 3s
       retries: 10
 
-  # Nightly pg_dump at BACKUP_HOUR (local time) into the backups volume, keeping 14 days.
-  # Restore: gunzip -c hh-YYYY-MM-DD.sql.gz | docker compose exec -T db psql -U hh hungry_hippos
-  backup:
-    image: postgres:17
-    restart: unless-stopped
-    environment:
-      PGHOST: db
-      PGUSER: ${POSTGRES_USER:-hh}
-      PGPASSWORD: ${POSTGRES_PASSWORD:-hh}
-      PGDATABASE: ${POSTGRES_DB:-hungry_hippos}
-      TZ: ${TZ:-America/Detroit}
-      BACKUP_HOUR: ${BACKUP_HOUR:-3}
-    volumes:
-      - backups:/backups
-    depends_on:
-      db:
-        condition: service_healthy
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        set -eu
-        while true; do
-          now=$$(date +%s)
-          next=$$(date -d "today $${BACKUP_HOUR}:00" +%s)
-          [ "$$next" -le "$$now" ] && next=$$(date -d "tomorrow $${BACKUP_HOUR}:00" +%s)
-          sleep $$((next - now))
-          file="/backups/hh-$$(date +%F).sql.gz"
-          if pg_dump --no-owner | gzip > "$$file.tmp"; then mv "$$file.tmp" "$$file"; echo "backup written: $$file"
-          else rm -f "$$file.tmp"; echo "backup FAILED" >&2; fi
-          find /backups -name 'hh-*.sql.gz' -mtime +14 -delete
-        done
-
 volumes:
   pgdata:
-  backups:

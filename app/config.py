@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5-5"
     tz: str = "America/Detroit"
-    backup_dir: str = "/backups"
 
 
 @lru_cache

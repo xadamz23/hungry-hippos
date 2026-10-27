@@ -13,6 +13,4 @@
 <div class="grp">List</div>
 <button class="mrow" hx-post="/list/clear-checked" hx-swap="none"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear checked items<span class="r">{{ checked_count }}</span></button>
 <button class="mrow warn" hx-post="/list/clear-all" hx-swap="none" hx-confirm="Clear every item off the shopping list?"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear the whole list</button>
-<div class="grp">System</div>
-<div class="mrow"><span class="ic"><svg><use href="#i-db"/></svg></span>Backups<span class="r">{{ backup }}</span></div>
 {% endblock %}
