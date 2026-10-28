@@ -38,7 +38,7 @@
                :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
                @focus="open = true" @blur="open = false" @input="open = true"
                @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
-               @keydown.enter="enter($event)" @keydown.escape="open = false">
+               @keydown.enter="enter($event)" @keydown.tab="pick($event)" @keydown.escape="open = false">
         <button type="button" @click="add(q)">Add</button>
       </div>
       {% if staples %}

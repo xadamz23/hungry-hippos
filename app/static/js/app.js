@@ -90,9 +90,11 @@ function splitAmount(raw, units) {
   return rest.trim() ? { amt, name: rest.trim() } : { amt: "", name: raw.trim() };
 }
 
-// List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
-// start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
-// through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
+// List quick-add: typing opens a dropdown of matching staples. Typed words are matched against the start of
+// each word in a staple's name, counting back from the last word typed and skipping amounts. Only the staples
+// that match the most words are shown, so "sour cr" finds Sour cream but not Pie crust, while "2 gal mi"
+// still finds Milk. Arrow keys move through the matches and Enter or Tab adds the highlighted one, or the
+// only one when just one matches; otherwise Enter adds the typed text.
 function quickAddBase() {
   return {
     q: "",
@@ -102,18 +104,27 @@ function quickAddBase() {
     init() {
       this.$watch("q", () => (this.active = -1));
     },
-    word() {
-      const words = this.q.toLowerCase().split(/\s+/).filter((w) => w && !/^[\d.\/½¼¾⅓⅔-]+$/.test(w));
-      return words.at(-1) || "";
+    // Typed words, last first, without amounts.
+    terms() {
+      return this.q.toLowerCase().split(/\s+/).filter((w) => w && !/^[\d.\/½¼¾⅓⅔-]+$/.test(w)).reverse();
     },
-    matches(name) {
-      const w = this.word();
-      return !!w && name.toLowerCase().split(/\s+/).some((part) => part.startsWith(w));
+    // How many typed words, counting back from the last, each start a word in the name. 0 means no match.
+    score(name, terms) {
+      const parts = name.toLowerCase().split(/\s+/);
+      let n = 0;
+      for (const t of terms) {
+        if (!parts.some((part) => part.startsWith(t))) break;
+        n++;
+      }
+      return n;
     },
-    // Names of the staples to show, best first (server order), capped at `limit`.
+    // Names of the best-matching staples, in server order (most added first), capped at `limit`.
     hits() {
+      const terms = this.terms();
       const names = [...this.$root.querySelectorAll("#add-suggest [data-name]")].map((b) => b.dataset.name);
-      return names.filter((n) => this.matches(n)).slice(0, this.limit);
+      const scored = names.map((name) => [name, this.score(name, terms)]);
+      const best = Math.max(0, ...scored.map(([, n]) => n));
+      return best ? scored.filter(([, n]) => n === best).map(([name]) => name).slice(0, this.limit) : [];
     },
     shown(name) {
       return this.hits().includes(name);
@@ -136,8 +147,15 @@ function quickAddBase() {
       this.open = true;
       this.active = this.active < 0 && delta < 0 ? n - 1 : (this.active + delta + n) % n;
     },
+    // The highlighted suggestion, or the only one when just one matches.
+    chosen() {
+      if (!this.isOpen()) return null;
+      const opts = this.options();
+      return opts[this.active] || (opts.length === 1 ? opts[0] : null);
+    },
+    // Enter or Tab adds the chosen suggestion; otherwise the key does its usual thing.
     pick(e) {
-      const el = this.isOpen() && this.options()[this.active];
+      const el = this.chosen();
       if (!el) return;
       e.preventDefault();
       el.click();
@@ -217,7 +235,7 @@ document.addEventListener("alpine:init", () => {
       },
       enter(e) {
         e.preventDefault();
-        const el = this.isOpen() && this.options()[this.active];
+        const el = this.chosen();
         if (el) el.click();
         else this.add(this.q);
       },

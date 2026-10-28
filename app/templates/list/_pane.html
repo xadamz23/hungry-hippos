@@ -17,7 +17,7 @@
              :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
              @focus="open = true" @blur="open = false" @input="open = true"
              @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
-             @keydown.enter="pick($event)" @keydown.escape="open = false">
+             @keydown.enter="pick($event)" @keydown.tab="pick($event)" @keydown.escape="open = false">
       <button type="submit">Add</button>
     </form>
     {% include "list/_staples.html" %}
