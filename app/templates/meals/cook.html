@@ -21,13 +21,13 @@
     {% if s.uses %}<div class="uses">{% for name, amt in s.uses %}<div><span>{{ name }}</span><span>{{ amt }}</span></div>{% endfor %}</div>{% endif %}
   </section>
   {% endfor %}
+  <details class="all"><summary>All ingredients</summary>
+    <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
+  </details>
   <div class="ctl">
     <button class="btn ghost" type="button" @click="prev()" :disabled="i === 0">Back</button>
     <button class="btn" type="button" @click="next()" x-text="i === count - 1 ? 'Finish' : 'Next step'">Next step</button>
   </div>
-  <details class="all"><summary>All ingredients</summary>
-    <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
-  </details>
   {% else %}
   <p class="stepn" style="margin-top:20px">No steps saved for this meal. Here’s what goes in it:</p>
   <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>

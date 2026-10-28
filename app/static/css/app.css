@@ -336,7 +336,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .secgrid input:focus-visible + span { outline: 3px solid var(--go); outline-offset: 2px; }
 
 /* ---------- cook ---------- */
-.cook { min-height: 100dvh; background: var(--ink); color: #fff; padding: calc(16px + var(--safe-t)) 22px calc(24px + var(--safe-b)); display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; }
+.cook { min-height: 100dvh; background: var(--ink); color: #fff; padding: calc(16px + var(--safe-t)) 22px 0; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; }
 .cook .back { color: #a9c2b3; }
 .awake { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--go-light); background: rgba(155, 227, 181, .12); padding: 5px 10px; border-radius: 99px; }
 .awake svg { width: 14px; height: 14px; }
@@ -349,9 +349,10 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .step { font-size: 28px; line-height: 1.32; font-weight: 600; margin-top: 8px; }
 .uses { margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, .15); padding-top: 14px; }
 .uses div { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; padding: 5px 0; color: #dde8e1; }
-.cook .ctl { margin-top: 24px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.cook .ctl { margin-top: auto; position: sticky; bottom: 0; background: var(--ink); box-shadow: 0 -12px 12px var(--ink); padding: 12px 0 calc(12px + var(--safe-b)); display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 .cook .btn.ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .35); }
-.cook .all { margin-top: 22px; }
+.cook .all { margin-top: 22px; margin-bottom: 24px; }
+.cook > .uses:last-child { margin-bottom: calc(24px + var(--safe-b)); }
 .cook .all summary { color: #a9c2b3; font-weight: 700; cursor: pointer; }
 
 /* ---------- more ---------- */
