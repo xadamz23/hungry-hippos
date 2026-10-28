@@ -34,7 +34,7 @@
       {% set sec = sections.get(ing.section_id) %}
       <div class="ing">
         <span class="dot" style="background:{{ sec.color if sec else '#757575' }}" title="{{ sec.name if sec else 'Other' }}"></span>
-        <span class="amt">{{ ing.amounts|amounts }}</span>{{ ing.name|cap }}
+        {% set a = ing.amounts|amounts %}{% if a %}<span class="amt">{{ a }}</span>{% endif %}{{ ing.name|cap }}
       </div>
       {% else %}
       <p class="muted">No ingredients yet. <a class="link" href="/meals/{{ meal.id }}/edit">Add some</a></p>
