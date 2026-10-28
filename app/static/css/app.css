@@ -213,9 +213,10 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 @media (min-width: 900px) { .list-part .grp { padding-left: 22px; padding-right: 22px; } }
 /* Checked items are hidden unless the List's To get / All switch is on All.
    The "Meals" / "Everything else" labels go too once either part is all checked.
-   The clear-checked strip only shows on All, next to the items it would remove. */
-.list-view:not(.show-checked) #list-body .it.done,
-.list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done))),
+   The clear-checked strip only shows on All, next to the items it would remove.
+   A row just checked off on "To get" lingers (app.js listView) so the tick is seen. */
+.list-view:not(.show-checked) #list-body .it.done:not(.lingering),
+.list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done), .it.lingering)),
 .list-view:not(.show-checked) #list-body:has(.all-done) .grp,
 .list-view:not(.show-checked) .checked-strip,
 .show-checked .all-checked { display: none; }

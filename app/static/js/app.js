@@ -184,7 +184,21 @@ document.addEventListener("alpine:init", () => {
       const top = this.$el.querySelector(".top");
       this._ro = new ResizeObserver(() => this.$el.style.setProperty("--list-top-h", top.offsetHeight + "px"));
       this._ro.observe(top);
+      // On "To get", a row checked off stays in view briefly so the tick registers before it goes.
+      // The row's own hx-on:click has already toggled .done by the time the click reaches here.
+      // Swaps of the list (the toggle's response and the SSE refresh it causes) wait until the pause is over.
+      this.$el.addEventListener("click", (e) => {
+        const row = e.target.closest(".tick")?.closest(".it");
+        if (!row || this.showChecked || !row.classList.contains("done")) return;
+        row.classList.add("lingering");
+        this.lingerUntil = Date.now() + 450;
+      });
+      this.$el.addEventListener("htmx:beforeSwap", (e) => {
+        const wait = this.lingerUntil - Date.now();
+        if (wait > 0 && e.detail.target.id === "list-body") e.detail.swapOverride = `innerHTML swap:${wait}ms`;
+      });
     },
+    lingerUntil: 0,
     destroy() {
       this._ro?.disconnect();
     },

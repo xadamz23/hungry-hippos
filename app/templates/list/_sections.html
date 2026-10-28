@@ -19,7 +19,7 @@
 {% if total > left %}
 <div class="checked-strip">
   <span>{{ total - left }} checked off</span>
-  <button class="clr" hx-post="/list/clear-checked" hx-target="#list-body"><svg><use href="#i-broom"/></svg>Clear checked</button>
+  <button class="clr" hx-post="/list/clear-checked" hx-target="#list-body"><svg><use href="#i-trash"/></svg>Clear checked</button>
 </div>
 {% endif %}
 {% set labels = meal_groups and groups %}
