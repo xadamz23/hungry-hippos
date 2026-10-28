@@ -29,17 +29,11 @@
   {% else %}
   <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}">
     <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required autocomplete="off"></div>
-    <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}">
+    <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}"
+         data-units="{{ unit_words()|tojson|forceescape }}">
       <label for="add-ingredient">Ingredients</label>
-      <template x-for="(line, i) in lines">
-        <div class="irow">
-          <input class="t" name="ingredient_lines" x-model="lines[i]" :aria-label="`Ingredient ${i + 1}`" autocomplete="off">
-          <button type="button" class="icon-btn" @click="remove(i)" :aria-label="`Remove ${line}`"><svg><use href="#i-x"/></svg></button>
-        </div>
-      </template>
-      {# Named like the rows so text typed but not yet added is saved as the last ingredient. #}
-      <div class="add" style="margin-top:10px">
-        <input id="add-ingredient" name="ingredient_lines" x-ref="add" placeholder="Add an ingredient" autocomplete="off" enterkeyhint="enter" x-model="q"
+      <div class="add">
+        <input id="add-ingredient" x-ref="add" placeholder="Add an ingredient" autocomplete="off" enterkeyhint="enter" x-model="q"
                role="combobox" aria-autocomplete="list" aria-controls="add-suggest" aria-expanded="false"
                :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
                @focus="open = true" @blur="open = false" @input="open = true"
@@ -51,19 +45,55 @@
       <div class="staples-wrap">
         <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
           {% for s in staples %}
-          {% set a = s.amounts|amounts %}
-          <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}" data-line="{{ (a ~ ' ' ~ s.name)|trim }}"
+          <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}"
                   :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
-                  @mousedown.prevent @click="add($el.dataset.line)">
+                  @mousedown.prevent @click="add($el.dataset.name)">
             {% if s.section %}<span class="dot" style="background:{{ s.section.color }}"></span>{% endif %}
             <span class="nm">{{ s.name }}</span>
-            {% if a %}<span class="amt">{{ a }}</span>{% endif %}
           </button>
           {% endfor %}
         </div>
       </div>
       {% endif %}
-      <p class="hint">Pick a staple or type your own. Amounts are optional.</p>
+      <p class="hint">Pick a staple or type your own. Tap one to set the amount.</p>
+      <div class="ing-rows">
+        <template x-for="(l, i) in lines">
+          <button type="button" class="ing ing-edit" @click="edit(i)" :aria-label="`Edit ${lineText(l)}`">
+            <span class="amt" x-show="l.amt" x-text="l.amt"></span>
+            <span class="nm" x-text="l.name"></span>
+            <span class="add-amt" x-show="!l.amt">Add amount</span>
+            <input type="hidden" name="ingredient_lines" :value="lineText(l)">
+          </button>
+        </template>
+      </div>
+      {# Text typed but not yet added is saved as the last ingredient. #}
+      <input type="hidden" name="ingredient_lines" :value="q">
+
+      <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="ing-sheet-title" x-show="editing !== null" x-cloak
+           @keydown.escape.window="editing !== null && close()">
+        <div class="scrim" @click="close()"></div>
+        <div class="sheet" x-ref="sheet" tabindex="-1" style="outline:none">
+          <div class="grab"></div>
+          <h2 id="ing-sheet-title" style="font-size:20px" x-text="draft.name || 'Ingredient'"></h2>
+          <div class="field" style="margin-top:12px">
+            <label for="ing-amt">Amount</label>
+            <div class="add">
+              <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(-1)" aria-label="Less">−</button>
+              <input id="ing-amt" x-model="draft.amt" placeholder="e.g. 2 lb" autocomplete="off" style="text-align:center;font-weight:700"
+                     @keydown.enter.prevent="save()">
+              <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ing-name">Name</label>
+            <input id="ing-name" class="input" x-model="draft.name" autocomplete="off" @keydown.enter.prevent="save()">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+            <button type="button" class="btn danger" @click="removeEditing()">Remove</button>
+            <button type="button" class="btn" @click="save()">Save</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="field"><label for="steps">Steps</label><textarea id="steps" class="input" name="steps" rows="5" placeholder="Optional. One step per line.">{{ v.steps or '' }}</textarea></div>
     <div class="field"><label for="notes">Notes</label><textarea id="notes" class="input" name="notes" rows="2" style="min-height:64px" placeholder="Kids want the cheese on the side">{{ v.notes or '' }}</textarea></div>

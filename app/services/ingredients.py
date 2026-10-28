@@ -85,6 +85,11 @@ def normalize_unit(token: str) -> str | None:
     return _UNIT_LOOKUP.get(token.lower())
 
 
+def unit_words() -> list[str]:
+    """Every word normalize_unit recognizes, lowercase, for splitting amounts off lines in the browser."""
+    return sorted(_UNIT_LOOKUP)
+
+
 def name_key(name: str) -> str:
     words = re.sub(r"[^a-z0-9]+", " ", name.lower()).split()
     out = []

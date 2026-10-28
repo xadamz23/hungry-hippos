@@ -266,6 +266,11 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .note { background: var(--note); border-left: 4px solid var(--sticker); padding: 9px 12px; border-radius: 0 8px 8px 0; font-size: 15px; margin: 12px 0; white-space: pre-line; }
 .ing { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 16px; }
 .ing .amt { color: var(--ink-2); font-size: 14.5px; flex: none; }
+.ing-rows { margin-top: 6px; }
+.ing-edit { width: 100%; min-height: 46px; text-align: left; }
+.ing-edit:active { background: var(--go-faint); }
+.ing-edit .nm { flex: 1; min-width: 0; }
+.ing .add-amt { color: var(--faint); font-size: 14px; flex: none; }
 .steps { padding-left: 22px; }
 .steps li { font-size: 16px; line-height: 1.5; margin-bottom: 10px; padding-left: 4px; }
 .detail-actions {
@@ -293,7 +298,6 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .irow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
 .irow .t { flex: 1; font-size: 15px; line-height: 1.25; min-width: 0; }
 .irow .t small { display: block; font-size: 12.5px; color: var(--ink-2); }
-.irow input.t { border: 0; width: 100%; padding: 4px 0; background: transparent; font-size: 16px; }
 .flag { font-size: 12.5px; font-weight: 700; color: var(--warn); }
 .secselect {
   appearance: none; -webkit-appearance: none; border: 0; border-radius: 6px; padding: 5px 26px 5px 9px;

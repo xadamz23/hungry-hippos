@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from app.assets import AssetManifest
 from app.clock import today, week_label
 from app.services import amounts
+from app.services.ingredients import unit_words
 from app.services.sections import text_color
 
 APP_DIR = Path(__file__).parent
@@ -60,7 +61,7 @@ def nice_day(d: date) -> str:
 
 
 templates = Jinja2Templates(directory=APP_DIR / "templates")
-templates.env.globals.update(static_url=static_url, today=today)
+templates.env.globals.update(static_url=static_url, today=today, unit_words=unit_words)
 templates.env.filters.update(
     amounts=amounts.fmt, text_color=text_color, cap=cap, meal_bg=meal_bg, ago=ago, nice_day=nice_day, week_label=week_label
 )

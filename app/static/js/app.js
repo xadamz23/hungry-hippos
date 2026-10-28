@@ -61,6 +61,35 @@ function initSortables(root) {
 document.addEventListener("DOMContentLoaded", () => initSortables(document));
 document.addEventListener("htmx:load", (e) => initSortables(e.detail.elt));
 
+// Amount stepper: "2 lb" + 1 → "3 lb"; an empty amount steps up to "1".
+function bumpAmount(amt, delta) {
+  const m = amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
+  if (m) {
+    const n = Math.max(0, parseFloat(m[1]) + delta);
+    return (n % 1 ? n.toFixed(1) : String(n)) + m[2];
+  }
+  return !amt.trim() && delta > 0 ? "1" : amt;
+}
+
+// "2 lb ground beef" → { amt: "2 lb", name: "ground beef" }. Mirrors parse_line's leading quantity (whole
+// numbers, decimals, fractions, unicode fractions, ranges) and unit; `units` comes from unit_words().
+const NUM = "\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d*[½⅓⅔¼¾⅕⅛⅜⅝⅞⅙]|\\d+(?:\\.\\d+)?";
+const QTY_RE = new RegExp(`^(?:${NUM})(?:\\s*(?:-|–|to)\\s*(?:${NUM}))?(?=\\s|$)\\s*`);
+function splitAmount(raw, units) {
+  let rest = (raw || "").trim();
+  const m = rest.match(QTY_RE);
+  if (!m) return { amt: "", name: rest };
+  let amt = m[0].trim();
+  rest = rest.slice(m[0].length);
+  const [first, ...more] = rest.split(/\s+/);
+  if (first && units.has(first.replace(/\.$/, "").toLowerCase())) {
+    amt += " " + first;
+    rest = more.join(" ");
+  }
+  // A bare amount ("1 gal") isn't an ingredient; keep it all as the name rather than leave the name empty.
+  return rest.trim() ? { amt, name: rest.trim() } : { amt: "", name: raw.trim() };
+}
+
 // List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
 // start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
 // through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
@@ -126,13 +155,7 @@ document.addEventListener("alpine:init", () => {
       this.amt = this.$el.dataset.amount || "";
     },
     bump(delta) {
-      const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
-      if (m) {
-        const n = Math.max(0, parseFloat(m[1]) + delta);
-        this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2];
-      } else if (!this.amt.trim() && delta > 0) {
-        this.amt = "1";
-      }
+      this.amt = bumpAmount(this.amt, delta);
     },
   }));
 
@@ -164,20 +187,30 @@ document.addEventListener("alpine:init", () => {
 
   Alpine.data("quickAdd", quickAddBase);
 
-  // Meal form: ingredients as editable rows, added one at a time from the same staple dropdown as the List
-  // quick-add. Enter never submits the meal form; it adds the highlighted staple or the typed text.
+  // Meal form: ingredients as rows with the amount split off, added one at a time from the same staple dropdown
+  // as the List quick-add. Picking a staple adds just its name; tapping a row opens a sheet to set the amount.
+  // Enter in the add box never submits the meal form.
   Alpine.data("ingredientRows", () => {
     const base = quickAddBase();
     return {
       ...base,
       lines: [],
+      units: new Set(),
+      editing: null,
+      draft: { amt: "", name: "" },
       init() {
         base.init.call(this);
-        try { this.lines = JSON.parse(this.$el.dataset.lines || "[]"); } catch { this.lines = []; }
+        try { this.units = new Set(JSON.parse(this.$el.dataset.units || "[]")); } catch {}
+        try {
+          this.lines = JSON.parse(this.$el.dataset.lines || "[]").map((raw) => splitAmount(raw, this.units));
+        } catch {}
+      },
+      lineText(l) {
+        return [l.amt.trim(), l.name.trim()].filter(Boolean).join(" ");
       },
       add(text) {
-        const line = (text || "").trim();
-        if (line) this.lines.push(line);
+        const line = splitAmount(text, this.units);
+        if (line.name || line.amt) this.lines.push(line);
         this.q = "";
         this.open = false;
         this.$refs.add.focus();
@@ -188,8 +221,26 @@ document.addEventListener("alpine:init", () => {
         if (el) el.click();
         else this.add(this.q);
       },
-      remove(i) {
-        this.lines.splice(i, 1);
+      edit(i) {
+        this.editing = i;
+        this.draft = { ...this.lines[i] };
+        // Focus the sheet, not the Amount box, so a phone keyboard doesn't pop up over the stepper.
+        this.$nextTick(() => this.$refs.sheet.focus());
+      },
+      bump(delta) {
+        this.draft.amt = bumpAmount(this.draft.amt, delta);
+      },
+      save() {
+        if (this.draft.name.trim()) this.lines[this.editing] = { amt: this.draft.amt.trim(), name: this.draft.name.trim() };
+        else this.lines.splice(this.editing, 1);
+        this.close();
+      },
+      removeEditing() {
+        this.lines.splice(this.editing, 1);
+        this.close();
+      },
+      close() {
+        this.editing = null;
       },
     };
   });

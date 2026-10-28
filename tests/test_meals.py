@@ -127,7 +127,10 @@ def test_meal_form_suggests_staples(client, seeded):
     seeded.add(Staple(name="milk", name_key="milk", amounts=[{"qty": 1, "unit": "gal"}]))
     seeded.commit()
     html = client.get("/meals/new").text
-    assert 'id="add-suggest"' in html and 'data-line="1 gal milk"' in html
+    suggest = html[html.index('id="add-suggest"'):]
+    # Picking a staple adds just its name; the amount is set afterwards in the row's sheet
+    assert 'data-name="milk"' in suggest and "1 gal" not in suggest
+    assert "&#34;lb&#34;" in html  # unit words for splitting amounts off typed lines
 
 
 def test_detail_route(client, seeded):
