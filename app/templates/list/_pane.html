@@ -2,12 +2,9 @@
   <div class="top static" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
-      <div class="row" style="gap:8px">
-        <button class="icon-btn" @click="toggle()" :aria-pressed="showChecked" :aria-label="showChecked ? 'Hide checked items' : 'Show checked items'" aria-label="Show checked items" aria-pressed="false">
-          <svg x-show="showChecked" x-cloak><use href="#i-eye"/></svg>
-          <svg x-show="!showChecked"><use href="#i-eye-off"/></svg>
-        </button>
-        <button class="link quiet" hx-post="/list/clear-checked" hx-target="#list-body">Clear checked</button>
+      <div class="seg sm" role="group" aria-label="Which items to show">
+        <button type="button" @click="setShowChecked(false)" :aria-pressed="!showChecked" aria-pressed="true">To get</button>
+        <button type="button" @click="setShowChecked(true)" :aria-pressed="showChecked" aria-pressed="false">All</button>
       </div>
     </div>
     <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">

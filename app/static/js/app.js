@@ -191,8 +191,8 @@ document.addEventListener("alpine:init", () => {
     showChecked: (() => {
       try { return localStorage.getItem("showChecked") === "1"; } catch { return false; }
     })(),
-    toggle() {
-      this.showChecked = !this.showChecked;
+    setShowChecked(on) {
+      this.showChecked = on;
       try { localStorage.setItem("showChecked", this.showChecked ? "1" : "0"); } catch {}
     },
   }));

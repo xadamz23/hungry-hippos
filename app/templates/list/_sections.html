@@ -15,7 +15,13 @@
   </div>
 {% endmacro %}
 {% if meal_groups or groups %}
-{% if not left %}<p class="muted small all-checked">All checked off. Tap the eye to see them.</p>{% endif %}
+{% if not left %}<p class="muted small all-checked">All checked off. Switch to All to see them.</p>{% endif %}
+{% if total > left %}
+<div class="checked-strip">
+  <span>{{ total - left }} checked off</span>
+  <button class="clr" hx-post="/list/clear-checked" hx-target="#list-body"><svg><use href="#i-broom"/></svg>Clear checked</button>
+</div>
+{% endif %}
 {% set labels = meal_groups and groups %}
 {% macro part_class(groups) %}list-part{% if not (groups|map(attribute=1)|sum(start=[])|rejectattr('checked')|list) %} all-done{% endif %}{% endmacro %}
 {% if meal_groups %}

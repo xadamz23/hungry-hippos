@@ -11,8 +11,9 @@ def test_list_page_renders_sections_without_counts(client, seeded):
     shopping.add_text(seeded, "2 yellow onions")
     html = client.get("/list").text
     assert "left</small>" not in html
-    assert "Show checked items" in html
+    assert "Which items to show" in html
     assert "All checked off" not in html
+    assert "checked-strip" not in html
     sign = re.search(r'<div class="sign"[^>]*>(.*?)</div>', html, re.S).group(1)
     assert sign.strip() == "Produce"
 
@@ -105,6 +106,17 @@ def test_delete_route(client, seeded):
 
 def test_missing_item_404(client):
     assert client.post("/list/9999/toggle").status_code == 404
+
+
+def test_checked_strip_counts_checked_items(client, seeded):
+    a = shopping.add_text(seeded, "milk")
+    b = shopping.add_text(seeded, "eggs")
+    shopping.add_text(seeded, "bread")
+    shopping.toggle(seeded, a.id)
+    shopping.toggle(seeded, b.id)
+    html = client.get("/list/items").text
+    assert "2 checked off" in html
+    assert 'hx-post="/list/clear-checked"' in html
 
 
 def test_clear_routes(client, seeded):
