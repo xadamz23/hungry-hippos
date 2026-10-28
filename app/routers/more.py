@@ -118,7 +118,7 @@ def order_staples(ids: list[int] = Form(...), session: Session = Depends(get_ses
 def _get_staple(session: Session, staple_id: int) -> Staple:
     staple = session.get(Staple, staple_id)
     if staple is None:
-        raise HTTPException(404, "That staple no longer exists.")
+        raise HTTPException(404, "That favorite no longer exists.")
     return staple
 
 

@@ -3,7 +3,7 @@
 <div class="empty">
   <div class="art"><svg><use href="#i-cal"/></svg></div>
   <h2>Nothing planned yet</h2>
-  <p>Pick a few meals for the week. Kid favorites you haven’t made in a while show up first.</p>
+  <p>Pick a few meals for the week. Meals the kids like that you haven’t made in a while show up first.</p>
   <a class="btn" href="/meals?pick=none&amp;week={{ view.start }}">Choose meals</a>
   {% if has_prev_entries %}
   <form hx-post="/plan/copy-last?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML" style="margin-top:8px">

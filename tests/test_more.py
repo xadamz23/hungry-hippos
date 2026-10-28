@@ -8,7 +8,7 @@ from tests.factories import section
 
 def test_more_index(client):
     html = client.get("/more").text
-    for text in ["Section order", "Staples", "Remembered sections", "History", "Clear checked items"]:
+    for text in ["Section order", "Favorites", "Remembered sections", "History", "Clear checked items"]:
         assert text in html
     assert "Backups" not in html
 

@@ -43,7 +43,7 @@
       </div>
       {% if staples %}
       <div class="staples-wrap">
-        <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
+        <div id="add-suggest" class="suggest" role="listbox" aria-label="Favorites" :hidden="!isOpen()" hidden>
           {% for s in staples %}
           <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}" data-label="{{ s.name|cap }}"
                   :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
@@ -55,7 +55,7 @@
         </div>
       </div>
       {% endif %}
-      <p class="hint">Pick a staple or type your own. Tap one to set the amount.</p>
+      <p class="hint">Pick a favorite or type your own. Tap one to set the amount.</p>
       <div class="ing-rows">
         <template x-for="(l, i) in lines">
           <button type="button" class="ing ing-edit" @click="edit(i)" :aria-label="`Edit ${lineText(l)}`">

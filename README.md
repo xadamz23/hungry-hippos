@@ -2,10 +2,10 @@
 
 Meal planning and a shared shopping list, sorted in the order you walk through Meijer.
 
-- **List**: ingredients from planned meals, merged ("Onions ×3 — Tacos, Chili"), grouped by store section, with live sync between phones. Includes staples you can add with one tap.
+- **List**: ingredients from planned meals, merged ("Onions ×3 — Tacos, Chili"), grouped by store section, with live sync between phones. Includes favorites you can add with one tap.
 - **Plan**: a Monday–Sunday week. Put meals on days or under "Not on a day yet", add leftovers and eating-out nights, and mark meals cooked.
 - **Meals**: add by hand or import from a recipe link. Kid favorites get a star. Each meal has notes, tags, history, and cook mode.
-- **More**: section order and colors, staples, remembered sections, and history.
+- **More**: section order and colors, favorites, remembered sections, and history.
 
 Design and decisions are in [`docs/superpowers/specs/2026-10-26-hungry-hippos-design.md`](docs/superpowers/specs/2026-10-26-hungry-hippos-design.md). The original mockups are in `docs/design/`.
 

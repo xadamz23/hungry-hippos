@@ -7,7 +7,7 @@
     <svg class="handle" width="22" height="22" aria-label="Drag to reorder" :hidden="filtering()"><use href="#i-grip"/></svg>
   </div>
   {% else %}
-  <p class="body muted">No staples yet.</p>
+  <p class="body muted">No favorites yet.</p>
   {% endfor %}
   {% if staples %}<p class="body muted" hidden :hidden="!filtering() || anyShown()" x-text="`No staples match “${q.trim()}”.`"></p>{% endif %}
 </div>

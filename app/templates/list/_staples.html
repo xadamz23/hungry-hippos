@@ -1,12 +1,12 @@
 <div id="list-staples" class="staples-wrap" {% if oob %}hx-swap-oob="true"{% endif %}>
   {% if staples %}
   <div class="staples" x-show="!q">
-    <span class="lbl">Staples</span>
+    <span class="lbl">Favorites</span>
     {% for s in staples %}
     <button type="button" hx-post="/list/staple/{{ s.id }}" hx-target="#list-body" aria-label="Add {{ s.name }}">{{ s.name }}</button>
     {% endfor %}
   </div>
-  <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
+  <div id="add-suggest" class="suggest" role="listbox" aria-label="Favorites" :hidden="!isOpen()" hidden>
     {% for s in staples %}
     <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}"
             hx-post="/list/staple/{{ s.id }}" hx-target="#list-body"

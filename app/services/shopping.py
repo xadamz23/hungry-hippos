@@ -97,7 +97,7 @@ def available_staples(session: Session) -> list[Staple]:
 def add_staple(session: Session, staple_id: int) -> ListItem:
     staple = session.get(Staple, staple_id)
     if staple is None:
-        raise HTTPException(404, "That staple no longer exists.")
+        raise HTTPException(404, "That favorite no longer exists.")
     staple.add_count += 1
     item = _add(session, staple.name, staple.name_key, staple.amounts, staple.section_id)
     _commit(session)
