@@ -128,3 +128,20 @@ def test_delete_remembered(client, seeded):
     seeded.expire_all()
     assert seeded.scalars(select(ItemSectionMap)).all() == []
 
+
+
+def test_changing_staple_section_remembers_it(client, seeded):
+    from app.services.sections import guess_section
+
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    frozen = section(seeded, "Frozen").id
+    client.post(f"/more/staples/{milk.id}", data={"name": "Milk", "amount": "", "section_id": frozen})
+    seeded.expire_all()
+    # "milk" is a Dairy keyword; the explicit staple choice now wins for meals and typed list items too
+    assert guess_section(seeded, "milk").id == frozen
+
+
+def test_saving_staple_without_changing_section_remembers_nothing(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    client.post(f"/more/staples/{milk.id}", data={"name": "Milk", "amount": "", "section_id": milk.section_id})
+    assert seeded.scalars(select(ItemSectionMap)).all() == []

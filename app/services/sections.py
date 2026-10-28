@@ -1,4 +1,5 @@
-"""Decide which store section an item belongs in: learned mapping, then keywords, then Other."""
+"""Decide which store section an item belongs in: learned mapping, then a matching staple, then keywords,
+then Other."""
 
 from functools import cache
 
@@ -6,8 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models import ItemSectionMap, Section
-from app.services.ingredients import name_key
+from app.models import ItemSectionMap, Section, Staple
+from app.services.ingredients import name_key, parse_line
 
 OTHER = "Other"
 
@@ -88,10 +89,26 @@ def keyword_section(key: str) -> str:
     return OTHER
 
 
+def staple_keys(staple: Staple) -> set[str]:
+    """Keys an ingredient line naming this staple can have: its own, and the one parse_line gives its name,
+    which drops anything in parentheses ("Hamburger meat (family pack)" → "hamburger meat")."""
+    return {k for k in (staple.name_key, parse_line(staple.name).name_key) if k}
+
+
+def staple_section(session: Session, key: str) -> Section | None:
+    for staple in session.scalars(select(Staple).where(Staple.section_id.is_not(None)).order_by(Staple.id)):
+        if key in staple_keys(staple):
+            return staple.section
+    return None
+
+
 def guess_section(session: Session, key: str) -> Section:
     learned = session.get(ItemSectionMap, key)
     if learned is not None:
         return learned.section
+    from_staple = staple_section(session, key)
+    if from_staple is not None:
+        return from_staple
     wanted = keyword_section(key)
     section = session.scalar(select(Section).where(Section.name == wanted))
     if section is None:

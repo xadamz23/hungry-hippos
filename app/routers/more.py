@@ -11,7 +11,7 @@ from app.models import ItemSectionMap, ListItem, Section, Staple
 from app.services import importer
 from app.services.amounts import parse_amount_text
 from app.services.ingredients import name_key, parse_line
-from app.services.sections import guess_section
+from app.services.sections import guess_section, remember, staple_keys
 from app.templating import templates
 
 router = APIRouter(prefix="/more")
@@ -144,6 +144,10 @@ def edit_staple(
         staple.name_key = name_key(name)
     staple.amounts = parse_amount_text(amount)
     if section_id is not None and session.get(Section, section_id) is not None:
+        if section_id != staple.section_id:
+            # An explicit choice: remember it so meal ingredients and typed list items with this name follow it
+            for key in staple_keys(staple):
+                remember(session, key, section_id)
         staple.section_id = section_id
     session.commit()
     response = templates.TemplateResponse(request, "more/_staple_rows.html", {"staples": _staples(session)})
