@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import select
 
-from app.models import CookLog, Ingredient, ListItem, Meal, PlanEntry
+from app.models import CookLog, Ingredient, ListItem, Meal, PlanEntry, Staple
 from app.services import meals
 from tests.factories import make_meal, section
 
@@ -106,6 +106,28 @@ def test_create_meal_requires_name(client, seeded):
     assert r.status_code == 200
     assert "Give the meal a name" in r.text
     assert seeded.scalar(select(Meal)) is None
+
+
+def test_create_meal_from_ingredient_rows(client, seeded):
+    # The form posts one ingredient_lines per row, plus the add box last (often empty)
+    r = client.post("/meals", data={"name": "Chili", "ingredient_lines": ["2 lb ground beef", "1 onion", ""]},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    meal = seeded.scalar(select(Meal))
+    assert [i.raw for i in meal.ingredients] == ["2 lb ground beef", "1 onion"]
+
+
+def test_missing_name_keeps_every_ingredient_row(client, seeded):
+    r = client.post("/meals", data={"name": " ", "ingredient_lines": ["2 lb ground beef", "1 onion"]})
+    assert "Give the meal a name" in r.text
+    assert "2 lb ground beef" in r.text and "1 onion" in r.text
+
+
+def test_meal_form_suggests_staples(client, seeded):
+    seeded.add(Staple(name="milk", name_key="milk", amounts=[{"qty": 1, "unit": "gal"}]))
+    seeded.commit()
+    html = client.get("/meals/new").text
+    assert 'id="add-suggest"' in html and 'data-line="1 gal milk"' in html
 
 
 def test_detail_route(client, seeded):

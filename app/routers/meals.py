@@ -102,12 +102,17 @@ def _form_kwargs(form) -> dict:
     )
 
 
+def _retry_values(form, kwargs) -> dict:
+    # dict(form) keeps only the last of the repeated ingredient_lines, so put the joined lines back
+    return {**dict(form), "ingredients": kwargs["ingredients_text"]}
+
+
 def _form_page(request, session, meal=None, values=None, error=None, mode="manual"):
     return templates.TemplateResponse(
         request,
         "meals/form.html",
         {"active": "meals", "meal": meal, "v": values or {}, "error": error, "mode": mode,
-         "tags": meal_svc.all_tags(session)},
+         "tags": meal_svc.all_tags(session), "staples": shopping.all_staples(session)},
     )
 
 
@@ -121,7 +126,7 @@ async def create(request: Request, session: Session = Depends(get_session)):
     form = await request.form()
     kwargs = _form_kwargs(form)
     if not kwargs["name"].strip():
-        return _form_page(request, session, values=dict(form), error="Give the meal a name.")
+        return _form_page(request, session, values=_retry_values(form, kwargs), error="Give the meal a name.")
     meal = meal_svc.save_meal(session, meal=None, **kwargs)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
 
@@ -161,7 +166,7 @@ async def update(request: Request, meal_id: int, session: Session = Depends(get_
     form = await request.form()
     kwargs = _form_kwargs(form)
     if not kwargs["name"].strip():
-        return _form_page(request, session, meal=meal, values=dict(form), error="Give the meal a name.")
+        return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs), error="Give the meal a name.")
     meal_svc.save_meal(session, meal=meal, **kwargs)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
 

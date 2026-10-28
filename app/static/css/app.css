@@ -293,6 +293,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .irow { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
 .irow .t { flex: 1; font-size: 15px; line-height: 1.25; min-width: 0; }
 .irow .t small { display: block; font-size: 12.5px; color: var(--ink-2); }
+.irow input.t { border: 0; width: 100%; padding: 4px 0; background: transparent; font-size: 16px; }
 .flag { font-size: 12.5px; font-weight: 700; color: var(--warn); }
 .secselect {
   appearance: none; -webkit-appearance: none; border: 0; border-radius: 6px; padding: 5px 26px 5px 9px;

@@ -29,10 +29,41 @@
   {% else %}
   <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}">
     <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required autocomplete="off"></div>
-    <div class="field">
-      <label for="ingredients">Ingredients</label>
-      <textarea id="ingredients" class="input" name="ingredients" rows="7" placeholder="2 lb ground beef&#10;1 yellow onion, diced&#10;2 cans black beans">{{ v.ingredients or '' }}</textarea>
-      <p class="hint">One per line. Amounts are optional.</p>
+    <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}">
+      <label for="add-ingredient">Ingredients</label>
+      <template x-for="(line, i) in lines">
+        <div class="irow">
+          <input class="t" name="ingredient_lines" x-model="lines[i]" :aria-label="`Ingredient ${i + 1}`" autocomplete="off">
+          <button type="button" class="icon-btn" @click="remove(i)" :aria-label="`Remove ${line}`"><svg><use href="#i-x"/></svg></button>
+        </div>
+      </template>
+      {# Named like the rows so text typed but not yet added is saved as the last ingredient. #}
+      <div class="add" style="margin-top:10px">
+        <input id="add-ingredient" name="ingredient_lines" x-ref="add" placeholder="Add an ingredient" autocomplete="off" enterkeyhint="enter" x-model="q"
+               role="combobox" aria-autocomplete="list" aria-controls="add-suggest" aria-expanded="false"
+               :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
+               @focus="open = true" @blur="open = false" @input="open = true"
+               @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+               @keydown.enter="enter($event)" @keydown.escape="open = false">
+        <button type="button" @click="add(q)">Add</button>
+      </div>
+      {% if staples %}
+      <div class="staples-wrap">
+        <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
+          {% for s in staples %}
+          {% set a = s.amounts|amounts %}
+          <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}" data-line="{{ (a ~ ' ' ~ s.name)|trim }}"
+                  :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
+                  @mousedown.prevent @click="add($el.dataset.line)">
+            {% if s.section %}<span class="dot" style="background:{{ s.section.color }}"></span>{% endif %}
+            <span class="nm">{{ s.name }}</span>
+            {% if a %}<span class="amt">{{ a }}</span>{% endif %}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <p class="hint">Pick a staple or type your own. Amounts are optional.</p>
     </div>
     <div class="field"><label for="steps">Steps</label><textarea id="steps" class="input" name="steps" rows="5" placeholder="Optional. One step per line.">{{ v.steps or '' }}</textarea></div>
     <div class="field"><label for="notes">Notes</label><textarea id="notes" class="input" name="notes" rows="2" style="min-height:64px" placeholder="Kids want the cheese on the side">{{ v.notes or '' }}</textarea></div>

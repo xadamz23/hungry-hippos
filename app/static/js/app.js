@@ -61,56 +61,11 @@ function initSortables(root) {
 document.addEventListener("DOMContentLoaded", () => initSortables(document));
 document.addEventListener("htmx:load", (e) => initSortables(e.detail.elt));
 
-document.addEventListener("alpine:init", () => {
-  // List item sheet: amount stepper and the "Always put X in <section>" label.
-  Alpine.data("itemSheet", () => ({
-    sec: "",
-    amt: "",
-    init() {
-      this.sec = this.$el.dataset.section || "";
-      this.amt = this.$el.dataset.amount || "";
-    },
-    bump(delta) {
-      const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
-      if (m) {
-        const n = Math.max(0, parseFloat(m[1]) + delta);
-        this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2];
-      } else if (!this.amt.trim() && delta > 0) {
-        this.amt = "1";
-      }
-    },
-  }));
-
-  // List: checked items are hidden by default; the choice is remembered on this device.
-  Alpine.data("listView", () => ({
-    showChecked: (() => {
-      try { return localStorage.getItem("showChecked") === "1"; } catch { return false; }
-    })(),
-    toggle() {
-      this.showChecked = !this.showChecked;
-      try { localStorage.setItem("showChecked", this.showChecked ? "1" : "0"); } catch {}
-    },
-  }));
-
-  // Staples page: the filter box hides rows whose name doesn't contain the typed text. Drag handles hide
-  // while filtering, since reordering a partial list is confusing.
-  Alpine.data("stapleFilter", () => ({
-    q: "",
-    filtering() {
-      return this.q.trim() !== "";
-    },
-    shows(name) {
-      return !this.filtering() || name.toLowerCase().includes(this.q.trim().toLowerCase());
-    },
-    anyShown() {
-      return [...this.$root.querySelectorAll("#staple-rows [data-name]")].some((r) => this.shows(r.dataset.name));
-    },
-  }));
-
-  // List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
-  // start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
-  // through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
-  Alpine.data("quickAdd", () => ({
+// List quick-add: typing opens a dropdown of matching staples. The last word typed is matched against the
+// start of each word in a staple's name, skipping amounts, so "2 gal mi" still finds Milk. Arrow keys move
+// through the matches and Enter adds the highlighted one; with nothing highlighted Enter adds the typed text.
+function quickAddBase() {
+  return {
     q: "",
     open: false,
     active: -1,
@@ -158,7 +113,86 @@ document.addEventListener("alpine:init", () => {
       e.preventDefault();
       el.click();
     },
+  };
+}
+
+document.addEventListener("alpine:init", () => {
+  // List item sheet: amount stepper and the "Always put X in <section>" label.
+  Alpine.data("itemSheet", () => ({
+    sec: "",
+    amt: "",
+    init() {
+      this.sec = this.$el.dataset.section || "";
+      this.amt = this.$el.dataset.amount || "";
+    },
+    bump(delta) {
+      const m = this.amt.match(/^(\d+(?:\.\d+)?)(.*)$/);
+      if (m) {
+        const n = Math.max(0, parseFloat(m[1]) + delta);
+        this.amt = (n % 1 ? n.toFixed(1) : String(n)) + m[2];
+      } else if (!this.amt.trim() && delta > 0) {
+        this.amt = "1";
+      }
+    },
   }));
+
+  // List: checked items are hidden by default; the choice is remembered on this device.
+  Alpine.data("listView", () => ({
+    showChecked: (() => {
+      try { return localStorage.getItem("showChecked") === "1"; } catch { return false; }
+    })(),
+    toggle() {
+      this.showChecked = !this.showChecked;
+      try { localStorage.setItem("showChecked", this.showChecked ? "1" : "0"); } catch {}
+    },
+  }));
+
+  // Staples page: the filter box hides rows whose name doesn't contain the typed text. Drag handles hide
+  // while filtering, since reordering a partial list is confusing.
+  Alpine.data("stapleFilter", () => ({
+    q: "",
+    filtering() {
+      return this.q.trim() !== "";
+    },
+    shows(name) {
+      return !this.filtering() || name.toLowerCase().includes(this.q.trim().toLowerCase());
+    },
+    anyShown() {
+      return [...this.$root.querySelectorAll("#staple-rows [data-name]")].some((r) => this.shows(r.dataset.name));
+    },
+  }));
+
+  Alpine.data("quickAdd", quickAddBase);
+
+  // Meal form: ingredients as editable rows, added one at a time from the same staple dropdown as the List
+  // quick-add. Enter never submits the meal form; it adds the highlighted staple or the typed text.
+  Alpine.data("ingredientRows", () => {
+    const base = quickAddBase();
+    return {
+      ...base,
+      lines: [],
+      init() {
+        base.init.call(this);
+        try { this.lines = JSON.parse(this.$el.dataset.lines || "[]"); } catch { this.lines = []; }
+      },
+      add(text) {
+        const line = (text || "").trim();
+        if (line) this.lines.push(line);
+        this.q = "";
+        this.open = false;
+        this.$refs.add.focus();
+      },
+      enter(e) {
+        e.preventDefault();
+        const el = this.isOpen() && this.options()[this.active];
+        if (el) el.click();
+        else this.add(this.q);
+      },
+      remove(i) {
+        this.lines.splice(i, 1);
+      },
+    };
+  });
 });
 
 window.addTag = (btn) => {

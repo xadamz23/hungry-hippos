@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from fastapi import HTTPException
 from sqlalchemy import delete, select, text
 from sqlalchemy import update as sql_update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models import ListItem, ListItemSource, Meal, Section, Staple
 from app.services import amounts as amt
@@ -82,11 +82,16 @@ def add_meal(session: Session, meal: Meal, factor: float = 1.0) -> int:
     return len(meal.ingredients)
 
 
+def all_staples(session: Session) -> list[Staple]:
+    # Most-added first; the manual order on More > Staples breaks ties.
+    return session.scalars(
+        select(Staple).options(selectinload(Staple.section)).order_by(Staple.add_count.desc(), Staple.position, Staple.id)
+    ).all()
+
+
 def available_staples(session: Session) -> list[Staple]:
     on_list = set(session.scalars(select(ListItem.name_key).where(ListItem.checked.is_(False))))
-    # Most-added first; the manual order on More > Staples breaks ties.
-    staples = session.scalars(select(Staple).order_by(Staple.add_count.desc(), Staple.position, Staple.id)).all()
-    return [s for s in staples if s.name_key not in on_list]
+    return [s for s in all_staples(session) if s.name_key not in on_list]
 
 
 def add_staple(session: Session, staple_id: int) -> ListItem:
