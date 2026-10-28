@@ -130,6 +130,7 @@ def test_meal_form_suggests_staples(client, seeded):
     suggest = html[html.index('id="add-suggest"'):]
     # Picking a staple adds just its name; the amount is set afterwards in the row's sheet
     assert 'data-name="milk"' in suggest and "1 gal" not in suggest
+    assert 'data-label="Milk"' in suggest and '<span class="nm">Milk</span>' in suggest
     assert "&#34;lb&#34;" in html  # unit words for splitting amounts off typed lines
 
 

@@ -45,11 +45,11 @@
       <div class="staples-wrap">
         <div id="add-suggest" class="suggest" role="listbox" aria-label="Staples" :hidden="!isOpen()" hidden>
           {% for s in staples %}
-          <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}"
+          <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}" data-label="{{ s.name|cap }}"
                   :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
-                  @mousedown.prevent @click="add($el.dataset.name)">
+                  @mousedown.prevent @click="add($el.dataset.label)">
             {% if s.section %}<span class="dot" style="background:{{ s.section.color }}"></span>{% endif %}
-            <span class="nm">{{ s.name }}</span>
+            <span class="nm">{{ s.name|cap }}</span>
           </button>
           {% endfor %}
         </div>
