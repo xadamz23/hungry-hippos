@@ -81,7 +81,8 @@ svg.i { width: 24px; height: 24px; flex: none; }
 }
 
 /* ---------- page header ---------- */
-.top.static { position: static; }
+/* The List header is pinned on phones only. */
+@media (min-width: 900px) { .top.static { position: static; } }
 .top {
   position: sticky; top: 0; z-index: 10; background: var(--paper);
   padding: calc(14px + var(--safe-t)) 18px 12px; border-bottom: 1px solid var(--rule);
@@ -182,6 +183,8 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .suggest .nm { flex: 1; font-weight: 600; }
 .suggest .amt { color: var(--ink-2); font-size: 14.5px; }
 
+/* app.js measures the pinned List header so section headings stick just below it. */
+@media (max-width: 899px) { .list-view { --sign-top: var(--list-top-h, 0px); } }
 .sign { padding: 9px 18px; font-size: 17px; font-weight: 700; position: sticky; top: var(--sign-top, 0); z-index: 5; }
 @media (min-width: 900px) { .sign { padding-left: 22px; padding-right: 22px; } }
 .it { display: flex; align-items: center; gap: 14px; padding: 11px 18px; border-bottom: 1px solid var(--rule); background: #fff; }
