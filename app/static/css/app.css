@@ -250,14 +250,14 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .ml .go { margin-left: auto; flex: none; }
 .ph-fallback { display: grid; place-items: center; font-weight: 800; font-size: 22px; color: rgba(255, 255, 255, .92); }
 
-.hero { height: 170px; position: relative; background-size: cover; background-position: center; }
+.hero { height: calc(58px + var(--safe-t)); position: relative; background-size: cover; background-position: center; }
 .hero .back, .hero .edit {
   position: absolute; top: calc(12px + var(--safe-t)); background: rgba(255, 255, 255, .94);
   padding: 7px 12px 7px 8px; border-radius: 99px; color: var(--ink); font-weight: 700; font-size: 15px;
 }
 .hero .back { left: 14px; }
 .hero .edit { right: 14px; padding-left: 12px; }
-@media (min-width: 900px) { .hero { height: 200px; } .hero .back { display: none; } }
+@media (min-width: 900px) { .hero { height: 58px; } .hero .back { display: none; } }
 .star-btn { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--rule); display: grid; place-items: center; flex: none; }
 .star-btn svg { width: 24px; height: 24px; fill: none; stroke: var(--ink-2); stroke-width: 1.8; }
 .star-btn.on { background: var(--sticker); border-color: var(--sticker); }
