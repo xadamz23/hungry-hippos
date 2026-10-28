@@ -22,9 +22,11 @@
 <script src="{{ static_url('vendor/alpine.min.js') }}" defer></script>
 </head>
 {% set aside_html %}{% block aside %}{% endblock %}{% endset %}
-<body class="{% block body_class %}{% endblock %}{% if bare %} bare{% endif %}" hx-boost="true">
+{% set body_class %}{% block body_class %}{% endblock %}{% if bare %} bare{% endif %}{% endset %}
+<body class="{{ body_class|trim }}" hx-boost="true">
 {% include "_icons.html" %}
-<div class="shell{% if aside_html|trim %} has-aside{% endif %}">
+{# Boosted navigation swaps only the body's contents, so app.js copies this onto <body> after each swap. #}
+<div class="shell{% if aside_html|trim %} has-aside{% endif %}" data-body-class="{{ body_class|trim }}">
   <nav class="side" aria-label="Main">
     <a class="brand" href="/list"><img src="{{ static_url('icons/icon-192.png') }}" alt="">Hungry Hippos</a>
     {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}

@@ -29,6 +29,15 @@ function toast(message) {
 }
 window.toast = toast;
 
+// hx-boost and history restores swap the body's contents but not its class, so pages would keep the previous
+// page's layout classes (e.g. cook mode showing the tab bar). Each page carries its class on .shell.
+function syncBodyClass() {
+  const shell = document.querySelector(".shell[data-body-class]");
+  if (shell) document.body.className = shell.dataset.bodyClass;
+}
+document.addEventListener("htmx:afterSettle", syncBodyClass);
+document.addEventListener("htmx:historyRestore", syncBodyClass);
+
 document.addEventListener("toast", (e) => toast(e.detail.value || e.detail));
 document.addEventListener("close-sheet", closeSheet);
 
