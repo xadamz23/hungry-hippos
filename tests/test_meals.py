@@ -9,7 +9,7 @@ from tests.factories import make_meal, section
 
 def test_create_meal_parses_ingredients(seeded):
     meal = make_meal(seeded, "Chili", "2 lb ground beef\n1 yellow onion, diced\n\n2 cans black beans")
-    assert [i.name for i in meal.ingredients] == ["ground beef", "yellow onion", "black beans"]
+    assert [i.name for i in meal.ingredients] == ["Ground beef", "Yellow onion", "Black beans"]
     assert meal.ingredients[2].amounts == [{"qty": 2, "unit": "can"}]
     assert meal.ingredients[0].section.name == "Meat & Seafood"
 
@@ -17,7 +17,7 @@ def test_create_meal_parses_ingredients(seeded):
 def test_edit_meal_replaces_ingredients(seeded):
     meal = make_meal(seeded, "Chili", "2 lb ground beef")
     make_meal(seeded, "Chili v2", "1 lb ground turkey", meal=meal)
-    assert seeded.scalars(select(Ingredient)).all()[0].name == "ground turkey"
+    assert seeded.scalars(select(Ingredient)).all()[0].name == "Ground turkey"
     assert len(seeded.scalars(select(Meal)).all()) == 1
 
 

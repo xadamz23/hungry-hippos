@@ -62,15 +62,15 @@ def test_add_section(client, seeded):
 
 def test_add_duplicate_section_ignored(client, seeded):
     client.post("/more/sections", data={"name": "produce"})
-    assert len(seeded.scalars(select(Section)).all()) == 14
+    assert len(seeded.scalars(select(Section)).all()) == 19
 
 
 def test_add_staple_appears_as_chip(client, seeded):
     client.post("/more/staples", data={"text": "1 bag coffee"})
-    staple = seeded.scalar(select(Staple).where(Staple.name == "coffee"))
+    staple = seeded.scalar(select(Staple).where(Staple.name == "Coffee"))
     assert staple.amounts == [{"qty": 1, "unit": "bag"}]
-    assert staple.section.name == "Breakfast & Cereal"
-    assert 'aria-label="Add coffee"' in client.get("/list").text
+    assert staple.section.name == "Cereal & Peanut Butter"
+    assert 'aria-label="Add Coffee"' in client.get("/list").text
 
 
 def test_staples_page_has_filter(client, seeded):

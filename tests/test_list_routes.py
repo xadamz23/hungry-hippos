@@ -42,7 +42,7 @@ def test_list_empty_state(client):
 def test_add_route_returns_items_partial(client, seeded):
     r = client.post("/list/add", data={"text": "2 lb apples"})
     assert r.status_code == 200
-    assert "apples" in r.text and "2 lb" in r.text
+    assert "Apples" in r.text and "2 lb" in r.text
     assert "<html" not in r.text
 
 

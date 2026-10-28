@@ -41,7 +41,7 @@ def test_checked_not_merged(seeded):
 
 def test_quick_add_parses(seeded):
     item = shopping.add_text(seeded, "2 lb apples")
-    assert item.name == "apples"
+    assert item.name == "Apples"
     assert item.amounts == [{"qty": 2, "unit": "lb"}]
     assert item.section.name == "Produce"
 
@@ -55,7 +55,7 @@ def test_grouped_walk_order(seeded):
     shopping.toggle(seeded, done.id)
     groups = shopping.grouped(seeded)
     assert [s.name for s, _ in groups] == ["Produce", "Meat & Seafood", "Dairy & Eggs"]
-    assert [i.name for i in groups[0][1]] == ["cilantro", "garlic", "bananas"]
+    assert [i.name for i in groups[0][1]] == ["Cilantro", "Garlic", "Bananas"]
 
 
 def test_meal_groups(seeded):
@@ -68,8 +68,8 @@ def test_meal_groups(seeded):
     seeded.expire_all()
     groups = shopping.meal_groups(seeded)
     assert [(name, [i.name for i in items]) for name, items in groups] == [
-        ("Chili", ["yellow onion", "ground beef", "sour cream"]),
-        ("Tacos", ["lime", "corn tortillas"]),
+        ("Chili", ["Yellow onion", "Ground beef", "Sour cream"]),
+        ("Tacos", ["Lime", "Corn tortillas"]),
     ]
     assert [s.name for s, _ in shopping.grouped(seeded)] == ["Dairy & Eggs"]
 
@@ -127,7 +127,7 @@ def test_clear_checked(seeded):
     shopping.add_text(seeded, "eggs")
     shopping.toggle(seeded, a.id)
     assert shopping.clear_checked(seeded) == 1
-    assert [i.name for i in seeded.scalars(select(ListItem))] == ["eggs"]
+    assert [i.name for i in seeded.scalars(select(ListItem))] == ["Eggs"]
 
 
 def test_clear_all(seeded):
@@ -144,7 +144,7 @@ def test_meal_delete_keeps_list_item(seeded):
     seeded.commit()
     seeded.expire_all()
     item = seeded.scalar(select(ListItem))
-    assert item.name == "ground beef"
+    assert item.name == "Ground beef"
     assert item.sources[0].meal_id is None and item.sources[0].meal_name == "Tacos"
     assert seeded.scalar(select(Meal)) is None
 

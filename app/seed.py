@@ -6,18 +6,23 @@ from app.models import Section, Staple
 # Typical Meijer walk order, each with a distinct header color.
 DEFAULT_SECTIONS: list[tuple[str, str]] = [
     ("Produce", "#2E7D32"),
+    ("Meat & Seafood", "#C62828"),
     ("Bakery", "#A16207"),
     ("Deli", "#8E24AA"),
-    ("Meat & Seafood", "#C62828"),
-    ("Canned & Soup", "#BF360C"),
-    ("Pasta & Rice", "#827717"),
-    ("International", "#00796B"),
-    ("Baking & Spices", "#5D4037"),
-    ("Breakfast & Cereal", "#AD1457"),
-    ("Snacks & Drinks", "#FF8A65"),
-    ("Household", "#455A64"),
-    ("Dairy & Eggs", "#1565C0"),
     ("Frozen", "#4FC3F7"),
+    ("Alcohol", "#6A1B9A"),
+    ("Pop & Gatorade", "#0277BD"),
+    ("Pasta & Mexican", "#827717"),
+    ("Rice & Asian", "#00796B"),
+    ("Soup, Oil & Mayo", "#BF360C"),
+    ("Bread & Condiments", "#F9A825"),
+    ("Cereal & Peanut Butter", "#AD1457"),
+    ("Spices, Baking & Snacks", "#5D4037"),
+    ("Dairy & Eggs", "#1565C0"),
+    ("Paper & Laundry", "#455A64"),
+    ("Yogurt, Butter & Ritz", "#FF8A65"),
+    ("Dish & Cleaning", "#3949AB"),
+    ("Health & Personal Care", "#7CB342"),
     ("Other", "#757575"),
 ]
 
@@ -26,7 +31,7 @@ DEFAULT_STAPLES: list[tuple[str, str, list[dict], str]] = [
     ("Milk", "milk", [{"qty": 1, "unit": "gal"}], "Dairy & Eggs"),
     ("Eggs", "egg", [{"qty": 1, "unit": "dozen"}], "Dairy & Eggs"),
     ("Bananas", "banana", [{"qty": 1, "unit": "bunch"}], "Produce"),
-    ("Bread", "bread", [{"qty": 1, "unit": None}], "Bakery"),
+    ("Bread", "bread", [{"qty": 1, "unit": None}], "Bread & Condiments"),
 ]
 
 

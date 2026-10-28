@@ -149,7 +149,7 @@ def test_to_list_route_for_list_page(client, seeded):
     tacos = make_meal(seeded, "Tacos", "1 lb beef")
     planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
     r = client.post("/plan/to-list", headers={"HX-Target": "list-body"})
-    assert "beef" in r.text and "Added ingredients for 1 meal" in r.headers["HX-Trigger"]
+    assert "Beef" in r.text and "Added ingredients for 1 meal" in r.headers["HX-Trigger"]
 
 
 def test_cooked_route(client, seeded):

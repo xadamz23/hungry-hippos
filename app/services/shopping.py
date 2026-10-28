@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models import ListItem, ListItemSource, Meal, Section, Staple
 from app.services import amounts as amt
-from app.services.ingredients import name_key, parse_line
+from app.services.ingredients import display_name, name_key, parse_line
 from app.services import sections
 
 CHANNEL = "hh_list"
@@ -46,7 +46,7 @@ def _add(session, name, key, amounts, section_id=None, source: Meal | None = Non
     if item is None:
         if section_id is None:
             section_id = sections.guess_section(session, key).id
-        item = ListItem(name=name, name_key=key, amounts=list(amounts), section_id=section_id)
+        item = ListItem(name=display_name(name), name_key=key, amounts=list(amounts), section_id=section_id)
         session.add(item)
     else:
         item.amounts = amt.merge(item.amounts, amounts)

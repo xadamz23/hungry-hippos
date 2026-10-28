@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models import CookLog, Ingredient, Meal, PlanEntry, Tag, meal_tags
 from app.services.amounts import fmt, scale
-from app.services.ingredients import name_key, parse_line
+from app.services.ingredients import display_name, name_key, parse_line
 from app.services.sections import guess_section, remember
 
 
@@ -71,7 +71,7 @@ def save_meal(
             Ingredient(
                 position=pos,
                 raw=parsed.raw,
-                name=parsed.name or parsed.raw,
+                name=parsed.name or display_name(parsed.raw),
                 name_key=parsed.name_key or parsed.raw.lower(),
                 amounts=[{"qty": parsed.qty, "unit": parsed.unit}] if parsed.qty is not None else [],
                 section_id=section_id,

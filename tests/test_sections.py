@@ -9,24 +9,38 @@ from app.services.sections import guess_section, remember, text_color
     [
         ("yellow onions", "Produce"),
         ("ground beef", "Meat & Seafood"),
-        ("tomato sauce", "Canned & Soup"),
+        ("tomato sauce", "Pasta & Mexican"),
         ("sour cream", "Dairy & Eggs"),
-        ("flour tortillas", "International"),
+        ("flour tortillas", "Pasta & Mexican"),
         ("frozen peas", "Frozen"),
-        ("all-purpose flour", "Baking & Spices"),
-        ("spaghetti", "Pasta & Rice"),
-        ("shredded cheddar cheese", "Dairy & Eggs"),
-        ("paper towels", "Household"),
-        ("hamburger buns", "Bakery"),
+        ("all-purpose flour", "Spices, Baking & Snacks"),
+        ("spaghetti", "Pasta & Mexican"),
+        ("shredded cheddar cheese", "Deli"),
+        ("paper towels", "Paper & Laundry"),
+        ("hamburger buns", "Bread & Condiments"),
         ("garlic", "Produce"),
         ("chicken breasts", "Meat & Seafood"),
-        ("chicken broth", "Canned & Soup"),
-        ("salt and pepper", "Baking & Spices"),
-        ("red pepper flakes", "Baking & Spices"),
+        ("chicken broth", "Soup, Oil & Mayo"),
+        ("salt and pepper", "Spices, Baking & Snacks"),
+        ("red pepper flakes", "Spices, Baking & Snacks"),
+        ("greek yogurt", "Yogurt, Butter & Ritz"),
+        ("peanut butter", "Cereal & Peanut Butter"),
+        ("diet coke", "Pop & Gatorade"),
+        ("dawn dish soap", "Dish & Cleaning"),
+        ("cottage cheese", "Dairy & Eggs"),
     ],
 )
 def test_keyword_guess(seeded, name, section):
     assert guess_section(seeded, name_key(name)).name == section
+
+
+def test_keyword_sections_are_default_sections():
+    from app.seed import DEFAULT_SECTIONS
+    from app.services.sections import KEYWORDS
+
+    assert set(KEYWORDS) <= {name for name, _ in DEFAULT_SECTIONS}
+    words = [w for ws in KEYWORDS.values() for w in ws]
+    assert len(words) == len(set(words))
 
 
 def test_unknown_is_other(seeded):
@@ -97,4 +111,4 @@ def test_meal_ingredient_follows_staple_section(seeded):
 
     _staple(seeded, "Hamburger meat (family pack)", "Meat & Seafood")
     meal = make_meal(seeded, "Tacos", "Hamburger meat (family pack)\nSalsa")
-    assert [i.section.name for i in meal.ingredients] == ["Meat & Seafood", "International"]
+    assert [i.section.name for i in meal.ingredients] == ["Meat & Seafood", "Pasta & Mexican"]

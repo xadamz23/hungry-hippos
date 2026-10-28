@@ -5,17 +5,17 @@ from app.services.ingredients import name_key, normalize_unit, parse_line
 
 def test_parse_basic():
     p = parse_line("2 lb ground beef")
-    assert (p.qty, p.unit, p.name) == (2, "lb", "ground beef")
+    assert (p.qty, p.unit, p.name) == (2, "lb", "Ground beef")
 
 
 def test_parse_unicode_fraction():
     p = parse_line("½ cup milk")
-    assert (p.qty, p.unit, p.name) == (0.5, "cup", "milk")
+    assert (p.qty, p.unit, p.name) == (0.5, "cup", "Milk")
 
 
 def test_parse_mixed():
     p = parse_line("1 1/2 cups flour")
-    assert (p.qty, p.unit, p.name) == (1.5, "cup", "flour")
+    assert (p.qty, p.unit, p.name) == (1.5, "cup", "Flour")
 
 
 def test_parse_mixed_unicode():
@@ -25,30 +25,30 @@ def test_parse_mixed_unicode():
 
 def test_parse_range_takes_upper():
     assert parse_line("2-3 cloves garlic, minced").qty == 3
-    assert parse_line("2-3 cloves garlic, minced").name == "garlic"
+    assert parse_line("2-3 cloves garlic, minced").name == "Garlic"
 
 
 def test_parse_paren_size():
     p = parse_line("1 (15 oz) can black beans, drained and rinsed")
-    assert (p.qty, p.unit, p.name) == (1, "can", "black beans")
+    assert (p.qty, p.unit, p.name) == (1, "can", "Black beans")
 
 
 def test_parse_prep_stripped():
     p = parse_line("1 yellow onion, diced")
-    assert (p.qty, p.unit, p.name) == (1, None, "yellow onion")
-    assert parse_line("2 cloves fresh garlic, minced").name == "garlic"
-    assert parse_line("1 cup diced tomatoes").name == "diced tomatoes"
+    assert (p.qty, p.unit, p.name) == (1, None, "Yellow onion")
+    assert parse_line("2 cloves fresh garlic, minced").name == "Garlic"
+    assert parse_line("1 cup diced tomatoes").name == "Diced tomatoes"
 
 
 def test_parse_to_taste():
     p = parse_line("salt and pepper to taste")
     assert p.qty is None and p.unit is None
-    assert p.name == "salt and pepper"
+    assert p.name == "Salt and pepper"
 
 
 def test_parse_no_qty():
     p = parse_line("salt")
-    assert (p.qty, p.unit, p.name) == (None, None, "salt")
+    assert (p.qty, p.unit, p.name) == (None, None, "Salt")
 
 
 @pytest.mark.parametrize("line", ["½ cup", "", "   ", "2", "(optional)", "1 / 2"])
@@ -78,3 +78,9 @@ def test_name_key_plural():
     assert name_key("berries") == "berry"
     assert name_key("glass") == "glass"
     assert name_key("Black-beans!") == "black bean"
+
+
+def test_parse_capitalizes_first_letter_only():
+    assert parse_line("1 gal milk").name == "Milk"
+    assert parse_line("2 cans kraft mac and cheese").name == "Kraft mac and cheese"
+    assert parse_line("1 bag BBQ chips").name == "BBQ chips"

@@ -10,7 +10,7 @@ from app.db import get_session
 from app.models import ItemSectionMap, ListItem, Section, Staple
 from app.services import importer
 from app.services.amounts import parse_amount_text
-from app.services.ingredients import name_key, parse_line
+from app.services.ingredients import display_name, name_key, parse_line
 from app.services.sections import guess_section, remember, staple_keys
 from app.templating import templates
 
@@ -92,7 +92,7 @@ def staples_page(request: Request, session: Session = Depends(get_session)):
 @router.post("/staples")
 def add_staple(request: Request, text: str = Form(""), session: Session = Depends(get_session)):
     parsed = parse_line(text, strip_prep=False)
-    name = parsed.name or parsed.raw
+    name = parsed.name or display_name(parsed.raw)
     if name:
         position = session.scalar(select(func.coalesce(func.max(Staple.position), -1))) + 1
         session.add(
@@ -138,7 +138,7 @@ def edit_staple(
     session: Session = Depends(get_session),
 ):
     staple = _get_staple(session, staple_id)
-    name = name.strip()[:200]
+    name = display_name(name.strip()[:200])
     if name:
         staple.name = name
         staple.name_key = name_key(name)

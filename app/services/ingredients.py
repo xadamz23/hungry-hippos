@@ -90,6 +90,11 @@ def unit_words() -> list[str]:
     return sorted(_UNIT_LOOKUP)
 
 
+def display_name(name: str) -> str:
+    """Item names are stored with a capital first letter ("1 gal milk" → "Milk"); the rest is left as typed."""
+    return name[:1].upper() + name[1:]
+
+
 def name_key(name: str) -> str:
     words = re.sub(r"[^a-z0-9]+", " ", name.lower()).split()
     out = []
@@ -128,5 +133,5 @@ def parse_line(line: str, *, strip_prep: bool = True) -> ParsedIngredient:
     words = name.split()
     while strip_prep and words and words[0].lower() in PREP_WORDS:
         words.pop(0)
-    name = " ".join(words).strip(" .;:-/")
+    name = display_name(" ".join(words).strip(" .;:-/"))
     return ParsedIngredient(raw=raw, name=name, name_key=name_key(name), qty=qty, unit=unit)
