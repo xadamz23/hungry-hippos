@@ -31,8 +31,9 @@ def hippo(size: int, scale: float, rounded: bool) -> Image.Image:
     d.ellipse(box(7, -21, 15, -8), fill=INK)
     d.ellipse(box(-12.5, -18, -9.5, -15), fill="#FFFFFF")
     d.ellipse(box(9.5, -18, 12.5, -15), fill="#FFFFFF")
-    d.ellipse(box(-19, 3.5, -12, 7.5), fill=INK)  # flat nostrils
-    d.ellipse(box(12, 3.5, 19, 7.5), fill=INK)
+    ring = max(2, int(1.7 * u))
+    d.ellipse(box(-18.15, 1.35, -9.85, 7.65), fill=FACE, outline=INK, width=ring)  # ring nostrils
+    d.ellipse(box(9.85, 1.35, 18.15, 7.65), fill=FACE, outline=INK, width=ring)
     d.chord(box(-22, 6, 22, 32), 0, 180, fill=MOUTH, outline=INK, width=max(2, int(2.5 * u)))  # mouth
     return img
 
