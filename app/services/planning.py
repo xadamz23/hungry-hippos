@@ -146,6 +146,36 @@ def mark_cooked(session: Session, entry_id: int, on: date) -> PlanEntry:
     return entry
 
 
+def finish_cooking(session: Session, meal_id: int, on: date) -> CookLog | None:
+    """Log a meal as cooked on `on` after cook mode. It marks this week's plan entry for the meal when there is one
+    not yet cooked (today's first, then the earliest), or logs it on its own. None if it's already logged for that day."""
+    if session.scalar(select(CookLog.id).where(CookLog.meal_id == meal_id, CookLog.cooked_on == on).limit(1)):
+        return None
+    entry = session.scalars(
+        select(PlanEntry)
+        .where(PlanEntry.week_start == week_start(on), PlanEntry.meal_id == meal_id, PlanEntry.cooked_on.is_(None))
+        .order_by(func.coalesce(PlanEntry.day == on, False).desc(), PlanEntry.day.asc().nulls_last(), PlanEntry.id)
+        .limit(1)
+    ).first()
+    if entry is not None:
+        entry.cooked_on = on
+    log = CookLog(meal_id=meal_id, cooked_on=on, plan_entry_id=entry.id if entry else None)
+    session.add(log)
+    session.commit()
+    return log
+
+
+def undo_cooked(session: Session, log_id: int) -> None:
+    """Take back a cook log, un-marking the plan entry it marked."""
+    log = session.get(CookLog, log_id)
+    if log is None:
+        return
+    if log.plan_entry_id is not None and (entry := session.get(PlanEntry, log.plan_entry_id)) is not None:
+        entry.cooked_on = None
+    session.delete(log)
+    session.commit()
+
+
 def copy_week(session: Session, from_ws: date, to_ws: date) -> int | None:
     """Copy from_ws's entries into to_ws. None when to_ws already has entries (a second tap of Copy)."""
     if session.scalar(select(PlanEntry.id).where(PlanEntry.week_start == to_ws).limit(1)) is not None:

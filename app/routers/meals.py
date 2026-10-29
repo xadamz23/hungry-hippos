@@ -10,7 +10,7 @@ from starlette.datastructures import UploadFile
 from app.db import get_session
 from app.models import Meal, MealPhoto, Section
 from app.services import meals as meal_svc
-from app.services import shopping
+from app.services import planning, shopping
 from app.services.planning import week_start
 from app.templating import templates, today
 
@@ -267,6 +267,27 @@ def to_list(meal_id: int, session: Session = Depends(get_session)):
     n = shopping.add_meal(session, meal)
     msg = f"Added {n} item{'s' if n != 1 else ''} to the list" if n else "This meal has no ingredients yet"
     return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": msg})})
+
+
+@router.post("/{meal_id}/finish")
+def finish_cooking(request: Request, meal_id: int, session: Session = Depends(get_session)):
+    """Finish in cook mode: log the meal as cooked today and go back to it, with an Undo in case it was a read-through."""
+    meal = get_meal(session, meal_id)
+    log = planning.finish_cooking(session, meal.id, today())
+    url = f"/meals/{meal.id}"
+    if not request.headers.get("HX-Request"):
+        return RedirectResponse(url, status_code=303)
+    response = detail(request, meal.id, session)
+    response.headers["HX-Push-Url"] = url
+    toast = {"message": f"Marked {meal.name} as cooked", "undo": f"/meals/cook-log/{log.id}/undo"} if log else "Already marked as cooked today"
+    response.headers["HX-Trigger-After-Settle"] = json.dumps({"toast": toast})
+    return response
+
+
+@router.post("/cook-log/{log_id}/undo")
+def undo_cooked(log_id: int, session: Session = Depends(get_session)):
+    planning.undo_cooked(session, log_id)
+    return Response(status_code=204, headers={"HX-Refresh": "true"})
 
 
 @router.get("/{meal_id}/cook")

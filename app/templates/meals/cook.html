@@ -26,11 +26,16 @@
   </details>
   <div class="ctl">
     <button class="btn ghost" type="button" @click="prev()" :disabled="i === 0">Back</button>
-    <button class="btn" type="button" @click="next()" x-text="i === count - 1 ? 'Finish' : 'Next step'">Next step</button>
+    {# Finish logs the meal as cooked (marking it on this week's plan) and goes back to it. #}
+    <button class="btn" type="button" @click="next()" x-show="i < count - 1" {% if steps|length == 1 %}x-cloak{% endif %}>Next step</button>
+    <form method="post" action="/meals/{{ meal.id }}/finish" x-show="i === count - 1" {% if steps|length > 1 %}x-cloak{% endif %}>
+      <button class="btn" type="submit">Finish</button>
+    </form>
   </div>
   {% else %}
   <p class="stepn" style="margin-top:20px">No steps saved for this meal. Here’s what goes in it:</p>
   <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
+  <form class="ctl solo" method="post" action="/meals/{{ meal.id }}/finish"><button class="btn" type="submit">Finish</button></form>
   {% endif %}
 </div>
 {% endblock %}

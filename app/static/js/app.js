@@ -14,7 +14,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeSheet();
 });
 
-// `undo` is a URL to POST that reverses what just happened; its response replaces the plan week.
+// `undo` is a URL to POST that reverses what just happened.
 let toastTimer;
 function toast(message, undo) {
   const root = document.getElementById("toast-root");
@@ -31,7 +31,9 @@ function toast(message, undo) {
     btn.textContent = "Undo";
     btn.addEventListener("click", () => {
       el.remove();
-      htmx.ajax("POST", undo, { target: "#plan-week", swap: "outerHTML" });
+      // On the Plan the week is redrawn; elsewhere the undo response refreshes the page (HX-Refresh).
+      const week = document.getElementById("plan-week");
+      htmx.ajax("POST", undo, week ? { target: week, swap: "outerHTML" } : { swap: "none" });
     });
     el.appendChild(btn);
   }
@@ -425,7 +427,6 @@ document.addEventListener("alpine:init", () => {
     },
     next() {
       if (this.i < this.count - 1) this.i++;
-      else window.location.href = window.location.pathname.replace(/\/cook$/, "");
     },
     prev() {
       if (this.i > 0) this.i--;

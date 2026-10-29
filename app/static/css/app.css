@@ -335,10 +335,12 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 }
 .detail-actions .btn { padding: 11px 6px; font-size: 15px; }
 .has-actions .main { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 90px); }
+.has-actions .toast { bottom: calc(var(--nav-h) + var(--safe-b) + 84px); } /* above the pinned actions */
 @media (min-width: 900px) {
   .detail-actions { position: static; border: 0; padding: 0; margin-top: 14px; display: flex; }
   .detail-actions .btn { width: auto; padding: 9px 16px; }
   .has-actions .main { padding-bottom: 32px; }
+  .has-actions .toast { bottom: 24px; }
 }
 .two { display: grid; gap: 22px; }
 @media (min-width: 1200px) { .two { grid-template-columns: 1fr 1fr; } }
@@ -423,6 +425,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .cook .btn.ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .35); }
 .cook .all { margin-top: 22px; margin-bottom: 24px; }
 .cook > .uses:last-child { margin-bottom: calc(24px + var(--safe-b)); }
+.cook .ctl.solo { grid-template-columns: 1fr; margin-top: 24px; }
 .cook .all summary { color: #a9c2b3; font-weight: 700; cursor: pointer; }
 
 /* ---------- more ---------- */

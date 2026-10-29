@@ -290,3 +290,49 @@ def test_copy_last_button_disables_while_sending(client, seeded):
     tacos = make_meal(seeded, "Tacos", "x")
     planning.add_entry(seeded, MON, WED, "meal", tacos.id)
     assert 'hx-disabled-elt="find button"' in client.get("/plan?week=2026-11-02").text
+
+
+def test_finish_cooking_marks_todays_plan_entry(seeded):
+    on = date(2026, 10, 28)
+    tacos = make_meal(seeded, "Tacos", "x")
+    earlier = planning.add_entry(seeded, MON, MON, "meal", tacos.id)
+    todays = planning.add_entry(seeded, MON, on, "meal", tacos.id)
+    log = planning.finish_cooking(seeded, tacos.id, on)
+    assert log.plan_entry_id == todays.id and todays.cooked_on == on and earlier.cooked_on is None
+    assert planning.finish_cooking(seeded, tacos.id, on) is None  # finishing twice logs once
+    planning.undo_cooked(seeded, log.id)
+    assert todays.cooked_on is None and seeded.scalars(select(CookLog)).all() == []
+
+
+def test_finish_cooking_without_a_plan_entry_logs_it_alone(seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    cooked = planning.add_entry(seeded, MON, MON, "meal", tacos.id)
+    planning.mark_cooked(seeded, cooked.id, MON)
+    planning.add_entry(seeded, date(2026, 11, 2), None, "meal", tacos.id)  # next week's doesn't count
+    log = planning.finish_cooking(seeded, tacos.id, WED)
+    assert log.plan_entry_id is None
+    assert meal_svc.stats_for(seeded, tacos.id) == (WED, 2)
+
+
+def test_finish_route_shows_the_meal_with_undo(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    entry = planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
+    r = client.post(f"/meals/{tacos.id}/finish", headers={"HX-Request": "true"})
+    assert r.status_code == 200 and "Made 1 time" in r.text and r.headers["HX-Push-Url"] == f"/meals/{tacos.id}"
+    toast = json.loads(r.headers["HX-Trigger-After-Settle"])["toast"]
+    assert toast["message"] == "Marked Tacos as cooked"
+    seeded.refresh(entry)
+    assert entry.cooked_on is not None
+    again = client.post(f"/meals/{tacos.id}/finish", headers={"HX-Request": "true"})
+    assert json.loads(again.headers["HX-Trigger-After-Settle"])["toast"] == "Already marked as cooked today"
+    undo = client.post(toast["undo"])
+    assert undo.status_code == 204 and undo.headers["HX-Refresh"] == "true"
+    seeded.refresh(entry)
+    assert entry.cooked_on is None and seeded.scalars(select(CookLog)).all() == []
+
+
+def test_cook_page_finish_posts(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x", steps_text="Brown the beef\nServe")
+    assert f'action="/meals/{tacos.id}/finish"' in client.get(f"/meals/{tacos.id}/cook").text
+    plain = make_meal(seeded, "Toast", "bread")
+    assert f'action="/meals/{plain.id}/finish"' in client.get(f"/meals/{plain.id}/cook").text
