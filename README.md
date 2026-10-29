@@ -7,7 +7,7 @@ Meal planning and a shared shopping list, sorted in the order you walk through M
 - **Meals**: add by hand or import from a recipe link. Kid favorites get a star. Each meal has notes, tags, history, and cook mode.
 - **More**: section order and colors, favorites, remembered sections, and history.
 
-Design and decisions are in [`docs/superpowers/specs/2026-10-26-hungry-hippos-design.md`](docs/superpowers/specs/2026-10-26-hungry-hippos-design.md).
+Design and decisions are in [`docs/superpowers/specs/2026-10-26-hungry-hippos-design.md`](docs/superpowers/specs/2026-10-26-hungry-hippos-design.md). The original mockups are in `docs/design/`.
 
 ## Local development
 

@@ -51,7 +51,7 @@ Adam and his wife use Hungry Hippos to plan family dinners and shop for them at 
 - System: when the last backup ran (the newest file in the backup directory).
 
 ## Design
-Direction B, "Grocery utility".
+Direction B, "Grocery utility". Final mockups are in `docs/design/b-grocery-utility.html` and `docs/design/b-screens.html`.
 - Font: Figtree (400/500/700/800).
 - Colors: white background, spruce ink `#10291C`, secondary text `#4E6357`, rules `#DCE3DE`, wash `#F2F5F3`, checkout green `#178245`, faint green `#E3F2E8`, sticker yellow `#FFD84A`, warn `#B53A2C`.
 - Mobile nav is a bottom bar: List / Plan / Meals / More. The active tab has a faint green pill behind the icon, and the icon and label turn green.

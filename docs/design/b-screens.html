@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Other screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fff; --wash:#F2F5F3; --ink:#10291C; --ink-2:#4E6357; --rule:#DCE3DE;
+  --go:#178245; --go-faint:#E3F2E8; --sticker:#FFD84A; --warn:#B53A2C;
+  --s-produce:#2F8F3E; --s-bakery:#B9822A; --s-deli:#7A4E9A; --s-meat:#B53A2C; --s-canned:#C4612A; --s-pasta:#9A6B1F;
+  --s-intl:#16807A; --s-baking:#8C6D4F; --s-dairy:#2C66B0; --s-frozen:#4AA3CF; --s-other:#6B7A72;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D7DCD9;font-family:Figtree,system-ui,sans-serif;color:var(--ink);padding:32px 16px 64px}
+.stage-title{max-width:1240px;margin:0 auto 24px;font-size:15px;color:#46524b}
+.stage-title b{display:block;font-size:28px;color:var(--ink)}
+.stage-title a{color:var(--go)}
+.phones{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.cap{font-size:13px;color:#56625b;text-align:center;margin-top:10px;max-width:375px}
+
+.phone{width:375px;height:780px;border-radius:44px;background:var(--paper);position:relative;overflow:hidden;box-shadow:0 0 0 10px #1a1d1b,0 30px 60px -20px rgba(0,30,15,.4)}
+.top{padding:54px 18px 12px;border-bottom:1px solid var(--rule)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.2px}
+h2{font-size:17px;font-weight:700}
+.link{font-size:15px;font-weight:700;color:var(--go)}
+.muted{color:var(--ink-2)}
+.back{display:flex;align-items:center;gap:4px;font-size:15px;font-weight:700;color:var(--ink-2)}
+.back svg{width:20px;height:20px}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:80px;background:var(--paper);border-top:1px solid var(--rule);display:flex;padding:8px 6px 18px}
+.nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px;font-weight:700;color:var(--ink-2);text-decoration:none}
+.nav .pill{width:58px;height:32px;border-radius:99px;display:grid;place-items:center}
+.nav a.on{color:var(--go)}
+.nav a.on .pill{background:var(--go-faint)}
+.nav svg{width:24px;height:24px}
+
+.body{padding:14px 18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--wash);color:var(--ink-2)}
+.chip.on{background:var(--ink);color:#fff}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px;border:0;border-radius:10px;background:var(--go);color:#fff;font:700 16px Figtree;width:100%}
+.btn.ghost{background:var(--paper);color:var(--ink);border:2px solid var(--ink)}
+.btn.danger{background:var(--paper);color:var(--warn);border:2px solid var(--rule)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.input{border:2px solid var(--ink);border-radius:10px;padding:11px 13px;font:400 16px Figtree;color:var(--ink);width:100%;background:#fff;display:block}
+.input.ta{min-height:96px;line-height:1.45;white-space:pre-line}
+.input.ph{color:#90a097}
+.hint{font-size:12.5px;color:var(--ink-2);margin-top:5px}
+.seg{display:flex;background:var(--wash);border-radius:10px;padding:4px;margin-top:12px}
+.seg span{flex:1;text-align:center;font-size:14.5px;font-weight:700;padding:8px;border-radius:7px;color:var(--ink-2)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.secpill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:4px 9px;border-radius:6px;color:#fff;white-space:nowrap}
+.secpill svg{width:12px;height:12px}
+.q{font-size:15px;font-weight:700;background:var(--sticker);padding:2px 8px;border-radius:4px;white-space:nowrap}
+
+/* meal detail */
+.hero{height:170px;background:linear-gradient(135deg,#F2B544,#D9622B);position:relative}
+.hero .back{position:absolute;top:52px;left:14px;background:rgba(255,255,255,.92);padding:6px 10px 6px 6px;border-radius:99px;color:var(--ink)}
+.hero .edit{position:absolute;top:52px;right:14px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:99px;font-weight:700;font-size:15px}
+.star-btn{width:46px;height:46px;border-radius:50%;border:2px solid var(--rule);display:grid;place-items:center;flex:none}
+.star-btn.on{background:var(--sticker);border-color:var(--sticker)}
+.star-btn svg{width:24px;height:24px}
+.meta{font-size:14px;color:var(--ink-2);margin-top:4px}
+.note{background:#FFF8D6;border-left:4px solid var(--sticker);padding:9px 12px;border-radius:0 8px 8px 0;font-size:14.5px;margin:12px 0}
+.ing{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:16px}
+.ing .amt{width:64px;color:var(--ink-2);font-size:14.5px;flex:none}
+.actions{position:absolute;left:0;right:0;bottom:80px;background:#fff;border-top:1px solid var(--rule);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.actions .btn{padding:11px 6px;font-size:14.5px}
+
+/* sheets */
+.scrim{position:absolute;inset:0;background:rgba(16,41,28,.5)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 18px 30px}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--rule);margin:0 auto 12px}
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.dy{border:2px solid var(--rule);border-radius:10px;padding:8px 6px;text-align:center;font-size:14px;font-weight:700;min-height:62px}
+.dy small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-2);margin-top:2px;line-height:1.2}
+.dy.on{border-color:var(--go);background:var(--go-faint);color:var(--go)}
+.dy.taken{background:var(--wash)}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;margin:10px 0 14px}
+.cb{width:24px;height:24px;border:2.5px solid var(--ink);border-radius:6px;flex:none;display:grid;place-items:center}
+.cb.on{background:var(--go);border-color:var(--go)}
+.secgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}
+.secgrid span{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;padding:9px 10px;border:2px solid var(--rule);border-radius:9px}
+.secgrid span.on{border-color:var(--ink);background:var(--wash)}
+.stepper{display:flex;align-items:center;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.stepper b{width:44px;text-align:center;font-size:22px;padding:6px 0}
+.stepper span{flex:1;text-align:center;font-size:17px;font-weight:700;border-left:2px solid var(--rule);border-right:2px solid var(--rule);padding:9px 0}
+
+/* list behind sheet */
+.sign{color:#fff;padding:9px 18px;font-size:17px;font-weight:700}
+.it{display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--rule)}
+.it .n{font-size:18px;font-weight:500}
+.it .f{font-size:13px;color:var(--ink-2)}
+.it .q{margin-left:auto}
+
+/* import */
+.irow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--rule)}
+.irow .t{flex:1;font-size:15px;line-height:1.25}
+.irow .t small{display:block;font-size:12px;color:var(--ink-2)}
+.flag{font-size:12.5px;font-weight:700;color:var(--warn)}
+.src{display:flex;gap:10px;align-items:center;background:var(--wash);border-radius:10px;padding:10px;margin:12px 0}
+.src .ph2{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#F4E3B5,#C9A35B);flex:none}
+
+/* cook */
+.cook{position:absolute;inset:0;background:var(--ink);color:#fff;padding:54px 22px 30px;display:flex;flex-direction:column}
+.cook .awake{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#9BE3B5;background:rgba(155,227,181,.12);padding:5px 10px;border-radius:99px}
+.prog{display:flex;gap:4px;margin:18px 0 10px}
+.prog i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.18)}
+.prog i.on{background:#9BE3B5}
+.cook .stepn{font-size:15px;color:#A9C2B3;font-weight:700}
+.cook .step{font-size:29px;line-height:1.3;font-weight:600;margin-top:8px}
+.cook .step b{background:rgba(255,216,74,.2);color:var(--sticker);padding:0 4px;border-radius:4px;font-weight:700}
+.cook .uses{margin-top:20px;border-top:1px solid rgba(255,255,255,.15);padding-top:14px}
+.cook .uses div{display:flex;justify-content:space-between;font-size:16px;padding:5px 0;color:#DDE8E1}
+.cook .ctl{margin-top:auto;display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.cook .ctl .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.serv{display:flex;align-items:center;gap:8px;font-size:14px;color:#A9C2B3}
+.serv b{background:rgba(255,255,255,.1);border-radius:8px;padding:3px 10px;color:#fff;font-size:15px}
+
+/* more */
+.grp{font-size:13.5px;font-weight:700;color:var(--ink-2);padding:16px 18px 6px}
+.mrow{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--rule);font-size:16.5px;font-weight:500}
+.mrow:first-of-type{border-top:1px solid var(--rule)}
+.mrow .r{margin-left:auto;color:var(--ink-2);font-size:14px;display:flex;align-items:center;gap:6px}
+.mrow svg.ch{width:16px;height:16px;color:#9aaaa0}
+.mrow .ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--wash);flex:none}
+.mrow .ic svg{width:18px;height:18px}
+.ok{color:var(--go);font-weight:700}
+
+/* section order */
+.ord{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--rule);font-size:16.5px;font-weight:600;background:#fff}
+.ord .sw{width:6px;height:28px;border-radius:3px}
+.ord .hd{margin-left:auto;color:#9aaaa0}
+.ord.drag{box-shadow:0 10px 24px rgba(16,41,28,.22);transform:scale(1.02) rotate(-.6deg);position:relative;z-index:2;border-radius:8px;border:0}
+
+/* history */
+.hwk{font-size:13.5px;font-weight:700;color:var(--ink-2);padding:14px 18px 6px;background:var(--wash)}
+.hrow{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--rule)}
+.hrow .dt{width:44px;font-size:13px;color:var(--ink-2);font-weight:700;line-height:1.15}
+.hrow .dt b{display:block;font-size:18px;color:var(--ink)}
+.hrow .nm{font-size:17px;font-weight:600}
+.hrow .nm small{display:block;font-size:13px;color:var(--ink-2);font-weight:400}
+.hrow svg{margin-left:auto;width:20px;height:20px}
+
+/* empty */
+.empty{position:absolute;left:24px;right:24px;top:230px;text-align:center}
+.empty .art{width:120px;height:120px;margin:0 auto 18px;border-radius:50%;background:var(--go-faint);display:grid;place-items:center}
+.empty h2{font-size:21px;font-weight:800}
+.empty p{font-size:15.5px;color:var(--ink-2);margin:8px 0 18px;line-height:1.45}
+.empty .btn+.btn{margin-top:8px}
+
+/* desktop */
+.desk{max-width:1240px;margin:0 auto;height:760px;background:var(--paper);border-radius:14px;display:grid;grid-template-columns:200px 1fr 1.1fr;overflow:hidden;border:1px solid #c3cbc6;box-shadow:0 30px 60px -25px rgba(0,30,15,.35)}
+.side{background:var(--ink);color:#fff;padding:26px 14px}
+.side .brand{font-size:20px;font-weight:800;padding:0 10px 20px}
+.side a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:99px;color:#bcd0c4;text-decoration:none;font-weight:700;font-size:16px}
+.side a.on{background:rgba(155,227,181,.14);color:#9BE3B5}
+.side svg{width:22px;height:22px}
+.mcol{border-right:1px solid var(--rule);overflow:hidden}
+.mcol .hd{padding:24px 22px 14px;border-bottom:1px solid var(--rule)}
+.ml{display:flex;gap:12px;align-items:center;padding:12px 22px;border-bottom:1px solid var(--rule)}
+.ml.sel{background:var(--go-faint);box-shadow:inset 4px 0 0 var(--go)}
+.ml .ph{width:50px;height:50px;border-radius:8px;flex:none}
+.ml h3{font-size:17px}
+.ml p{font-size:13px;color:var(--ink-2)}
+.ml svg{margin-left:auto;width:22px;height:22px}
+.dcol{overflow:hidden;position:relative}
+.dcol .hero{height:200px}
+.dcol .hero .back{display:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.steps li{font-size:15.5px;line-height:1.45;margin:0 0 10px 18px;padding-left:4px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="i-list" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17" stroke-linejoin="round"/></g></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-meals" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2.5 1-4 4-4 8h4"/></g></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></g></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6 19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></g></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9v11h16V9M4 9h16"/><path d="M10 20v-6h4v6"/></g></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></g></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></g></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-broom" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6M17 7l-6 6"/><path d="M11 13l-6 2-1 5 5-1 2-6"/></g></symbol>
+  <symbol id="i-bag" viewBox="0 0 48 48"><g fill="none" stroke="#178245" stroke-width="3" stroke-linejoin="round"><path d="M9 16h30l-2.5 25h-25Z"/><path d="M17 16v-3a7 7 0 0 1 14 0v3" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 48 48"><g fill="none" stroke="#178245" stroke-width="3"><rect x="7" y="10" width="34" height="31" rx="4"/><path d="M7 19h34M16 6v8M32 6v8" stroke-linecap="round"/><path d="M24 25v10M19 30h10" stroke-linecap="round"/></g></symbol>
+</defs></svg>
+
+<div class="stage-title"><b>B. Screens you haven’t seen yet</b>Figtree, no section numbers or per-section counts, pill-style active tab. <a href="b-grocery-utility.html">Back to the main screens</a></div>
+
+<div class="phones">
+
+<!-- 1 MEAL DETAIL -->
+<div><div class="phone">
+  <div class="hero"><span class="back"><svg><use href="#i-back"/></svg>Meals</span><span class="edit">Edit</span></div>
+  <div class="body" style="padding-top:16px">
+    <div class="row" style="align-items:flex-start"><div><h1>Tacos</h1><p class="meta">Last made 6 days ago. Made 14 times.</p></div>
+      <span class="star-btn on"><svg fill="var(--ink)"><use href="#i-star"/></svg></span></div>
+    <div class="chips" style="margin-top:10px"><span class="chip">30 min</span><span class="chip">Ground beef</span><span class="chip">Serves 4</span></div>
+    <div class="note">Kids want the cheese and sour cream on the side.</div>
+    <div class="row" style="margin-bottom:4px"><h2>Ingredients</h2><span class="link">Add to list</span></div>
+    <div class="ing"><span class="dot" style="background:var(--s-meat)"></span><span class="amt">1 lb</span>Ground beef</div>
+    <div class="ing"><span class="dot" style="background:var(--s-intl)"></span><span class="amt">1 pack</span>Flour tortillas</div>
+    <div class="ing"><span class="dot" style="background:var(--s-intl)"></span><span class="amt">1 pkt</span>Taco seasoning</div>
+    <div class="ing"><span class="dot" style="background:var(--s-dairy)"></span><span class="amt">1 cup</span>Shredded cheddar</div>
+    <div class="ing"><span class="dot" style="background:var(--s-produce)"></span><span class="amt">1</span>Yellow onion</div>
+  </div>
+  <div class="actions"><span class="btn ghost">+ Plan</span><span class="btn ghost">Add to list</span><span class="btn">Cook</span></div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a class="on"><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Meal detail. The colored dots show which section each ingredient lands in. Steps are further down the page.</p></div>
+
+<!-- 2 ADD MEAL -->
+<div><div class="phone">
+  <div class="top"><div class="row"><span class="back"><svg><use href="#i-back"/></svg>Cancel</span><span class="link">Save</span></div>
+    <h1 style="margin-top:10px">New meal</h1>
+    <div class="seg"><span class="on">Type it in</span><span>From a link</span></div></div>
+  <div class="body">
+    <div class="field"><label>Name</label><div class="input">Crockpot chili</div></div>
+    <div class="field"><label>Ingredients</label><div class="input ta">2 lb ground beef
+1 yellow onion, diced
+2 cans black beans
+2 cans diced tomatoes
+1 packet chili seasoning</div><p class="hint">One per line. Amounts are optional.</p></div>
+    <div class="field"><label>Steps</label><div class="input ta ph" style="min-height:64px">Optional</div></div>
+    <div class="field"><label>Tags</label><div class="chips"><span class="chip on">Crockpot</span><span class="chip">30 min</span><span class="chip">Pasta</span><span class="chip">Freezer</span><span class="chip">+ New tag</span></div></div>
+    <div class="check"><span class="cb on"><svg width="16" height="16"><use href="#i-check"/></svg></span>Kids like it</div>
+  </div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a class="on"><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Add a meal by hand. Ingredients go in as plain lines and the app works out amounts and sections.</p></div>
+
+<!-- 3 IMPORT -->
+<div><div class="phone">
+  <div class="top"><div class="row"><span class="back"><svg><use href="#i-back"/></svg>Cancel</span><span class="link">Save meal</span></div>
+    <h1 style="margin-top:10px">New meal</h1>
+    <div class="seg"><span>Type it in</span><span class="on">From a link</span></div></div>
+  <div class="body">
+    <div class="input" style="font-size:14.5px;color:var(--ink-2)">allrecipes.com/recipe/2318/chicken-alfredo</div>
+    <div class="src"><span class="ph2"></span><div><h2>Chicken Fettuccine Alfredo</h2><p class="meta" style="margin:0">Serves 4. 35 min. 7 ingredients.</p></div></div>
+    <div class="row" style="margin:4px 0 2px"><h2>Check the sections</h2><span class="muted" style="font-size:13px">Tap to change</span></div>
+    <div class="irow"><div class="t">Chicken breasts<small>1 lb</small></div><span class="secpill" style="background:var(--s-meat)">Meat &amp; Seafood<svg><use href="#i-down"/></svg></span></div>
+    <div class="irow"><div class="t">Fettuccine<small>12 oz</small></div><span class="secpill" style="background:var(--s-pasta)">Pasta &amp; Rice<svg><use href="#i-down"/></svg></span></div>
+    <div class="irow"><div class="t">Heavy cream<small>2 cups</small></div><span class="secpill" style="background:var(--s-dairy)">Dairy &amp; Eggs<svg><use href="#i-down"/></svg></span></div>
+    <div class="irow"><div class="t">Parmesan<small>1 cup, grated</small></div><span class="secpill" style="background:var(--s-deli)">Deli<svg><use href="#i-down"/></svg></span></div>
+    <div class="irow"><div class="t">Garlic<small>3 cloves</small></div><span class="secpill" style="background:var(--s-produce)">Produce<svg><use href="#i-down"/></svg></span></div>
+    <div class="irow"><div class="t">Italian seasoning<small>1 tsp</small><span class="flag">Not sure, pick one</span></div><span class="secpill" style="background:var(--s-other)">Other<svg><use href="#i-down"/></svg></span></div>
+  </div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a class="on"><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Import from a link. Paste the URL, then check the guessed sections before saving. Any changes you make are remembered.</p></div>
+
+<!-- 4 COOK -->
+<div><div class="phone">
+  <div class="cook">
+    <div class="row"><span class="back" style="color:#A9C2B3"><svg><use href="#i-back"/></svg>Done</span><span class="awake"><svg width="14" height="14"><use href="#i-sun"/></svg>Screen stays on</span></div>
+    <h2 style="margin-top:16px;font-size:20px">Crockpot chili</h2>
+    <div class="serv" style="margin-top:6px">Servings <b>−</b><b>6</b><b>+</b> <span>scaled from 4</span></div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="stepn">Step 2 of 5</div>
+    <div class="step">Brown <b>3 lb</b> ground beef with <b>1½</b> diced onions. Drain the fat.</div>
+    <div class="uses"><div><span>Ground beef</span><span>3 lb</span></div><div><span>Yellow onion</span><span>1½</span></div></div>
+    <div class="ctl"><span class="btn ghost">Back</span><span class="btn">Next step</span></div>
+  </div>
+</div><p class="cap">Cook mode. Big text, the screen stays awake, and amounts scale when you change servings.</p></div>
+
+<!-- 5 PLAN SHEET -->
+<div><div class="phone">
+  <div class="hero" style="background:linear-gradient(135deg,#F4E3B5,#C9A35B)"></div>
+  <div class="body"><h1>Chicken alfredo</h1></div>
+  <div class="scrim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 style="font-size:20px">Plan chicken alfredo</h2>
+    <p class="meta">This week, Oct 26 to Nov 1</p>
+    <div class="days">
+      <div class="dy taken">Mon<small>Tacos</small></div><div class="dy taken">Tue<small>Chili</small></div><div class="dy on">Wed<small>Open</small></div><div class="dy taken">Thu<small>Leftovers</small></div>
+      <div class="dy taken">Fri<small>Breakfast</small></div><div class="dy taken">Sat<small>Eating out</small></div><div class="dy">Sun<small>Open</small></div><div class="dy">No day<small>Sometime</small></div>
+    </div>
+    <div class="row" style="justify-content:flex-start;gap:6px;margin-bottom:6px"><span class="chip">Next week</span></div>
+    <div class="check"><span class="cb on"><svg width="16" height="16"><use href="#i-check"/></svg></span>Also add ingredients to the list</div>
+    <span class="btn">Plan for Wednesday</span>
+  </div>
+</div><p class="cap">Plan a meal. Pick a day or "No day", and you can add its ingredients to the list in the same step.</p></div>
+
+<!-- 6 LIST ITEM SHEET -->
+<div><div class="phone">
+  <div class="top"><h1>List</h1></div>
+  <div class="sign" style="background:var(--s-produce)">Produce</div>
+  <div class="it"><span class="cb"></span><div><div class="n">Yellow onions</div><div class="f">Tacos, Chili</div></div><span class="q">3</span></div>
+  <div class="it"><span class="cb"></span><div><div class="n">Tortillas</div><div class="f">Tacos</div></div><span class="q">1</span></div>
+  <div class="scrim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="row"><h2 style="font-size:20px">Tortillas</h2><span class="muted" style="font-size:14px">From Tacos</span></div>
+    <div class="field" style="margin-top:12px"><label>Amount</label><div class="stepper"><b>−</b><span>1 pack</span><b>+</b></div></div>
+    <label style="font-size:14px;font-weight:700">Section</label>
+    <div class="secgrid">
+      <span><i class="dot" style="background:var(--s-produce)"></i>Produce</span><span><i class="dot" style="background:var(--s-bakery)"></i>Bakery</span>
+      <span class="on"><i class="dot" style="background:var(--s-intl)"></i>International</span><span><i class="dot" style="background:var(--s-deli)"></i>Deli</span>
+      <span><i class="dot" style="background:var(--s-dairy)"></i>Dairy &amp; Eggs</span><span><i class="dot" style="background:var(--s-other)"></i>More sections</span>
+    </div>
+    <div class="check" style="margin-top:4px"><span class="cb on"><svg width="16" height="16"><use href="#i-check"/></svg></span>Always put tortillas in International</div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px"><span class="btn danger">Remove</span><span class="btn">Save</span></div>
+  </div>
+</div><p class="cap">Tap a list item to change the amount or move it to another section. The app remembers where it goes.</p></div>
+
+<!-- 7 MORE -->
+<div><div class="phone">
+  <div class="top"><h1>More</h1></div>
+  <div class="grp">Store</div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-store"/></svg></span>Section order<span class="r">14 sections<svg class="ch"><use href="#i-chev"/></svg></span></div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-bolt"/></svg></span>Staples<span class="r">9 items<svg class="ch"><use href="#i-chev"/></svg></span></div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-pin"/></svg></span>Remembered sections<span class="r">37<svg class="ch"><use href="#i-chev"/></svg></span></div>
+  <div class="grp">Meals</div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-clock"/></svg></span>History<svg class="ch" style="margin-left:auto"><use href="#i-chev"/></svg></div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-spark"/></svg></span>Recipe import with AI<span class="r ok">On</span></div>
+  <div class="grp">List</div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear checked items<span class="r">13</span></div>
+  <div class="mrow" style="color:var(--warn)"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear the whole list</div>
+  <div class="grp">System</div>
+  <div class="mrow"><span class="ic"><svg><use href="#i-db"/></svg></span>Backups<span class="r">Last one 3:00 AM today</span></div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a class="on"><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">More: store setup, history, list cleanup and system status.</p></div>
+
+<!-- 8 SECTION ORDER -->
+<div><div class="phone">
+  <div class="top"><div class="row"><span class="back"><svg><use href="#i-back"/></svg>More</span><span class="link">+ Add section</span></div>
+    <h1 style="margin-top:10px">Section order</h1><p class="meta">Drag to match how you walk through the store.</p></div>
+  <div class="ord"><span class="sw" style="background:var(--s-produce)"></span>Produce<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-bakery)"></span>Bakery<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-deli)"></span>Deli<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord drag"><span class="sw" style="background:var(--s-meat)"></span>Meat &amp; Seafood<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-canned)"></span>Canned &amp; Soup<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-pasta)"></span>Pasta &amp; Rice<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-intl)"></span>International<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:var(--s-baking)"></span>Baking &amp; Spices<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:#C9822B"></span>Breakfast &amp; Cereal<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:#A04A6E"></span>Snacks &amp; Drinks<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <div class="ord"><span class="sw" style="background:#5A6B8C"></span>Household<svg class="hd" width="22" height="22"><use href="#i-grip"/></svg></div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a class="on"><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Section order, with one row mid-drag. The list follows this order.</p></div>
+
+<!-- 9 HISTORY -->
+<div><div class="phone">
+  <div class="top"><div class="row"><span class="back"><svg><use href="#i-back"/></svg>More</span></div><h1 style="margin-top:10px">History</h1></div>
+  <div class="hwk">This week</div>
+  <div class="hrow"><div class="dt">Mon<b>26</b></div><div class="nm">Tacos<small>Made 14 times</small></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+  <div class="hwk">Last week</div>
+  <div class="hrow"><div class="dt">Sat<b>24</b></div><div class="nm">Homemade pizza<small>Made 6 times</small></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+  <div class="hrow"><div class="dt">Thu<b>22</b></div><div class="nm">Teriyaki bowls<small>First time</small></div><span></span></div>
+  <div class="hrow"><div class="dt">Wed<b>21</b></div><div class="nm">Sheet-pan sausage<small>Made 4 times</small></div><span></span></div>
+  <div class="hrow"><div class="dt">Mon<b>19</b></div><div class="nm">Chicken alfredo<small>Made 9 times</small></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+  <div class="hwk">Oct 12 to 18</div>
+  <div class="hrow"><div class="dt">Fri<b>16</b></div><div class="nm">Breakfast for dinner<small>Made 11 times</small></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a class="on"><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">History. Meals show up here when you mark them cooked on the Plan tab.</p></div>
+
+<!-- 10 EMPTY LIST -->
+<div><div class="phone">
+  <div class="top"><h1>List</h1></div>
+  <div class="empty"><div class="art"><svg width="60" height="60"><use href="#i-bag"/></svg></div>
+    <h2>Your list is empty</h2><p>Add this week’s meals from the Plan tab, or type an item to get started.</p>
+    <span class="btn">Add ingredients from the plan</span><span class="btn ghost">Add staples</span></div>
+  <nav class="nav"><a class="on"><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Empty list</p></div>
+
+<!-- 11 EMPTY WEEK -->
+<div><div class="phone">
+  <div class="top"><div class="row"><h1>Plan</h1><span class="muted" style="font-size:15px">Nov 2 to 8</span></div></div>
+  <div class="empty"><div class="art"><svg width="60" height="60"><use href="#i-cal"/></svg></div>
+    <h2>Nothing planned yet</h2><p>Pick a few meals for the week. Kid favorites you haven’t made in a while show up first.</p>
+    <span class="btn">Choose meals</span><span class="btn ghost">Copy last week</span></div>
+  <nav class="nav"><a><span class="pill"><svg><use href="#i-list"/></svg></span>List</a><a class="on"><span class="pill"><svg><use href="#i-plan"/></svg></span>Plan</a><a><span class="pill"><svg><use href="#i-meals"/></svg></span>Meals</a><a><span class="pill"><svg><use href="#i-more"/></svg></span>More</a></nav>
+</div><p class="cap">Empty week</p></div>
+</div>
+
+<!-- DESKTOP: meals + detail -->
+<div class="desk">
+  <nav class="side"><div class="brand">Hungry Hippos</div>
+    <a><svg><use href="#i-list"/></svg>List</a><a><svg><use href="#i-plan"/></svg>Plan</a><a class="on"><svg><use href="#i-meals"/></svg>Meals</a><a><svg><use href="#i-more"/></svg>More</a></nav>
+  <section class="mcol">
+    <div class="hd"><div class="row"><h1>Meals</h1><span class="btn" style="width:auto;padding:9px 14px;font-size:15px">+ New meal</span></div>
+      <div class="input" style="margin-top:12px;color:#90a097">Search 42 meals</div>
+      <div class="chips" style="margin-top:10px"><span class="chip on">★ Favorites</span><span class="chip">All</span><span class="chip">Crockpot</span><span class="chip">30 min</span></div></div>
+    <div class="ml sel"><div class="ph" style="background:linear-gradient(135deg,#F2B544,#D9622B)"></div><div><h3>Tacos</h3><p>Last made 6 days ago</p></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+    <div class="ml"><div class="ph" style="background:linear-gradient(135deg,#F4E3B5,#C9A35B)"></div><div><h3>Chicken alfredo</h3><p>Last made 2 weeks ago</p></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+    <div class="ml"><div class="ph" style="background:linear-gradient(135deg,#C8452E,#7A2214)"></div><div><h3>Spaghetti &amp; meatballs</h3><p>Last made a month ago</p></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+    <div class="ml"><div class="ph" style="background:linear-gradient(135deg,#F7E07A,#E39A3B)"></div><div><h3>Breakfast for dinner</h3><p>Planned for Fri</p></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+    <div class="ml"><div class="ph" style="background:linear-gradient(135deg,#9C3B2A,#5E2117)"></div><div><h3>Crockpot chili</h3><p>Planned for Tue</p></div><svg fill="var(--sticker)" stroke="var(--ink)" stroke-width="1.6"><use href="#i-star"/></svg></div>
+  </section>
+  <section class="dcol">
+    <div class="hero"><span class="edit">Edit</span></div>
+    <div class="body" style="padding:20px 26px">
+      <div class="row" style="align-items:flex-start"><div><h1>Tacos</h1><p class="meta">Last made 6 days ago. Made 14 times. Serves 4.</p></div><span class="star-btn on"><svg fill="var(--ink)"><use href="#i-star"/></svg></span></div>
+        <div style="display:flex;gap:8px;margin-top:12px"><span class="btn ghost" style="width:auto;padding:9px 14px;font-size:15px">+ Plan</span><span class="btn ghost" style="width:auto;padding:9px 14px;font-size:15px">Add to list</span><span class="btn" style="width:auto;padding:9px 16px;font-size:15px">Cook</span></div>
+      <div class="note">Kids want the cheese and sour cream on the side.</div>
+      <div class="two">
+        <div><h2 style="margin-bottom:4px">Ingredients</h2>
+          <div class="ing"><span class="dot" style="background:var(--s-meat)"></span><span class="amt">1 lb</span>Ground beef</div>
+          <div class="ing"><span class="dot" style="background:var(--s-intl)"></span><span class="amt">1 pack</span>Flour tortillas</div>
+          <div class="ing"><span class="dot" style="background:var(--s-intl)"></span><span class="amt">1 pkt</span>Taco seasoning</div>
+          <div class="ing"><span class="dot" style="background:var(--s-dairy)"></span><span class="amt">1 cup</span>Shredded cheddar</div>
+          <div class="ing"><span class="dot" style="background:var(--s-produce)"></span><span class="amt">1</span>Yellow onion</div></div>
+        <div><h2 style="margin-bottom:8px">Steps</h2><ol class="steps">
+          <li>Dice the onion and brown it with the ground beef over medium-high heat.</li>
+          <li>Drain the fat, stir in the taco seasoning and ⅔ cup water. Simmer 5 minutes.</li>
+          <li>Warm the tortillas in a dry pan or wrapped in foil in the oven.</li>
+          <li>Serve with cheese, sour cream and toppings on the side.</li></ol></div>
+      </div>
+    </div>
+  </section>
+</div>
+<p class="cap" style="margin:10px auto 0;max-width:none">Desktop: the meal list and the selected meal side by side</p>
+</body>
+</html>
