@@ -102,7 +102,8 @@ def add_entry(
         # Picked from the meal list: show the plan with an Undo toast in case the tap was a slip.
         response = page_response(request, session, ws)
         response.headers["HX-Push-Url"] = url
-        toast = {"message": _when(d, ws, entry.meal.name), "undo": f"/plan/entries/{entry.id}/delete"}
+        toast = {"message": _when(d, ws, entry.meal.name), "undo": f"/plan/entries/{entry.id}/delete",
+                 "target": "#plan-week", "swap": "outerHTML"}
         response.headers["HX-Trigger-After-Settle"] = json.dumps({"toast": toast})
         return response
     if request.headers.get("HX-Request"):

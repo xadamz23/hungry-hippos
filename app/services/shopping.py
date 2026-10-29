@@ -1,13 +1,13 @@
 """The shared shopping list: adding with merge, checking off, grouping in walk order."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException
 from sqlalchemy import delete, select, text
 from sqlalchemy import update as sql_update
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import ListItem, ListItemSource, Meal, Section, Staple
+from app.models import ListItem, ListItemSource, ListUndo, Meal, Section, Staple
 from app.services import amounts as amt
 from app.services.ingredients import NAME_MAX, display_name, name_key, parse_line
 from app.services import sections
@@ -163,15 +163,65 @@ def update(session: Session, item_id: int, amount_text: str, note: str) -> ListI
     return item
 
 
-def remove(session: Session, item_id: int) -> None:
-    session.delete(get_item(session, item_id))
-    _commit(session)
+UNDO_KEEP = timedelta(days=1)
 
 
-def clear_checked(session: Session) -> int:
-    n = session.execute(delete(ListItem).where(ListItem.checked.is_(True))).rowcount
+def _keep_for_undo(session: Session, items: list[ListItem]) -> int | None:
+    """Save items about to be deleted so Undo can restore them. Returns the undo id, or None for nothing."""
+    session.execute(delete(ListUndo).where(ListUndo.created_at < datetime.now(UTC) - UNDO_KEEP))
+    if not items:
+        return None
+    saved = ListUndo(items=[
+        {"name": i.name, "name_key": i.name_key, "amounts": i.amounts, "section_id": i.section_id, "note": i.note,
+         "checked": i.checked, "checked_at": i.checked_at.isoformat() if i.checked_at else None,
+         "created_at": i.created_at.isoformat() if i.created_at else None,
+         "sources": [{"meal_id": s.meal_id, "meal_name": s.meal_name} for s in i.sources]}
+        for i in items
+    ])
+    session.add(saved)
+    session.flush()
+    return saved.id
+
+
+def undo(session: Session, undo_id: int) -> int:
+    """Put back the items saved under undo_id. Returns how many came back (0 if it's gone or already used)."""
+    saved = session.get(ListUndo, undo_id)
+    if saved is None:
+        return 0
+    known_meals = set(session.scalars(select(Meal.id)))
+    known_sections = set(session.scalars(select(Section.id)))
+    for d in saved.items:
+        session.add(ListItem(
+            name=d["name"], name_key=d["name_key"], amounts=d["amounts"], note=d["note"], checked=d["checked"],
+            section_id=d["section_id"] if d["section_id"] in known_sections else None,
+            checked_at=datetime.fromisoformat(d["checked_at"]) if d["checked_at"] else None,
+            created_at=datetime.fromisoformat(d["created_at"]) if d["created_at"] else None,
+            sources=[ListItemSource(meal_id=s["meal_id"] if s["meal_id"] in known_meals else None, meal_name=s["meal_name"])
+                     for s in d["sources"]],
+        ))
+    n = len(saved.items)
+    session.delete(saved)
     _commit(session)
     return n
+
+
+def remove(session: Session, item_id: int) -> int | None:
+    """Delete an item. Returns its undo id."""
+    item = get_item(session, item_id)
+    undo_id = _keep_for_undo(session, [item])
+    session.delete(item)
+    _commit(session)
+    return undo_id
+
+
+def clear_checked(session: Session) -> tuple[int, int | None]:
+    """Delete checked items. Returns (how many, undo id)."""
+    items = session.scalars(select(ListItem).where(ListItem.checked.is_(True)).options(selectinload(ListItem.sources))).all()
+    undo_id = _keep_for_undo(session, items)
+    for item in items:
+        session.delete(item)
+    _commit(session)
+    return len(items), undo_id
 
 
 def clear_all(session: Session) -> int:
@@ -194,7 +244,8 @@ def meal_groups(session: Session) -> list[tuple[str, list[ListItem]]]:
         key = src.meal_id if src.meal_id is not None else src.meal_name  # the meal may have been deleted
         by_meal.setdefault(key, (src.meal_name, []))[1].append(item)
     out = []
-    for name, items in sorted(by_meal.values(), key=lambda g: min(i.id for i in g[1])):
+    # Ordered by when the meal's items were added; Undo keeps created_at, so a put-back group doesn't jump to the end.
+    for name, items in sorted(by_meal.values(), key=lambda g: min((i.created_at, i.id) for i in g[1])):
         items.sort(key=lambda i: (i.checked, i.section.position if i.section else 1_000_000))
         out.append((name, items))
     return out

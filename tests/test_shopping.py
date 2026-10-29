@@ -126,8 +126,62 @@ def test_clear_checked(seeded):
     a = shopping.add_text(seeded, "milk")
     shopping.add_text(seeded, "eggs")
     shopping.toggle(seeded, a.id)
-    assert shopping.clear_checked(seeded) == 1
+    n, undo_id = shopping.clear_checked(seeded)
+    assert n == 1 and undo_id is not None
     assert [i.name for i in seeded.scalars(select(ListItem))] == ["Eggs"]
+
+
+def test_undo_clear_checked_puts_items_back_as_they_were(seeded):
+    meal = make_meal(seeded, "Tacos", "1 lb ground beef")
+    shopping.add_meal(seeded, meal)
+    milk = shopping.add_text(seeded, "2 gal milk")
+    shopping.update(seeded, milk.id, "2 gal", "the organic one")
+    beef = next(i for i in seeded.scalars(select(ListItem)) if i.name == "Ground beef")
+    for item in (milk, beef):
+        shopping.toggle(seeded, item.id)
+    before = sorted((i.name, i.amounts, i.section_id, i.note, i.checked, i.created_at) for i in seeded.scalars(select(ListItem)))
+    _, undo_id = shopping.clear_checked(seeded)
+    assert seeded.scalars(select(ListItem)).all() == []
+    assert shopping.undo(seeded, undo_id) == 2
+    seeded.expire_all()
+    items = seeded.scalars(select(ListItem)).all()
+    assert sorted((i.name, i.amounts, i.section_id, i.note, i.checked, i.created_at) for i in items) == before
+    assert [s.meal_name for i in items for s in i.sources] == ["Tacos"]
+    assert shopping.undo(seeded, undo_id) == 0  # only once
+
+
+def test_undo_remove_after_its_meal_was_deleted(seeded):
+    meal = make_meal(seeded, "Tacos", "1 lb ground beef")
+    shopping.add_meal(seeded, meal)
+    item = seeded.scalar(select(ListItem))
+    undo_id = shopping.remove(seeded, item.id)
+    seeded.delete(meal)
+    seeded.commit()
+    assert shopping.undo(seeded, undo_id) == 1
+    source = seeded.scalar(select(ListItem)).sources[0]
+    assert (source.meal_id, source.meal_name) == (None, "Tacos")
+
+
+def test_undo_keeps_a_meals_place_in_the_list(seeded):
+    from datetime import timedelta
+
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef")
+    chili = make_meal(seeded, "Chili", "2 cans beans")
+    shopping.add_meal(seeded, tacos)
+    shopping.add_meal(seeded, chili)
+    for item in seeded.scalars(select(ListItem)):  # one transaction stamps the same time; make the order explicit
+        if item.sources[0].meal_name == "Chili":
+            item.created_at += timedelta(seconds=1)
+    seeded.commit()
+    first = min(seeded.scalars(select(ListItem)), key=lambda i: i.id)
+    shopping.undo(seeded, shopping.remove(seeded, first.id))
+    seeded.expire_all()
+    assert [name for name, _ in shopping.meal_groups(seeded)] == ["Tacos", "Chili"]
+
+
+def test_clear_checked_with_nothing_checked_has_no_undo(seeded):
+    shopping.add_text(seeded, "eggs")
+    assert shopping.clear_checked(seeded) == (0, None)
 
 
 def test_clear_all(seeded):

@@ -1,3 +1,4 @@
+import json
 import re
 
 from sqlalchemy import select
@@ -134,3 +135,23 @@ def test_long_typed_item_is_cut_to_fit(client, seeded):
     assert client.post("/list/add", data={"text": "2 (" + "y" * 500 + ")"}).status_code == 200
     items = seeded.scalars(select(ListItem)).all()
     assert len(items) == 2 and all(len(i.name) <= 200 and len(i.name_key) <= 200 for i in items)
+
+
+def test_remove_route_offers_undo(client, seeded):
+    item = shopping.add_text(seeded, "milk")
+    r = client.post(f"/list/{item.id}/delete")
+    toast = json.loads(r.headers["HX-Trigger"])["toast"]
+    assert toast["message"] == "Removed Milk" and toast["target"] == "#list-body"
+    back = client.post(toast["undo"])
+    assert "Milk" in back.text and "Put back 1 item" in back.headers["HX-Trigger"]
+    assert [i.name for i in seeded.scalars(select(ListItem))] == ["Milk"]
+
+
+def test_clear_checked_route_offers_undo(client, seeded):
+    a = shopping.add_text(seeded, "milk")
+    shopping.add_text(seeded, "eggs")
+    shopping.toggle(seeded, a.id)
+    toast = json.loads(client.post("/list/clear-checked").headers["HX-Trigger"])["toast"]
+    assert toast["message"] == "Cleared 1 checked item"
+    client.post(toast["undo"])
+    assert sorted(i.name for i in seeded.scalars(select(ListItem))) == ["Eggs", "Milk"]

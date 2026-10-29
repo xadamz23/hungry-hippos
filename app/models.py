@@ -173,3 +173,13 @@ class Staple(Base):
     add_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     section: Mapped[Section | None] = relationship()
+
+
+class ListUndo(Base):
+    """List items just removed or cleared, kept briefly so the toast's Undo can put them back."""
+
+    __tablename__ = "list_undo"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    items: Mapped[list] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

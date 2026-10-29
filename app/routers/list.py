@@ -21,7 +21,14 @@ def list_context(session: Session) -> dict:
     }
 
 
-def items_response(request: Request, session: Session, *, toast: str | None = None, close_sheet: bool = False):
+def undo_toast(message: str, undo_id: int | None) -> str | dict:
+    """A toast whose Undo puts list items back and redraws the list."""
+    if undo_id is None:
+        return message
+    return {"message": message, "undo": f"/list/undo/{undo_id}", "target": "#list-body", "swap": "innerHTML"}
+
+
+def items_response(request: Request, session: Session, *, toast: str | dict | None = None, close_sheet: bool = False):
     response = templates.TemplateResponse(request, "list/_items.html", list_context(session))
     triggers = {}
     if toast:
@@ -62,8 +69,14 @@ def add_staple(request: Request, staple_id: int, session: Session = Depends(get_
 
 @router.post("/clear-checked")
 def clear_checked(request: Request, session: Session = Depends(get_session)):
-    n = shopping.clear_checked(session)
-    return items_response(request, session, toast=f"Cleared {n} checked item{'s' if n != 1 else ''}")
+    n, undo_id = shopping.clear_checked(session)
+    return items_response(request, session, toast=undo_toast(f"Cleared {n} checked item{'s' if n != 1 else ''}", undo_id))
+
+
+@router.post("/undo/{undo_id}")
+def undo(request: Request, undo_id: int, session: Session = Depends(get_session)):
+    n = shopping.undo(session, undo_id)
+    return items_response(request, session, toast=f"Put back {n} item{'s' if n != 1 else ''}" if n else None)
 
 
 @router.post("/clear-all")
@@ -100,6 +113,6 @@ def save(
 def delete(request: Request, item_id: int, session: Session = Depends(get_session)):
     item = shopping.get_item(session, item_id)
     name = item.name
-    shopping.remove(session, item_id)
-    return items_response(request, session, toast=f"Removed {name}", close_sheet=True)
+    undo_id = shopping.remove(session, item_id)
+    return items_response(request, session, toast=undo_toast(f"Removed {name}", undo_id), close_sheet=True)
 

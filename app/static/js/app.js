@@ -14,7 +14,8 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeSheet();
 });
 
-// `undo` is a URL to POST that reverses what just happened.
+// `undo` ({url, target, swap}) is a URL to POST that reverses what just happened; its response goes into `target`
+// when that's on the page, and is otherwise ignored (or reloads the page itself with HX-Refresh).
 let toastTimer;
 function toast(message, undo) {
   const root = document.getElementById("toast-root");
@@ -31,9 +32,8 @@ function toast(message, undo) {
     btn.textContent = "Undo";
     btn.addEventListener("click", () => {
       el.remove();
-      // On the Plan the week is redrawn; elsewhere the undo response refreshes the page (HX-Refresh).
-      const week = document.getElementById("plan-week");
-      htmx.ajax("POST", undo, week ? { target: week, swap: "outerHTML" } : { swap: "none" });
+      const target = undo.target && document.querySelector(undo.target);
+      htmx.ajax("POST", undo.url, target ? { target, swap: undo.swap || "innerHTML" } : { swap: "none" });
     });
     el.appendChild(btn);
   }
@@ -59,8 +59,11 @@ document.addEventListener("htmx:beforeHistorySave", () => {
   document.getElementById("toast-root")?.replaceChildren();
 });
 
-// HX-Trigger sends {"toast": "text"} (detail.value) or {"toast": {"message": ..., "undo": url}}.
-document.addEventListener("toast", (e) => toast(e.detail.message || e.detail.value || e.detail, e.detail.undo));
+// HX-Trigger sends {"toast": "text"} (detail.value) or {"toast": {"message", "undo": url, "target", "swap"}}.
+document.addEventListener("toast", (e) => {
+  const d = e.detail;
+  toast(d.message || d.value || d, d.undo && { url: d.undo, target: d.target, swap: d.swap });
+});
 document.addEventListener("close-sheet", closeSheet);
 
 // [data-sortable="/url"]: drag rows by .handle, then POST ids in their new order.
