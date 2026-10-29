@@ -1,7 +1,8 @@
 from sqlalchemy import select
 
 from app.models import Section, Staple
-from app.seed import ensure_seed
+from app.seed import DEFAULT_SECTIONS, ensure_seed
+from app.services.sections import text_color
 
 
 def test_seed_creates_sections_in_walk_order(session):
@@ -19,3 +20,7 @@ def test_seed_is_idempotent(session):
     ensure_seed(session)
     assert len(session.scalars(select(Section)).all()) == 19
     assert len(session.scalars(select(Staple)).all()) == 4
+
+
+def test_default_sections_use_white_text():
+    assert [name for name, color in DEFAULT_SECTIONS if text_color(color) != "#fff"] == []

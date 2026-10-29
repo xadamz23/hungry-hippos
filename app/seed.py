@@ -3,26 +3,26 @@ from sqlalchemy.orm import Session
 
 from app.models import Section, Staple
 
-# Typical Meijer walk order, each with a distinct header color.
+# Typical Meijer walk order, each with a distinct header color dark enough for white text.
 DEFAULT_SECTIONS: list[tuple[str, str]] = [
     ("Produce", "#2E7D32"),
     ("Meat & Seafood", "#C62828"),
     ("Bakery", "#A16207"),
     ("Deli", "#8E24AA"),
-    ("Frozen", "#4FC3F7"),
+    ("Frozen", "#0E7490"),
     ("Alcohol", "#6A1B9A"),
     ("Pop & Gatorade", "#0277BD"),
     ("Pasta & Mexican", "#827717"),
     ("Rice & Asian", "#00796B"),
     ("Soup, Oil & Mayo", "#BF360C"),
-    ("Bread & Condiments", "#F9A825"),
+    ("Bread & Condiments", "#8D6E00"),
     ("Cereal & Peanut Butter", "#AD1457"),
     ("Spices, Baking & Snacks", "#5D4037"),
     ("Dairy & Eggs", "#1565C0"),
     ("Paper & Laundry", "#455A64"),
-    ("Yogurt, Butter & Ritz", "#FF8A65"),
+    ("Yogurt, Butter & Ritz", "#DB2777"),
     ("Dish & Cleaning", "#3949AB"),
-    ("Health & Personal Care", "#7CB342"),
+    ("Health & Personal Care", "#4D7C0F"),
     ("Other", "#757575"),
 ]
 
