@@ -2,10 +2,8 @@
   <div class="top static" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
-      <div class="seg sm" role="group" aria-label="Which items to show">
-        <button type="button" @click="setShowChecked(false)" :aria-pressed="!showChecked" aria-pressed="true">To get</button>
-        <button type="button" @click="setShowChecked(true)" :aria-pressed="showChecked" aria-pressed="false">All</button>
-      </div>
+      <button type="button" class="switch" role="switch" @click="setShowChecked(!showChecked)"
+              :aria-checked="showChecked" aria-checked="false">Show checked<span class="track"></span></button>
     </div>
     <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">
       <label class="sr-only" for="add-text">Add an item</label>

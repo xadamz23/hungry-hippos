@@ -144,10 +144,17 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .seg { display: flex; background: var(--wash); border-radius: 10px; padding: 4px; margin-top: 12px; }
 .seg a { flex: 1; text-align: center; font-size: 14.5px; font-weight: 700; padding: 8px; border-radius: 7px; color: var(--ink-2); }
 .seg a[aria-current="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
-/* Compact toggle version, e.g. the List's To get / All switch. */
-.seg.sm { margin-top: 0; padding: 3px; flex: none; }
-.seg.sm button { font-size: 14px; font-weight: 700; padding: 6px 11px; border-radius: 7px; color: var(--ink-2); }
-.seg.sm button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+/* On/off switch with its label, e.g. the List's Show checked. */
+.switch { display: inline-flex; align-items: center; gap: 9px; font-size: 14.5px; font-weight: 700; color: var(--ink-2); padding: 4px 0; flex: none; }
+.switch .track { width: 44px; height: 26px; border-radius: 99px; background: #c9d3cc; position: relative; transition: background .18s; flex: none; }
+.switch .track::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .2); transition: transform .18s;
+}
+.switch[aria-checked="true"] { color: var(--ink); }
+.switch[aria-checked="true"] .track { background: var(--go); }
+.switch[aria-checked="true"] .track::after { transform: translateX(18px); }
+@media (prefers-reduced-motion: reduce) { .switch .track, .switch .track::after { transition: none; } }
 
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 0 18px; }
@@ -206,10 +213,10 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it .aisle i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .it.done .aisle i { opacity: .45; }
 @media (min-width: 900px) { .list-part .grp { padding-left: 22px; padding-right: 22px; } }
-/* Checked items are hidden unless the List's To get / All switch is on All.
+/* Checked items are hidden unless the List's Show checked switch is on.
    The "Meals" / "Everything else" labels go too once either part is all checked.
-   The clear-checked strip only shows on All, next to the items it would remove.
-   A row just checked off on "To get" lingers (app.js listView) so the tick is seen. */
+   The clear-checked strip only shows with them, next to the items it would remove.
+   A row just checked off while they're hidden lingers (app.js listView) so the tick is seen. */
 .list-view:not(.show-checked) #list-body .it.done:not(.lingering),
 .list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done), .it.lingering)),
 .list-view:not(.show-checked) #list-body:has(.all-done) .grp,
