@@ -250,6 +250,24 @@ document.addEventListener("alpine:init", () => {
 
   Alpine.data("quickAdd", quickAddBase);
 
+  // Pantry check before adding meals' ingredients: the button counts the ticked ones.
+  Alpine.data("listReview", () => ({
+    n: 0,
+    allowNone: false,
+    init() {
+      this.allowNone = this.$el.dataset.allowNone === "1";
+      this.count();
+      this.$el.addEventListener("change", () => this.count());
+    },
+    count() {
+      this.n = this.$el.querySelectorAll('input[name="ing"]:checked').length;
+    },
+    label() {
+      if (this.n) return `Add ${this.n} item${this.n === 1 ? "" : "s"}`;
+      return this.allowNone ? "Nothing to buy" : "Add to the list";
+    },
+  }));
+
   // Meal form: ingredients as rows with the amount split off, added one at a time from the same staple dropdown
   // as the List quick-add. Picking a staple adds just its name; tapping a row opens a sheet to set the amount.
   // Enter in the add box never submits the meal form.

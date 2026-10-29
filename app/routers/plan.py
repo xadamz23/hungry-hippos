@@ -12,7 +12,7 @@ from app.models import Section
 from app.routers.list import items_response, list_context
 from app.routers.meals import get_meal, pick_short
 from app.services import meals as meal_svc
-from app.services import planning
+from app.services import planning, shopping
 from app.templating import templates
 
 router = APIRouter()
@@ -147,14 +147,43 @@ def cooked(request: Request, entry_id: int, session: Session = Depends(get_sessi
     return week_response(request, session, entry.week_start, toast="Marked as cooked" if entry.cooked_on else None)
 
 
-@router.post("/plan/to-list")
-def to_list(request: Request, week: date | None = None, session: Session = Depends(get_session)):
+@router.get("/plan/to-list/review")
+def to_list_review(request: Request, week: date | None = None, target: str = "plan", session: Session = Depends(get_session)):
+    """Pantry check for the week's meals before their ingredients go on the list."""
     ws = _ws(week)
-    n = planning.add_week_to_list(session, ws)
-    msg = f"Added ingredients for {n} meal{'s' if n != 1 else ''}" if n else "Nothing new to add from the plan"
+    entries = planning.pending_entries(session, ws)
+    if not entries:
+        return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": "Nothing new to add from the plan"})})
+    where = {"target": "#list-body", "swap": "innerHTML"} if target == "list" else {"target": "#plan-week", "swap": "outerHTML"}
+    return templates.TemplateResponse(
+        request,
+        "list/_review_sheet.html",
+        {"groups": [(e.meal.name, e.meal.ingredients) for e in entries], "on_list_keys": shopping.unchecked_keys(session),
+         "meal_keys": shopping.unchecked_keys_by_meal(session),
+         "action": f"/plan/to-list?week={ws}", "allow_none": True, **where},
+    )
+
+
+@router.post("/plan/to-list")
+def to_list(
+    request: Request,
+    week: date | None = None,
+    ing: list[int] = Form([]),
+    reviewed: str | None = Form(None),
+    session: Session = Depends(get_session),
+):
+    ws = _ws(week)
+    n = planning.add_week_to_list(session, ws, only=set(ing) if reviewed else None)
+    meals = f"{n} meal{'s' if n != 1 else ''}"
+    if not n:
+        msg = "Nothing new to add from the plan"
+    elif reviewed and not ing:
+        msg = f"Nothing to buy for {meals}"
+    else:
+        msg = f"Added ingredients for {meals}"
     if request.headers.get("HX-Target") == "list-body":
-        return items_response(request, session, toast=msg)
-    return week_response(request, session, ws, toast=msg)
+        return items_response(request, session, toast=msg, close_sheet=True)
+    return week_response(request, session, ws, toast=msg, close_sheet=True)
 
 
 @router.post("/plan/copy-last")

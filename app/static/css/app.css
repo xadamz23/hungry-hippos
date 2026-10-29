@@ -385,6 +385,17 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .pick-sheet h2 .star { width: 20px; height: 20px; }
 .pick-steps { margin-top: 14px; }
 .pick-steps summary { font-weight: 700; font-size: 16px; cursor: pointer; padding: 6px 0 10px; }
+/* pantry check before adding to the list */
+.review-sheet { padding-bottom: 0; }
+.rv-group h3 { font-size: 15px; font-weight: 800; color: var(--ink-2); margin: 16px 0 2px; }
+.check.rv { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 16px; }
+.check.rv .nm { flex: 1; min-width: 0; }
+.check.rv .nm small { display: block; font-size: 13px; color: var(--go); font-weight: 600; }
+.check.rv .nm small.also { color: var(--ink-2); font-weight: 500; }
+.check.rv .amt { color: var(--ink-2); font-size: 14.5px; flex: none; }
+.check.rv:has(input:not(:checked)) .nm { color: var(--faint); }
+.rv-none { padding: 8px 0; }
+.rv-add { position: sticky; bottom: 0; background: #fff; margin: 14px -18px 0; padding: 12px 18px calc(16px + var(--safe-b)); border-top: 1px solid var(--rule); }
 .pick-add { position: sticky; bottom: 0; background: #fff; margin: 14px -18px 0; padding: 12px 18px calc(16px + var(--safe-b)); border-top: 1px solid var(--rule); }
 @keyframes rise { from { transform: translateY(40px); opacity: 0; } }
 @keyframes fade { from { opacity: 0; } }

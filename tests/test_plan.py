@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 
 from sqlalchemy import select
@@ -336,3 +337,67 @@ def test_cook_page_finish_posts(client, seeded):
     assert f'action="/meals/{tacos.id}/finish"' in client.get(f"/meals/{tacos.id}/cook").text
     plain = make_meal(seeded, "Toast", "bread")
     assert f'action="/meals/{plain.id}/finish"' in client.get(f"/meals/{plain.id}/cook").text
+
+
+def test_week_review_lists_pending_meals_and_skips_what_is_on_the_list(client, seeded):
+    from app.services import shopping
+
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n1 onion")
+    chili = make_meal(seeded, "Chili", "2 cans beans")
+    planning.add_entry(seeded, ws, None, "meal", tacos.id)
+    planning.add_entry(seeded, ws, None, "meal", chili.id, add_to_list=True)  # already added: not in the review
+    shopping.add_text(seeded, "onion")  # typed in: Tacos still needs its own, so it stays ticked with a note
+    html = client.get("/plan/to-list/review").text
+    assert "Ground beef" in html and "Beans" not in html
+    onion = next(i for i in tacos.ingredients if i.name_key == "onion")
+    assert f'value="{onion.id}" checked' in html and "Also on the list" in html
+
+
+def test_review_unticks_what_this_meal_already_has_on_the_list(client, seeded):
+    from app.services import shopping
+
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n1 onion")
+    chili = make_meal(seeded, "Chili", "1 onion")
+    shopping.add_meal(seeded, chili)
+    beef = next(i for i in tacos.ingredients if i.name_key == "ground beef")
+    shopping.add_meal(seeded, tacos, only={beef.id})
+    html = client.get(f"/meals/{tacos.id}/to-list/review").text
+    onion = next(i for i in tacos.ingredients if i.name_key == "onion")
+    assert re.search(rf'value="{beef.id}"\s*>', html) and "Already on the list" in html  # Tacos' own: unticked
+    assert f'value="{onion.id}" checked' in html  # Chili's onion doesn't cover Tacos
+
+
+def test_week_add_only_ticked_ingredients(client, seeded):
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n1 cup rice")
+    e = planning.add_entry(seeded, ws, None, "meal", tacos.id)
+    beef = next(i for i in tacos.ingredients if i.name_key == "ground beef")
+    r = client.post("/plan/to-list", data={"reviewed": "1", "ing": [beef.id]})
+    assert "Added ingredients for 1 meal" in r.headers["HX-Trigger"]
+    assert _names_on_list(seeded) == ["Ground beef"]
+    seeded.refresh(e)
+    assert e.added_to_list
+
+
+def test_week_add_with_nothing_ticked_still_marks_meals_added(client, seeded):
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 cup rice")
+    e = planning.add_entry(seeded, ws, None, "meal", tacos.id)
+    r = client.post("/plan/to-list", data={"reviewed": "1"})
+    assert "Nothing to buy for 1 meal" in r.headers["HX-Trigger"]
+    assert _names_on_list(seeded) == []
+    seeded.refresh(e)
+    assert e.added_to_list
+
+
+def test_week_review_with_nothing_pending(client, seeded):
+    r = client.get("/plan/to-list/review")
+    assert r.status_code == 204 and "Nothing new to add" in r.headers["HX-Trigger"]
+
+
+def test_week_review_from_the_list_targets_the_list(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef")
+    planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
+    html = client.get("/plan/to-list/review?target=list").text
+    assert 'hx-target="#list-body"' in html

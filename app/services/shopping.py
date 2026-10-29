@@ -75,11 +75,13 @@ def add_text(session: Session, text_: str) -> ListItem | None:
     return add_item(session, name, amounts)
 
 
-def add_meal(session: Session, meal: Meal, factor: float = 1.0) -> int:
-    for ing in meal.ingredients:
+def add_meal(session: Session, meal: Meal, factor: float = 1.0, only: set[int] | None = None) -> int:
+    """Add a meal's ingredients, or just those whose ids are in `only` (the rest are already in the pantry)."""
+    ingredients = [i for i in meal.ingredients if only is None or i.id in only]
+    for ing in ingredients:
         _add(session, ing.name, ing.name_key, amt.scale(ing.amounts, factor), ing.section_id, meal)
     _commit(session)
-    return len(meal.ingredients)
+    return len(ingredients)
 
 
 def meal_items(session: Session, meal_id: int) -> list[ListItem]:
@@ -112,8 +114,26 @@ def all_staples(session: Session) -> list[Staple]:
     ).all()
 
 
+def unchecked_keys(session: Session) -> set[str]:
+    """Names (normalized) of everything still to get on the list."""
+    return set(session.scalars(select(ListItem.name_key).where(ListItem.checked.is_(False))))
+
+
+def unchecked_keys_by_meal(session: Session) -> dict[int, set[str]]:
+    """For each meal, the names (normalized) of its items still to get on the list."""
+    rows = session.execute(
+        select(ListItemSource.meal_id, ListItem.name_key)
+        .join(ListItem, ListItem.id == ListItemSource.list_item_id)
+        .where(ListItem.checked.is_(False), ListItemSource.meal_id.is_not(None))
+    ).all()
+    out: dict[int, set[str]] = {}
+    for meal_id, key in rows:
+        out.setdefault(meal_id, set()).add(key)
+    return out
+
+
 def available_staples(session: Session) -> list[Staple]:
-    on_list = set(session.scalars(select(ListItem.name_key).where(ListItem.checked.is_(False))))
+    on_list = unchecked_keys(session)
     return [s for s in all_staples(session) if s.name_key not in on_list]
 
 

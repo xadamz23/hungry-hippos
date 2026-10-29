@@ -120,16 +120,24 @@ def remove(session: Session, entry_id: int, remove_items: bool = False) -> int:
     return shopping.remove_meal_items(session, meal_id) if meal_id is not None else 0
 
 
-def add_week_to_list(session: Session, ws: date) -> int:
+def pending_entries(session: Session, ws: date) -> list[PlanEntry]:
+    """The week's meals whose ingredients haven't been added to the list yet, in plan order."""
     view = week(session, ws)
-    count = 0
-    for entry in [e for _, entries in view.days for e in entries] + view.unscheduled:
-        if entry.kind == "meal" and entry.meal is not None and not entry.added_to_list:
-            shopping.add_meal(session, entry.meal)
-            entry.added_to_list = True
-            count += 1
+    return [
+        e for e in [e for _, entries in view.days for e in entries] + view.unscheduled
+        if e.kind == "meal" and e.meal is not None and not e.added_to_list
+    ]
+
+
+def add_week_to_list(session: Session, ws: date, only: set[int] | None = None) -> int:
+    """Add the pending meals' ingredients (just the ingredient ids in `only`, when given) and mark those meals
+    as added. Returns how many meals."""
+    entries = pending_entries(session, ws)
+    for entry in entries:
+        shopping.add_meal(session, entry.meal, only=only)
+        entry.added_to_list = True
     session.commit()
-    return count
+    return len(entries)
 
 
 def mark_cooked(session: Session, entry_id: int, on: date) -> PlanEntry:

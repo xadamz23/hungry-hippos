@@ -51,7 +51,7 @@
   <div class="art"><svg><use href="#i-bag"/></svg></div>
   <h2>Your list is empty</h2>
   <p>Add this week’s meals from the Plan tab, or type an item to get started.</p>
-  <form hx-post="/plan/to-list" hx-target="#list-body"><button class="btn" type="submit">Add ingredients from the plan</button></form>
+  <button class="btn" hx-get="/plan/to-list/review?target=list" hx-target="#sheet">Add ingredients from the plan</button>
   <a class="btn ghost" href="/more/staples">Manage favorites</a>
 </div>
 {% endif %}

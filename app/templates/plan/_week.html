@@ -24,7 +24,7 @@
 {% if not view.is_empty %}
 <div class="plan-cta">
   {% if view.pending_count %}
-  <button class="btn" hx-post="/plan/to-list?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML">Add ingredients for {{ view.pending_count }} meal{{ 's' if view.pending_count != 1 }}</button>
+  <button class="btn" hx-get="/plan/to-list/review?week={{ view.start }}" hx-target="#sheet">Add ingredients for {{ view.pending_count }} meal{{ 's' if view.pending_count != 1 }}</button>
   {% else %}
   <p class="muted small" style="text-align:center">Everything planned this week is on the list.</p>
   {% endif %}

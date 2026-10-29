@@ -152,6 +152,27 @@ def test_favorite_toggle_route(client, seeded):
     assert seeded.get(Meal, meal.id).favorite
 
 
+def test_to_list_review_sheet(client, seeded):
+    meal = make_meal(seeded, "Tacos", "1 lb ground beef\n1 onion")
+    html = client.get(f"/meals/{meal.id}/to-list/review").text
+    assert "Untick anything you already have" in html and f'hx-post="/meals/{meal.id}/to-list"' in html
+    assert html.count('name="ing"') == 2
+
+
+def test_to_list_review_without_ingredients(client, seeded):
+    meal = make_meal(seeded, "Toast", "")
+    r = client.get(f"/meals/{meal.id}/to-list/review")
+    assert r.status_code == 204 and "no ingredients yet" in r.headers["HX-Trigger"]
+
+
+def test_to_list_only_ticked(client, seeded):
+    meal = make_meal(seeded, "Tacos", "1 lb ground beef\n1 onion")
+    beef = next(i for i in meal.ingredients if i.name_key == "ground beef")
+    r = client.post(f"/meals/{meal.id}/to-list", data={"reviewed": "1", "ing": [beef.id]})
+    assert "Added 1 item to the list" in r.headers["HX-Trigger"] and "close-sheet" in r.headers["HX-Trigger"]
+    assert [i.name for i in seeded.scalars(select(ListItem))] == ["Ground beef"]
+
+
 def test_to_list_route(client, seeded):
     meal = make_meal(seeded, "Tacos", "1 lb ground beef\n1 onion")
     r = client.post(f"/meals/{meal.id}/to-list")

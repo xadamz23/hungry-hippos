@@ -23,7 +23,7 @@
 
   <div class="detail-actions">
     <button class="btn ghost" hx-get="/meals/{{ meal.id }}/plan" hx-target="#sheet">+ Plan</button>
-    <button class="btn ghost" hx-post="/meals/{{ meal.id }}/to-list" hx-swap="none">Add to list</button>
+    <button class="btn ghost" hx-get="/meals/{{ meal.id }}/to-list/review" hx-target="#sheet">Add to list</button>
     <a class="btn" href="/meals/{{ meal.id }}/cook">Cook</a>
   </div>
 

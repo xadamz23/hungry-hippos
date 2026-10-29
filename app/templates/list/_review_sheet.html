@@ -1,0 +1,35 @@
+{# Pantry check before adding meals' ingredients. Everything starts ticked except what this same meal already has on
+   the list. Something on the list for another meal (or typed in) stays ticked with a note, since each meal keeps
+   its own rows and its own amount.
+   groups: [(meal name, ingredients)]; action/target/swap say where the adding goes; allow_none lets the button
+   go with nothing ticked (the week's meals still count as added). #}
+<div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="scrim" onclick="closeSheet()"></div>
+  <form class="sheet review-sheet" hx-post="{{ action }}" hx-target="{{ target }}" hx-swap="{{ swap }}" x-data="listReview"
+        data-allow-none="{{ '1' if allow_none }}">
+    <div class="grab"></div>
+    <h2 id="sheet-title" style="font-size:20px">Add to the list</h2>
+    <p class="meta">Untick anything you already have.</p>
+    <input type="hidden" name="reviewed" value="1">
+    {% for meal_name, ingredients in groups %}
+    <div class="rv-group">
+      {% if groups|length > 1 %}<h3>{{ meal_name }}</h3>{% endif %}
+      {% for ing in ingredients %}
+      {% set mine = ing.name_key in meal_keys.get(ing.meal_id, ()) %}
+      {% set elsewhere = not mine and ing.name_key in on_list_keys %}
+      <label class="check rv">
+        <input type="checkbox" name="ing" value="{{ ing.id }}" {% if not mine %}checked{% endif %}>
+        <span class="cb"><svg><use href="#i-check"/></svg></span>
+        <span class="nm">{{ ing.name|cap }}{% if mine %}<small>Already on the list</small>{% elif elsewhere %}<small class="also">Also on the list</small>{% endif %}</span>
+        {% set a = ing.amounts|amounts %}{% if a %}<span class="amt">{{ a }}</span>{% endif %}
+      </label>
+      {% else %}
+      <p class="muted small rv-none">No ingredients saved.</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div class="rv-add">
+      <button class="btn" type="submit" :disabled="!n && !allowNone" x-text="label()">Add to the list</button>
+    </div>
+  </form>
+</div>

@@ -24,7 +24,7 @@ Adam and his wife use Hungry Hippos to plan family dinners and shop for them at 
 ### Plan
 - A week runs Monday to Sunday, with arrows to move between weeks. Each entry is a meal, **Leftovers**, or **Eating out**. An entry can be on a day or under "Not on a day yet".
 - Plan sheet (from a meal): pick a day or No day, this week or next. Checkbox "Also add ingredients to the list".
-- "Add ingredients for N meals" adds every entry in the week whose ingredients aren't on the list yet.
+- "Add ingredients for N meals" opens a pantry check: every ingredient of the week's not-yet-added meals, ticked, so you untick what you already have before adding. The meal page's "Add to list" uses the same check.
 - An entry can be marked cooked, which logs to history and feeds "last made".
 - Empty week: the days show as usual, and a "Same as last week?" row above Monday offers to **copy last week** onto the same days. Choosing a meal for a day lists kid favorites least recently made first.
 

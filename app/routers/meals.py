@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -261,12 +261,29 @@ def favorite(request: Request, meal_id: int, session: Session = Depends(get_sess
     return templates.TemplateResponse(request, "meals/_star.html", {"meal": meal})
 
 
-@router.post("/{meal_id}/to-list")
-def to_list(meal_id: int, session: Session = Depends(get_session)):
+@router.get("/{meal_id}/to-list/review")
+def to_list_review(request: Request, meal_id: int, session: Session = Depends(get_session)):
+    """Pantry check before a meal's ingredients go on the list."""
     meal = get_meal(session, meal_id)
-    n = shopping.add_meal(session, meal)
+    if not meal.ingredients:
+        return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": "This meal has no ingredients yet"})})
+    return templates.TemplateResponse(
+        request,
+        "list/_review_sheet.html",
+        {"groups": [(meal.name, meal.ingredients)], "on_list_keys": shopping.unchecked_keys(session),
+         "meal_keys": shopping.unchecked_keys_by_meal(session),
+         "action": f"/meals/{meal.id}/to-list", "target": "this", "swap": "none", "allow_none": False},
+    )
+
+
+@router.post("/{meal_id}/to-list")
+def to_list(
+    meal_id: int, ing: list[int] = Form([]), reviewed: str | None = Form(None), session: Session = Depends(get_session)
+):
+    meal = get_meal(session, meal_id)
+    n = shopping.add_meal(session, meal, only=set(ing) if reviewed else None)
     msg = f"Added {n} item{'s' if n != 1 else ''} to the list" if n else "This meal has no ingredients yet"
-    return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": msg})})
+    return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": msg, "close-sheet": True})})
 
 
 @router.post("/{meal_id}/finish")
