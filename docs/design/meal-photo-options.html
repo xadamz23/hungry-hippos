@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meal photo options</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fff; --wash:#F2F5F3; --ink:#10291C; --ink-2:#4E6357; --faint:#8A9A90; --rule:#DCE3DE;
+  --go:#178245; --go-faint:#E3F2E8; --sticker:#FFD84A; --note:#FFF8D6; --warn:#B53A2C;
+  --stage:#D7DCD9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--stage);font-family:Figtree,system-ui,sans-serif;color:var(--ink);padding:36px 16px 72px;line-height:1.4}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ---------- stage ---------- */
+.intro{max-width:1660px;margin:0 auto 34px}
+.intro h1{font-size:32px;font-weight:800;letter-spacing:-.4px;line-height:1.1}
+.intro p{font-size:16px;color:#3f4c45;max-width:68ch;margin-top:10px}
+.intro p b{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:14px;color:#3f4c45}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.need{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.need.up{background:var(--sticker);color:var(--ink)}
+.need.ok{background:var(--go-faint);color:var(--go)}
+.need.api{background:#E6DDF0;color:#5B3A7A}
+
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(375px,1fr));gap:48px 32px;max-width:1660px;margin:0 auto}
+.opt{display:flex;flex-direction:column;align-items:center}
+.opt-head{width:375px;max-width:100%;margin-bottom:14px}
+.opt-head h2{font-size:21px;font-weight:800;display:flex;align-items:baseline;gap:10px;letter-spacing:-.2px}
+.opt-head h2 .letter{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font-size:15px;flex:none;transform:translateY(-2px)}
+.opt-head p{font-size:14.5px;color:#3f4c45;margin-top:6px;min-height:4.2em}
+.notes{width:375px;max-width:100%;margin-top:18px;font-size:14px;color:#3f4c45}
+.notes dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px}
+.notes dt{font-weight:700;color:var(--ink)}
+.notes .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.reset{margin-top:12px;font-size:14px;font-weight:700;color:var(--go);padding:4px 0}
+
+/* ---------- phone ---------- */
+.phone{width:375px;height:760px;border-radius:44px;background:var(--paper);position:relative;overflow:hidden;
+  box-shadow:0 0 0 10px #1a1d1b,0 30px 60px -20px rgba(0,30,15,.45);flex:none}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:99px;background:#1a1d1b;z-index:60}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:110px}
+.screen::-webkit-scrollbar{display:none}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:78px;background:var(--paper);border-top:1px solid var(--rule);display:flex;padding:8px 6px 16px;z-index:30}
+.tabs span{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.tabs .pill{width:58px;height:32px;border-radius:99px;display:grid;place-items:center}
+.tabs span.on{color:var(--go)}
+.tabs span.on .pill{background:var(--go-faint)}
+.tabs svg{width:24px;height:24px}
+
+/* ---------- app pieces (mirrors app/static/css/app.css) ---------- */
+.top{padding:54px 18px 12px;border-bottom:1px solid var(--rule);background:var(--paper)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top h1{font-size:26px;font-weight:800;letter-spacing:-.2px;line-height:1.15;margin-top:10px}
+.link{font-size:15px;font-weight:700;color:var(--go)}
+.back{display:inline-flex;align-items:center;gap:2px;font-size:15px;font-weight:700;color:var(--ink-2)}
+.back svg{width:20px;height:20px}
+.body{padding:14px 18px}
+.seg{display:flex;background:var(--wash);border-radius:10px;padding:4px;margin-top:12px}
+.seg span{flex:1;text-align:center;font-size:14.5px;font-weight:700;padding:8px;border-radius:7px;color:var(--ink-2)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.field{margin-bottom:14px}
+.field>.lbl{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.input{display:block;width:100%;border:2px solid var(--ink);border-radius:10px;padding:11px 13px;font-size:16px;background:#fff}
+.input.ta{min-height:96px;color:#90a097}
+.input.ta.sm{min-height:60px}
+.input::placeholder{color:#90a097}
+.hint{font-size:12.5px;color:var(--ink-2);margin-top:5px}
+.add{display:flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:#fff}
+.add input{flex:1;min-width:0;border:0;padding:12px 14px;font-size:17px;outline:none}
+.add .go{background:var(--ink);color:#fff;font-weight:700;font-size:15px;padding:0 18px;display:grid;place-items:center}
+.add:focus-within{outline:3px solid var(--go);outline-offset:2px}
+.ing{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:16px;min-height:44px}
+.ing .amt{color:var(--ink-2);font-size:14.5px;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:14px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--wash);color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:10px;background:var(--go);color:#fff;font-weight:700;font-size:16px;width:100%}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--ink);padding:12px}
+.btn svg{width:20px;height:20px}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;margin:10px 0 14px}
+.cb{width:28px;height:28px;border:2.5px solid var(--ink);border-radius:50%;flex:none;background:#fff}
+
+/* sheets live inside the phone */
+.sheet-wrap{position:absolute;inset:0;z-index:50;display:none}
+.sheet-wrap.open{display:block}
+.scrim{position:absolute;inset:0;background:rgba(16,41,28,.5);animation:fade .15s ease-out}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:10px 18px 34px;animation:rise .2s ease-out;max-height:88%;overflow-y:auto}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--rule);margin:0 auto 12px}
+.sheet h3{font-size:20px;font-weight:800}
+.sheet .sub{font-size:14px;color:var(--ink-2);margin-top:2px}
+@keyframes rise{from{transform:translateY(40px);opacity:0}}
+@keyframes fade{from{opacity:0}}
+
+/* the three ways in */
+.ways{margin-top:12px;border-top:1px solid var(--rule)}
+.way{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:13px 2px;border-bottom:1px solid var(--rule);font-size:17px;font-weight:600}
+.way .ic{width:40px;height:40px;border-radius:10px;background:var(--wash);display:grid;place-items:center;flex:none;color:var(--ink)}
+.way .ic svg{width:22px;height:22px}
+.way small{display:block;font-size:13px;font-weight:500;color:var(--ink-2)}
+.linkbox{margin-top:14px;display:none}
+.linkbox.open{display:block}
+
+/* ---------- the photo ---------- */
+.pic{display:block;width:100%;height:100%}
+.ph-grad{background:linear-gradient(135deg,#F2B544,#D9622B)}
+
+/* A: banner */
+.banner{position:relative;height:150px;overflow:hidden}
+.banner .pic,.banner .ph-grad{position:absolute;inset:0}
+.banner .pill,.hero .pill{position:absolute;background:rgba(255,255,255,.94);padding:7px 12px;border-radius:99px;color:var(--ink);font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:6px;z-index:2}
+.banner .pill svg,.hero .pill svg{width:18px;height:18px}
+.banner .p-cancel{top:52px;left:14px;padding-left:8px}
+.banner .p-save{top:52px;right:14px;color:var(--go)}
+.banner .p-photo{right:14px;bottom:12px}
+.banner .p-photo.big{right:auto;left:50%;transform:translateX(-50%);bottom:22px;padding:10px 16px;font-size:16px}
+.a-head{padding:14px 18px 12px;border-bottom:1px solid var(--rule)}
+.a-head h1{font-size:26px;font-weight:800;letter-spacing:-.2px}
+
+/* B: thumbnail by the name */
+.namerow{display:flex;gap:10px;align-items:stretch}
+.tile{width:72px;flex:none;border-radius:10px;border:2px dashed #9fb0a6;background:var(--wash);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--ink-2);font-size:12.5px;font-weight:700;position:relative;overflow:hidden}
+.tile svg.i{width:24px;height:24px}
+.tile.filled{border:0}
+.tile .pic{position:absolute;inset:0}
+.tile .badge{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tile .badge svg{width:14px;height:14px}
+.namerow .input{align-self:stretch}
+
+/* C: a plain field */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.trio button{border:2px solid var(--rule);border-radius:10px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:14px;font-weight:700;color:var(--ink)}
+.trio button svg{width:24px;height:24px}
+.trio button[aria-pressed="true"]{border-color:var(--ink);background:var(--wash)}
+.preview{margin-top:10px;border-radius:10px;overflow:hidden;position:relative;height:150px;display:none}
+.preview.open{display:block}
+.preview .rm{position:absolute;right:8px;top:8px;background:rgba(255,255,255,.94);border-radius:99px;padding:5px 11px;font-size:14px;font-weight:700;color:var(--warn)}
+.c-link{display:none;margin-top:10px}
+.c-link.open{display:block}
+
+/* D: meal page after saving */
+.hero{position:relative;height:150px;overflow:hidden}
+.hero .pic,.hero .ph-grad{position:absolute;inset:0}
+.hero .p-back{top:52px;left:14px;padding-left:8px}
+.hero .p-edit{top:52px;right:14px}
+.hero .p-photo{left:14px;bottom:12px}
+.toast{position:absolute;left:50%;bottom:158px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:99px;font-size:14.5px;font-weight:700;white-space:nowrap;z-index:40;display:none}
+.toast.show{display:block;animation:rise .2s ease-out}
+.d-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.d-title h1{font-size:26px;font-weight:800;letter-spacing:-.2px;line-height:1.15}
+.meta{font-size:14px;color:var(--ink-2);margin-top:4px}
+.star-btn{width:48px;height:48px;border-radius:50%;border:2px solid var(--rule);display:grid;place-items:center;flex:none}
+.star-btn svg{width:24px;height:24px;fill:none;stroke:var(--ink-2);stroke-width:1.8}
+.sec-title{font-size:17px;font-weight:700;margin:18px 0 4px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.d-actions{position:absolute;left:0;right:0;bottom:78px;background:#fff;border-top:1px solid var(--rule);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;z-index:20}
+.d-actions .btn{padding:11px 6px;font-size:15px}
+.finds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.finds button{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative}
+.finds button .pic{position:absolute;inset:0}
+.finds-label{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px}
+.finds-label b{font-size:15px}
+.finds-label span{font-size:12.5px;color:var(--ink-2)}
+.or{display:flex;gap:8px;margin-top:14px}
+.or button{flex:1;border:2px solid var(--rule);border-radius:10px;padding:10px 4px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14.5px;font-weight:700}
+.or button svg{width:20px;height:20px}
+
+@media (prefers-reduced-motion:reduce){.sheet,.scrim,.toast.show{animation:none}}
+@media (max-width:440px){
+  body{padding:24px 16px 56px}
+  .options{grid-template-columns:minmax(0,1fr)}
+  .phone{zoom:.9}
+  .intro h1{font-size:27px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></symbol>
+    <symbol id="i-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.8l-5.4 2.9 1.2-5.9L3.4 9.7l6-.7z" stroke-linejoin="round"/></symbol>
+    <symbol id="t-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor"/></symbol>
+    <symbol id="t-plan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="t-meals" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12h16a8 8 0 0 1-16 0zM8 8c0-2 2-2 2-4M13 8c0-2 2-2 2-4"/></symbol>
+    <symbol id="t-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></symbol>
+
+    <!-- A stand-in "photo": turkey chili in a bowl on a wooden table -->
+    <radialGradient id="g-chili" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#C2441F"/><stop offset=".7" stop-color="#93290F"/><stop offset="1" stop-color="#5E1A0A"/></radialGradient>
+    <linearGradient id="g-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7A4C2C"/><stop offset="1" stop-color="#3B2213"/></linearGradient>
+    <radialGradient id="g-bowl" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FBF7EE"/><stop offset="1" stop-color="#D8CDB6"/></radialGradient>
+    <radialGradient id="g-light" cx="30%" cy="20%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
+    <g id="chili">
+      <rect width="400" height="300" fill="url(#g-wood)"/>
+      <g stroke="#2E1A0E" stroke-opacity=".35" stroke-width="2" fill="none">
+        <path d="M0 40 C120 30 260 52 400 38"/><path d="M0 96 C140 88 250 110 400 92"/><path d="M0 214 C120 206 280 226 400 210"/><path d="M0 268 C150 262 260 280 400 266"/>
+      </g>
+      <path d="M300 0 L400 0 L400 120 Q350 70 300 0z" fill="#2E7D74"/>
+      <path d="M318 0 L400 0 L400 92 Q362 52 318 0z" fill="#3A9488"/>
+      <ellipse cx="200" cy="168" rx="152" ry="118" fill="#1E120A" opacity=".45"/>
+      <ellipse cx="196" cy="156" rx="148" ry="114" fill="url(#g-bowl)"/>
+      <ellipse cx="196" cy="152" rx="122" ry="92" fill="url(#g-chili)"/>
+      <g fill="#4A1408">
+        <ellipse cx="140" cy="130" rx="9" ry="6" transform="rotate(-20 140 130)"/><ellipse cx="236" cy="190" rx="9" ry="6" transform="rotate(25 236 190)"/>
+        <ellipse cx="178" cy="196" rx="8" ry="5.5"/><ellipse cx="262" cy="128" rx="8.5" ry="6" transform="rotate(40 262 128)"/>
+        <ellipse cx="118" cy="172" rx="8" ry="5.5" transform="rotate(10 118 172)"/><ellipse cx="290" cy="166" rx="8" ry="5" transform="rotate(-30 290 166)"/>
+      </g>
+      <g fill="#A8673A">
+        <circle cx="160" cy="160" r="6"/><circle cx="214" cy="118" r="5"/><circle cx="254" cy="162" r="6"/><circle cx="132" cy="200" r="5"/><circle cx="200" cy="214" r="5"/>
+      </g>
+      <path d="M176 126 C190 108 228 110 236 130 C246 152 214 166 194 158 C172 152 166 140 176 126z" fill="#F6F2E6"/>
+      <path d="M186 128 C196 118 216 120 222 132" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>
+      <g stroke="#F2B630" stroke-width="3.5" stroke-linecap="round">
+        <path d="M120 140 l14 6"/><path d="M146 108 l10 -8"/><path d="M262 108 l14 4"/><path d="M276 196 l12 -6"/><path d="M150 226 l14 2"/><path d="M226 222 l10 8"/><path d="M286 140 l6 12"/><path d="M110 156 l4 12"/>
+      </g>
+      <g fill="#4FA34A">
+        <rect x="200" y="140" width="7" height="5" rx="1.5" transform="rotate(20 200 140)"/><rect x="218" y="146" width="7" height="5" rx="1.5"/><rect x="190" y="112" width="6" height="5" rx="1.5" transform="rotate(-30 190 112)"/>
+        <rect x="240" y="122" width="7" height="5" rx="1.5" transform="rotate(40 240 122)"/><rect x="166" y="146" width="6" height="5" rx="1.5"/>
+      </g>
+      <rect width="400" height="300" fill="url(#g-light)"/>
+    </g>
+  </defs>
+</svg>
+
+<header class="intro">
+  <h1>Adding a photo to a meal you type in</h1>
+  <p>Four ways to give a hand-typed meal a photo, each shown on the real New meal form. Tap the controls on each phone to try it out. Meals imported from a link keep getting their photo automatically.</p>
+  <div class="legend">
+    <span><span class="need ok">Links only</span> works with today’s <code>image_url</code> column</span>
+    <span><span class="need up">Needs uploads</span> camera or library photos have to be stored on the server</span>
+    <span><span class="need api">Needs image search</span> calls an outside photo search service</span>
+  </div>
+</header>
+
+<main class="options">
+
+  <!-- ================= A ================= -->
+  <section class="opt" id="opt-a" aria-labelledby="a-h">
+    <div class="opt-head">
+      <h2 id="a-h"><span class="letter">A</span>Photo banner at the top</h2>
+      <p>The form opens with the same banner the meal page uses, so you see the meal as it will look.</p>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="banner" data-a-banner>
+          <div class="ph-grad" data-empty></div>
+          <svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" data-full hidden><use href="#chili"/></svg>
+          <span class="pill p-cancel"><svg><use href="#i-back"/></svg>Cancel</span>
+          <span class="pill p-save">Save</span>
+          <button class="pill p-photo big" data-open="a"><svg><use href="#i-cam"/></svg><span data-label>Add photo</span></button>
+        </div>
+        <div class="a-head">
+          <h1>New meal</h1>
+          <div class="seg"><span class="on">Type it in</span><span>From a link</span></div>
+        </div>
+        <div class="body">
+          <div class="field"><span class="lbl">Name</span><input class="input" value="Turkey chili" aria-label="Name"></div>
+          <div class="field">
+            <span class="lbl">Ingredients</span>
+            <div class="add"><input placeholder="Add an ingredient" aria-label="Add an ingredient"><span class="go">Add</span></div>
+            <div style="margin-top:6px">
+              <div class="ing"><span class="amt">1 lb</span>Ground turkey</div>
+              <div class="ing"><span class="amt">2 cans</span>Kidney beans</div>
+              <div class="ing"><span class="amt">1</span>Yellow onion</div>
+            </div>
+          </div>
+          <div class="field"><span class="lbl">Steps</span><div class="input ta">Optional. One step per line.</div></div>
+        </div>
+      </div>
+      <div class="sheet-wrap" data-sheet="a" role="dialog" aria-modal="true" aria-label="Add a photo">
+        <div class="scrim" data-close></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h3>Add a photo</h3>
+          <div class="ways">
+            <button class="way" data-pick="a"><span class="ic"><svg><use href="#i-cam"/></svg></span>Take a photo</button>
+            <button class="way" data-pick="a"><span class="ic"><svg><use href="#i-img"/></svg></span>Choose from your photos</button>
+            <button class="way" data-showlink><span class="ic"><svg><use href="#i-link"/></svg></span><span>Use a link<small>Paste the address of a picture online</small></span></button>
+          </div>
+          <div class="linkbox">
+            <div class="add"><input placeholder="https://…/chili.jpg" aria-label="Picture link"><button class="go" data-pick="a">Use</button></div>
+          </div>
+        </div>
+      </div>
+      <nav class="tabs" aria-hidden="true"><span><span class="pill"><svg><use href="#t-list"/></svg></span>List</span><span><span class="pill"><svg><use href="#t-plan"/></svg></span>Plan</span><span class="on"><span class="pill"><svg><use href="#t-meals"/></svg></span>Meals</span><span><span class="pill"><svg><use href="#t-more"/></svg></span>More</span></nav>
+    </div>
+    <div class="notes">
+      <dl>
+        <dt>Good</dt><dd>Hard to miss. The form already looks like the meal page, so there’s nothing new to learn.</dd>
+        <dt>Cost</dt><dd>Cancel and Save move into the banner. The form gets 150px taller even when you skip the photo.</dd>
+      </dl>
+      <div class="tags"><span class="need up">Needs uploads</span><span class="need ok">Link works alone</span></div>
+      <button class="reset" data-reset="a">Start over</button>
+    </div>
+  </section>
+
+  <!-- ================= B ================= -->
+  <section class="opt" id="opt-b" aria-labelledby="b-h">
+    <div class="opt-head">
+      <h2 id="b-h"><span class="letter">B</span>Small photo next to the name</h2>
+      <p>A square photo spot sits beside Name, the same place Review import shows the recipe photo.</p>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="top">
+          <div class="row"><span class="back"><svg><use href="#i-back"/></svg>Cancel</span><span class="link">Save</span></div>
+          <h1>New meal</h1>
+          <div class="seg"><span class="on">Type it in</span><span>From a link</span></div>
+        </div>
+        <div class="body">
+          <div class="field">
+            <span class="lbl">Name</span>
+            <div class="namerow">
+              <button class="tile" data-open="b" data-b-tile aria-label="Add photo">
+                <svg class="i" data-empty><use href="#i-cam"/></svg><span data-empty>Photo</span>
+                <svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" data-full hidden><use href="#chili"/></svg>
+                <span class="badge" data-full hidden><svg><use href="#i-pen"/></svg></span>
+              </button>
+              <input class="input" value="Turkey chili" aria-label="Name">
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Ingredients</span>
+            <div class="add"><input placeholder="Add an ingredient" aria-label="Add an ingredient"><span class="go">Add</span></div>
+            <p class="hint">Pick a favorite or type your own. Tap one to set the amount.</p>
+            <div style="margin-top:6px">
+              <div class="ing"><span class="amt">1 lb</span>Ground turkey</div>
+              <div class="ing"><span class="amt">2 cans</span>Kidney beans</div>
+              <div class="ing"><span class="amt">1</span>Yellow onion</div>
+            </div>
+          </div>
+          <div class="field"><span class="lbl">Steps</span><div class="input ta">Optional. One step per line.</div></div>
+        </div>
+      </div>
+      <div class="sheet-wrap" data-sheet="b" role="dialog" aria-modal="true" aria-label="Photo">
+        <div class="scrim" data-close></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h3>Photo</h3>
+          <div class="ways">
+            <button class="way" data-pick="b"><span class="ic"><svg><use href="#i-cam"/></svg></span>Take a photo</button>
+            <button class="way" data-pick="b"><span class="ic"><svg><use href="#i-img"/></svg></span>Choose from your photos</button>
+            <button class="way" data-showlink><span class="ic"><svg><use href="#i-link"/></svg></span><span>Use a link<small>Paste the address of a picture online</small></span></button>
+          </div>
+          <div class="linkbox">
+            <div class="add"><input placeholder="https://…/chili.jpg" aria-label="Picture link"><button class="go" data-pick="b">Use</button></div>
+          </div>
+          <button class="way" data-b-remove hidden style="color:var(--warn);border:0"><span class="ic" style="background:#fdecea;color:var(--warn)"><svg><use href="#i-img"/></svg></span>Remove photo</button>
+        </div>
+      </div>
+      <nav class="tabs" aria-hidden="true"><span><span class="pill"><svg><use href="#t-list"/></svg></span>List</span><span><span class="pill"><svg><use href="#t-plan"/></svg></span>Plan</span><span class="on"><span class="pill"><svg><use href="#t-meals"/></svg></span>Meals</span><span><span class="pill"><svg><use href="#t-more"/></svg></span>More</span></nav>
+    </div>
+    <div class="notes">
+      <dl>
+        <dt>Good</dt><dd>Takes almost no room and matches Review import. The header stays the same.</dd>
+        <dt>Cost</dt><dd>The photo is small, so you can’t judge how it will crop in the banner. Easy to overlook.</dd>
+      </dl>
+      <div class="tags"><span class="need up">Needs uploads</span><span class="need ok">Link works alone</span></div>
+      <button class="reset" data-reset="b">Start over</button>
+    </div>
+  </section>
+
+  <!-- ================= C ================= -->
+  <section class="opt" id="opt-c" aria-labelledby="c-h">
+    <div class="opt-head">
+      <h2 id="c-h"><span class="letter">C</span>Photo as its own field</h2>
+      <p>A Photo field after Tags, with the three ways in on view. No sheet to open. (The phone is scrolled down to it.)</p>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen" data-c-screen>
+        <div class="top">
+          <div class="row"><span class="back"><svg><use href="#i-back"/></svg>Cancel</span><span class="link">Save</span></div>
+          <h1>New meal</h1>
+          <div class="seg"><span class="on">Type it in</span><span>From a link</span></div>
+        </div>
+        <div class="body">
+          <div class="field"><span class="lbl">Name</span><input class="input" value="Turkey chili" aria-label="Name"></div>
+          <div class="field">
+            <span class="lbl">Ingredients</span>
+            <div class="add"><input placeholder="Add an ingredient" aria-label="Add an ingredient"><span class="go">Add</span></div>
+            <div style="margin-top:6px">
+              <div class="ing"><span class="amt">1 lb</span>Ground turkey</div>
+              <div class="ing"><span class="amt">2 cans</span>Kidney beans</div>
+            </div>
+          </div>
+          <div class="field"><span class="lbl">Steps</span><div class="input ta">Optional. One step per line.</div></div>
+          <div class="field"><span class="lbl">Notes</span><div class="input ta sm">Kids want the cheese on the side</div></div>
+          <div class="field">
+            <span class="lbl">Tags</span><input class="input" placeholder="Crockpot, 30 min" aria-label="Tags">
+            <div class="chips"><span class="chip">+ Crockpot</span><span class="chip">+ 30 min</span><span class="chip">+ Freezer</span></div>
+          </div>
+          <div class="field" data-c-field>
+            <span class="lbl">Photo</span>
+            <div class="trio" data-c-trio>
+              <button data-c="cam" aria-pressed="false"><svg><use href="#i-cam"/></svg>Camera</button>
+              <button data-c="lib" aria-pressed="false"><svg><use href="#i-img"/></svg>Library</button>
+              <button data-c="link" aria-pressed="false"><svg><use href="#i-link"/></svg>Link</button>
+            </div>
+            <div class="c-link">
+              <input class="input" placeholder="Paste a picture link" aria-label="Picture link" data-c-input>
+              <p class="hint">The picture shows up as soon as the link works.</p>
+            </div>
+            <div class="preview">
+              <svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><use href="#chili"/></svg>
+              <button class="rm" data-c-remove>Remove</button>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field"><span class="lbl">Serves</span><input class="input" placeholder="4" aria-label="Serves"></div>
+            <div class="field"><span class="lbl">Minutes</span><input class="input" placeholder="30" aria-label="Minutes"></div>
+          </div>
+          <div class="check"><span class="cb"></span>Kids like it</div>
+          <div class="btn">Save meal</div>
+        </div>
+      </div>
+      <nav class="tabs" aria-hidden="true"><span><span class="pill"><svg><use href="#t-list"/></svg></span>List</span><span><span class="pill"><svg><use href="#t-plan"/></svg></span>Plan</span><span class="on"><span class="pill"><svg><use href="#t-meals"/></svg></span>Meals</span><span><span class="pill"><svg><use href="#t-more"/></svg></span>More</span></nav>
+    </div>
+    <div class="notes">
+      <dl>
+        <dt>Good</dt><dd>Plain and predictable, like every other field. One tap to the camera. The preview is banner-shaped, so you see the crop.</dd>
+        <dt>Cost</dt><dd>It sits below the fold, so a photo feels optional. That might be the right message.</dd>
+      </dl>
+      <div class="tags"><span class="need up">Needs uploads</span><span class="need ok">Link works alone</span></div>
+      <button class="reset" data-reset="c">Start over</button>
+    </div>
+  </section>
+
+  <!-- ================= D ================= -->
+  <section class="opt" id="opt-d" aria-labelledby="d-h">
+    <div class="opt-head">
+      <h2 id="d-h"><span class="letter">D</span>Add it later, on the meal page</h2>
+      <p>The form doesn’t change. After saving, a meal without a photo shows “Add photo” on its banner, with photos found from its name.</p>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="hero" data-d-hero>
+          <div class="ph-grad" data-empty></div>
+          <svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" data-full hidden><use href="#chili"/></svg>
+          <span class="pill p-back"><svg><use href="#i-back"/></svg>Meals</span>
+          <span class="pill p-edit">Edit</span>
+          <button class="pill p-photo" data-open="d" data-empty><svg><use href="#i-cam"/></svg>Add photo</button>
+        </div>
+        <div class="body">
+          <div class="d-title">
+            <div><h1>Turkey chili</h1><p class="meta">Never made yet. Serves 6. 45 min.</p></div>
+            <span class="star-btn"><svg><use href="#i-star"/></svg></span>
+          </div>
+          <p class="sec-title">Ingredients</p>
+          <div class="ing"><span class="dot" style="background:#B53A2C"></span><span class="amt">1 lb</span>Ground turkey</div>
+          <div class="ing"><span class="dot" style="background:#C4612A"></span><span class="amt">2 cans</span>Kidney beans</div>
+          <div class="ing"><span class="dot" style="background:#2F8F3E"></span><span class="amt">1</span>Yellow onion</div>
+          <div class="ing"><span class="dot" style="background:#C4612A"></span><span class="amt">1 can</span>Crushed tomatoes</div>
+          <div class="ing"><span class="dot" style="background:#2C66B0"></span>Shredded cheddar</div>
+        </div>
+      </div>
+      <div class="d-actions"><span class="btn ghost">+ Plan</span><span class="btn ghost">Add to list</span><span class="btn">Cook</span></div>
+      <div class="toast" data-d-toast>Photo added</div>
+      <div class="sheet-wrap" data-sheet="d" role="dialog" aria-modal="true" aria-label="Add a photo">
+        <div class="scrim" data-close></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h3>Add a photo</h3>
+          <div class="finds-label"><b>Photos of turkey chili</b><span>Found online</span></div>
+          <div class="finds">
+            <button data-pick="d" aria-label="Photo 1"><svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice"><use href="#chili"/></svg></button>
+            <button data-pick="d" aria-label="Photo 2"><svg class="pic" viewBox="60 20 280 260" preserveAspectRatio="xMidYMid slice" style="filter:hue-rotate(-12deg) saturate(1.2)"><use href="#chili"/></svg></button>
+            <button data-pick="d" aria-label="Photo 3"><svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style="filter:brightness(1.12) sepia(.25);transform:scaleX(-1)"><use href="#chili"/></svg></button>
+            <button data-pick="d" aria-label="Photo 4"><svg class="pic" viewBox="100 60 220 200" preserveAspectRatio="xMidYMid slice" style="filter:hue-rotate(14deg)"><use href="#chili"/></svg></button>
+            <button data-pick="d" aria-label="Photo 5"><svg class="pic" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style="filter:contrast(1.15) brightness(.9);transform:rotate(180deg)"><use href="#chili"/></svg></button>
+            <button data-pick="d" aria-label="Photo 6"><svg class="pic" viewBox="40 40 320 240" preserveAspectRatio="xMidYMid slice" style="filter:saturate(.8) brightness(1.08)"><use href="#chili"/></svg></button>
+          </div>
+          <div class="or">
+            <button data-pick="d"><svg><use href="#i-cam"/></svg>Camera</button>
+            <button data-pick="d"><svg><use href="#i-img"/></svg>Library</button>
+            <button data-showlink><svg><use href="#i-link"/></svg>Link</button>
+          </div>
+          <div class="linkbox">
+            <div class="add"><input placeholder="https://…/chili.jpg" aria-label="Picture link"><button class="go" data-pick="d">Use</button></div>
+          </div>
+        </div>
+      </div>
+      <nav class="tabs" aria-hidden="true"><span><span class="pill"><svg><use href="#t-list"/></svg></span>List</span><span><span class="pill"><svg><use href="#t-plan"/></svg></span>Plan</span><span class="on"><span class="pill"><svg><use href="#t-meals"/></svg></span>Meals</span><span><span class="pill"><svg><use href="#t-more"/></svg></span>More</span></nav>
+    </div>
+    <div class="notes">
+      <dl>
+        <dt>Good</dt><dd>Typing in a meal stays quick. Older meals without a photo get the same button. Picking a found photo means no typing at all.</dd>
+        <dt>Cost</dt><dd>Searching needs a photo service and an API key. Without search, it’s the same three ways in, just in a different place.</dd>
+      </dl>
+      <div class="tags"><span class="need api">Needs image search</span><span class="need up">Uploads optional</span></div>
+      <button class="reset" data-reset="d">Start over</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const sheet = k => $(`[data-sheet="${k}"]`);
+  let lastFocus = null;
+
+  function open(k) {
+    const s = sheet(k);
+    lastFocus = document.activeElement;
+    $$('.linkbox', s).forEach(b => b.classList.remove('open'));
+    s.classList.add('open');
+    (s.querySelector('.way, .finds button') || s).focus();
+  }
+  function close(k) {
+    sheet(k).classList.remove('open');
+    if (lastFocus) lastFocus.focus();
+  }
+  function setFull(root, full) {
+    // SVG elements have no .hidden property, so set the attribute.
+    $$('[data-empty]', root).forEach(e => e.toggleAttribute('hidden', full));
+    $$('[data-full]', root).forEach(e => e.toggleAttribute('hidden', !full));
+  }
+
+  const apply = {
+    a(full) {
+      const b = $('[data-a-banner]');
+      setFull(b, full);
+      $('[data-label]', b).textContent = full ? 'Change photo' : 'Add photo';
+      $('.p-photo', b).classList.toggle('big', !full);
+    },
+    b(full) {
+      const t = $('[data-b-tile]');
+      setFull(t, full);
+      t.classList.toggle('filled', full);
+      t.setAttribute('aria-label', full ? 'Change photo' : 'Add photo');
+      $('[data-b-remove]').hidden = !full;
+    },
+    d(full) {
+      setFull($('[data-d-hero]'), full);
+      const t = $('[data-d-toast]');
+      t.classList.toggle('show', full);
+      if (full) setTimeout(() => t.classList.remove('show'), 1800);
+    },
+  };
+
+  $$('[data-open]').forEach(b => b.addEventListener('click', () => open(b.dataset.open)));
+  $$('[data-sheet]').forEach(s => {
+    const k = s.dataset.sheet;
+    $$('[data-close]', s).forEach(c => c.addEventListener('click', () => close(k)));
+    s.addEventListener('keydown', e => { if (e.key === 'Escape') close(k); });
+    $$('[data-showlink]', s).forEach(b => b.addEventListener('click', () => {
+      const box = $('.linkbox', s);
+      box.classList.add('open');
+      $('input', box).focus();
+    }));
+  });
+  $$('[data-pick]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.pick;
+    close(k);
+    apply[k](true);
+  }));
+  $('[data-b-remove]').addEventListener('click', () => { close('b'); apply.b(false); });
+
+  // C: the field's own buttons
+  const trio = $$('[data-c-trio] button');
+  const cLink = $('.c-link'), prev = $('.preview');
+  function cState(which) {
+    trio.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c === which)));
+    cLink.classList.toggle('open', which === 'link');
+    prev.classList.toggle('open', which === 'cam' || which === 'lib' || which === 'linked');
+    $('[data-c-trio]').hidden = which === 'cam' || which === 'lib' || which === 'linked';
+  }
+  trio.forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.c === 'link') { cState('link'); $('[data-c-input]').focus(); }
+    else cState(b.dataset.c);
+  }));
+  $('[data-c-input]').addEventListener('input', e => { if (e.target.value.trim().length > 6) { cLink.classList.remove('open'); cState('linked'); } });
+  $('[data-c-remove]').addEventListener('click', () => { $('[data-c-input]').value = ''; cState(null); trio[0].focus(); });
+  function scrollC() {
+    const sc = $('[data-c-screen]'), f = $('[data-c-field]');
+    sc.scrollTop = f.offsetTop - 260;
+  }
+
+  const reset = {
+    a: () => apply.a(false), b: () => apply.b(false), d: () => apply.d(false),
+    c: () => { $('[data-c-input]').value = ''; cState(null); scrollC(); },
+  };
+  $$('[data-reset]').forEach(b => b.addEventListener('click', () => reset[b.dataset.reset]()));
+  addEventListener('load', scrollC);
+})();
+</script>
+</body>
+</html>

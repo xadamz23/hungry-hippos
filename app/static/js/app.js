@@ -287,6 +287,89 @@ document.addEventListener("alpine:init", () => {
   });
 });
 
+// Photos are shrunk before upload: a phone camera's 4-12 MB picture becomes a few hundred KB, and HEIC becomes JPEG.
+const PHOTO_MAX_SIDE = 1600;
+
+async function shrinkPhoto(file) {
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+  if (!blob) throw new Error("Couldn't shrink the photo");
+  return new File([blob], "photo.jpg", { type: "image/jpeg" });
+}
+
+document.addEventListener("alpine:init", () => {
+  // Meal form banner: take, pick or link a photo. A taken or picked photo goes in the "photo" file input and
+  // image_url is sent empty; a link goes in image_url. Removing clears both.
+  Alpine.data("mealPhoto", () => ({
+    url: "",
+    file: false,
+    sheet: false,
+    linking: false,
+    link: "",
+    linkError: "",
+    init() {
+      this.url = this.$el.dataset.url || "";
+    },
+    background() {
+      return this.url ? `center / cover no-repeat url(${JSON.stringify(this.url)})` : this.$el.dataset.bg;
+    },
+    openSheet() {
+      this.sheet = true;
+      this.linking = false;
+      this.linkError = "";
+      this.$nextTick(() => this.$refs.sheet.focus());
+    },
+    setFile(file) {
+      const files = new DataTransfer();
+      if (file) files.items.add(file);
+      this.$refs.photo.files = files.files;
+      this.file = !!file;
+      if (this.url.startsWith("blob:")) URL.revokeObjectURL(this.url);
+    },
+    async picked(e) {
+      const original = e.target.files[0];
+      e.target.value = "";
+      if (!original) return;
+      this.sheet = false;
+      let file;
+      try {
+        file = await shrinkPhoto(original);
+      } catch {
+        toast("Couldn't open that photo. Try a different one.");
+        return;
+      }
+      this.setFile(file);
+      this.url = URL.createObjectURL(file);
+    },
+    showLink() {
+      this.linking = true;
+      this.$nextTick(() => this.$refs.link.focus());
+    },
+    useLink() {
+      const link = this.link.trim();
+      if (!/^https?:\/\//i.test(link)) {
+        this.linkError = "Paste a link that starts with http:// or https://";
+        return;
+      }
+      this.setFile(null);
+      this.url = link;
+      this.link = "";
+      this.sheet = false;
+    },
+    remove() {
+      this.setFile(null);
+      this.url = "";
+      this.sheet = false;
+    },
+  }));
+});
+
 window.addTag = (btn) => {
   const input = document.getElementById("tags");
   const names = input.value.split(",").map((t) => t.trim()).filter(Boolean);

@@ -1,13 +1,15 @@
 import json
+import re
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from starlette.datastructures import UploadFile
 
 from app.db import get_session
-from app.models import Meal, Section
+from app.models import Meal, MealPhoto, Section
 from app.services import meals as meal_svc
 from app.services import shopping
 from app.services.planning import week_start
@@ -77,6 +79,31 @@ def _http_url(value) -> str:
     return url if url.lower().startswith(("http://", "https://")) else ""
 
 
+OWN_PHOTO = re.compile(r"/meals/photos/\d+")
+
+
+def _image_url(value) -> str:
+    """A web link, or the address of a photo uploaded here."""
+    url = str(value or "").strip()
+    return url if OWN_PHOTO.fullmatch(url) else _http_url(url)
+
+
+async def _read_photo(form) -> tuple[bytes, str] | str | None:
+    """The uploaded photo as (data, content type), an error message, or None when no photo was sent."""
+    upload = form.get("photo")
+    if not isinstance(upload, UploadFile):
+        return None
+    data = await upload.read(meal_svc.PHOTO_MAX_BYTES + 1)
+    if not data:
+        return None
+    if len(data) > meal_svc.PHOTO_MAX_BYTES:
+        return "That photo is too big. Pick one under 10 MB."
+    content_type = meal_svc.sniff_image(data)
+    if content_type is None:
+        return "That file isn't a photo we can use. Pick a JPEG, PNG or WebP."
+    return data, content_type
+
+
 def _form_kwargs(form) -> dict:
     # section_<i> overrides line i's section; when guess_<i> is sent too, only a changed value counts
     overrides = {}
@@ -97,7 +124,7 @@ def _form_kwargs(form) -> dict:
         total_minutes=_int_or_none(form.get("total_minutes")),
         favorite=bool(form.get("favorite")),
         source_url=_http_url(form.get("source_url")) if "source_url" in form else None,
-        image_url=_http_url(form.get("image_url")) if "image_url" in form else None,
+        image_url=_image_url(form.get("image_url")) if "image_url" in form else None,
         section_overrides=overrides,
     )
 
@@ -125,10 +152,26 @@ def new(request: Request, mode: str = "manual", session: Session = Depends(get_s
 async def create(request: Request, session: Session = Depends(get_session)):
     form = await request.form()
     kwargs = _form_kwargs(form)
+    photo = await _read_photo(form)
+    error = photo if isinstance(photo, str) else None
     if not kwargs["name"].strip():
-        return _form_page(request, session, values=_retry_values(form, kwargs), error="Give the meal a name.")
+        error = "Give the meal a name."
+    if error:
+        return _form_page(request, session, values=_retry_values(form, kwargs), error=error)
     meal = meal_svc.save_meal(session, meal=None, **kwargs)
+    if photo:
+        meal_svc.set_photo(session, meal, *photo)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
+
+
+@router.get("/photos/{photo_id}")
+def meal_photo(photo_id: int, session: Session = Depends(get_session)):
+    photo = session.get(MealPhoto, photo_id)
+    if photo is None:
+        raise HTTPException(404, "That photo doesn't exist anymore.")
+    # A photo never changes: replacing it makes a new one at a new address.
+    return Response(photo.data, media_type=photo.content_type,
+                    headers={"Cache-Control": "private, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/{meal_id}")
@@ -156,6 +199,7 @@ def edit(request: Request, meal_id: int, session: Session = Depends(get_session)
         "servings": meal.servings or "",
         "total_minutes": meal.total_minutes or "",
         "favorite": meal.favorite,
+        "image_url": meal.image_url or "",
     }
     return _form_page(request, session, meal=meal, values=values)
 
@@ -165,9 +209,15 @@ async def update(request: Request, meal_id: int, session: Session = Depends(get_
     meal = get_meal(session, meal_id)
     form = await request.form()
     kwargs = _form_kwargs(form)
+    photo = await _read_photo(form)
+    error = photo if isinstance(photo, str) else None
     if not kwargs["name"].strip():
-        return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs), error="Give the meal a name.")
+        error = "Give the meal a name."
+    if error:
+        return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs), error=error)
     meal_svc.save_meal(session, meal=meal, **kwargs)
+    if photo:
+        meal_svc.set_photo(session, meal, *photo)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
 
 

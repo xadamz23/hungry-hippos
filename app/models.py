@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
     String,
     Table,
     Text,
@@ -67,6 +68,18 @@ class Meal(Base):
     @property
     def step_list(self) -> list[str]:
         return [s.strip() for s in self.steps.splitlines() if s.strip()]
+
+
+class MealPhoto(Base):
+    """A photo taken or picked on the meal form. Stored in the database because the app container is read-only."""
+
+    __tablename__ = "meal_photos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    meal_id: Mapped[int] = mapped_column(ForeignKey("meals.id", ondelete="CASCADE"), index=True)
+    content_type: Mapped[str] = mapped_column(String(40))
+    data: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class Ingredient(Base):

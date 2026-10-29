@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import CookLog, Ingredient, Meal, PlanEntry, Tag, meal_tags
+from app.models import CookLog, Ingredient, Meal, MealPhoto, PlanEntry, Tag, meal_tags
 from app.services.amounts import fmt, scale
 from app.services.ingredients import display_name, name_key, parse_line
 from app.services.sections import guess_section, remember
@@ -22,6 +22,43 @@ def _tags(session: Session, names: list[str]) -> list[Tag]:
             session.add(tag)
         out.append(tag)
     return out
+
+
+PHOTO_MAX_BYTES = 10 * 1024 * 1024
+
+
+def photo_url(photo: MealPhoto) -> str:
+    return f"/meals/photos/{photo.id}"
+
+
+def sniff_image(data: bytes) -> str | None:
+    """The image type from the file's first bytes, so a renamed file can't be served as something else."""
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+def _drop_unused_photos(session: Session, meal: Meal) -> None:
+    """Delete this meal's uploaded photos other than the one image_url points at."""
+    if meal.id is None:
+        return
+    for photo in session.scalars(select(MealPhoto).where(MealPhoto.meal_id == meal.id)):
+        if photo_url(photo) != meal.image_url:
+            session.delete(photo)
+
+
+def set_photo(session: Session, meal: Meal, data: bytes, content_type: str) -> None:
+    """Make an uploaded photo the meal's picture, replacing any earlier one."""
+    photo = MealPhoto(meal_id=meal.id, content_type=content_type, data=data)
+    session.add(photo)
+    session.flush()
+    meal.image_url = photo_url(photo)
+    _drop_unused_photos(session, meal)
+    session.commit()
 
 
 def save_meal(
@@ -55,6 +92,7 @@ def save_meal(
         meal.source_url = source_url or None
     if image_url is not None:
         meal.image_url = image_url or None
+        _drop_unused_photos(session, meal)
 
     overrides = section_overrides or {}
     meal.ingredients.clear()

@@ -2,12 +2,53 @@
 {% block title %}{{ 'Edit ' ~ meal.name if meal else 'New meal' }} · Hungry Hippos{% endblock %}
 {% block main_class %}narrow-on-desktop{% endblock %}
 {% block main %}
+{% set cancel_url = '/meals/%d' % meal.id if meal else '/meals' %}
+{% if mode == 'manual' %}
+{# The meal's banner, as on its page. Picked photos are shrunk in the browser, then sent with the form as "photo". #}
+{% set fallback_bg = meal_gradient(meal.name if meal else '') %}
+<div class="photo-banner" x-data="mealPhoto" data-url="{{ v.image_url or '' }}" data-bg="{{ fallback_bg }}"
+     style="background:{{ meal|meal_bg if meal else fallback_bg }}" :style="{ background: background() }">
+  <a class="pill p-cancel" href="{{ cancel_url }}"><svg><use href="#i-back"/></svg>Cancel</a>
+  <button class="pill p-save" type="submit" form="meal-form">Save</button>
+  <button class="pill p-photo" :class="{ big: !url }" type="button" @click="openSheet()">
+    <svg><use href="#i-camera"/></svg><span x-text="url ? 'Change photo' : 'Add photo'">{{ 'Change photo' if v.image_url else 'Add photo' }}</span>
+  </button>
+  <input type="hidden" name="image_url" form="meal-form" :value="file ? '' : url" value="{{ v.image_url or '' }}">
+  <input type="file" name="photo" form="meal-form" x-ref="photo" hidden>
+  <input type="file" accept="image/*" capture="environment" x-ref="camera" @change="picked($event)" hidden>
+  <input type="file" accept="image/*" x-ref="library" @change="picked($event)" hidden>
+
+  <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="photo-sheet-title" x-show="sheet" x-cloak
+       @keydown.escape.window="sheet && (sheet = false)">
+    <div class="scrim" @click="sheet = false"></div>
+    <div class="sheet" x-ref="sheet" tabindex="-1" style="outline:none">
+      <div class="grab"></div>
+      <h2 id="photo-sheet-title" style="font-size:20px" x-text="url ? 'Photo' : 'Add a photo'">Add a photo</h2>
+      <div class="ways">
+        <button type="button" class="way" @click="$refs.camera.click()"><span class="ic"><svg><use href="#i-camera"/></svg></span>Take a photo</button>
+        <button type="button" class="way" @click="$refs.library.click()"><span class="ic"><svg><use href="#i-image"/></svg></span>Choose from your photos</button>
+        <button type="button" class="way" @click="showLink()"><span class="ic"><svg><use href="#i-link"/></svg></span><span>Use a link<small>Paste the address of a picture online</small></span></button>
+        <button type="button" class="way danger" x-show="url" @click="remove()"><span class="ic"><svg><use href="#i-trash"/></svg></span>Remove photo</button>
+      </div>
+      <div class="add" x-show="linking" style="margin-top:14px">
+        <label class="sr-only" for="photo-link">Picture link</label>
+        <input id="photo-link" x-ref="link" x-model="link" type="url" inputmode="url" placeholder="https://…/photo.jpg" autocomplete="off"
+               @keydown.enter.prevent="useLink()">
+        <button type="button" @click="useLink()">Use</button>
+      </div>
+      <p class="hint" x-show="linkError" x-text="linkError" style="color:var(--warn)"></p>
+    </div>
+  </div>
+</div>
+<div class="top under-banner">
+  <h1>{{ 'Edit meal' if meal else 'New meal' }}</h1>
+{% else %}
 <div class="top">
   <div class="row">
-    <a class="back" href="{{ '/meals/%d' % meal.id if meal else '/meals' }}"><svg><use href="#i-back"/></svg>Cancel</a>
-    {% if mode == 'manual' %}<button class="link" type="submit" form="meal-form">Save</button>{% endif %}
+    <a class="back" href="{{ cancel_url }}"><svg><use href="#i-back"/></svg>Cancel</a>
   </div>
   <h1 style="margin-top:10px">{{ 'Edit meal' if meal else 'New meal' }}</h1>
+{% endif %}
   {% if not meal %}
   <nav class="seg" aria-label="How to add">
     <a href="/meals/new" aria-current="{{ 'true' if mode == 'manual' else 'false' }}">Type it in</a>
@@ -27,7 +68,7 @@
     <button class="btn" type="submit">Get recipe</button>
   </form>
   {% else %}
-  <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}">
+  <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}" enctype="multipart/form-data">
     <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required autocomplete="off"></div>
     <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}"
          data-units="{{ unit_words()|tojson|forceescape }}">

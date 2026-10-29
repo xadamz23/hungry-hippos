@@ -48,7 +48,12 @@ def meal_bg(meal) -> str:
     if getattr(meal, "image_url", None):
         url = meal.image_url.replace('"', "%22").replace(")", "%29").replace("(", "%28")
         return f'center / cover no-repeat url("{url}")'
-    a, b = MEAL_GRADIENTS[sum(map(ord, meal.name)) % len(MEAL_GRADIENTS)]
+    return meal_gradient(meal.name)
+
+
+def meal_gradient(name: str) -> str:
+    """The warm gradient a meal shows when it has no photo, picked from its name."""
+    a, b = MEAL_GRADIENTS[sum(map(ord, name)) % len(MEAL_GRADIENTS)]
     return f"linear-gradient(135deg, {a}, {b})"
 
 
@@ -61,7 +66,7 @@ def nice_day(d: date) -> str:
 
 
 templates = Jinja2Templates(directory=APP_DIR / "templates")
-templates.env.globals.update(static_url=static_url, today=today, unit_words=unit_words)
+templates.env.globals.update(static_url=static_url, today=today, unit_words=unit_words, meal_gradient=meal_gradient)
 templates.env.filters.update(
     amounts=amounts.fmt, text_color=text_color, cap=cap, meal_bg=meal_bg, ago=ago, nice_day=nice_day, week_label=week_label
 )

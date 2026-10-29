@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy import select
 
-from app.models import CookLog, Ingredient, ListItem, Meal, PlanEntry, Staple
+from app.models import CookLog, Ingredient, ListItem, Meal, MealPhoto, PlanEntry, Staple
 from app.services import meals
 from tests.factories import make_meal, section
 
@@ -209,3 +209,73 @@ def test_planned_on_shows_earliest_day(seeded):
     add_entry(seeded, date(2026, 10, 26), None, "meal", tacos.id)
     row = meals.search(seeded, week_start=date(2026, 10, 26))[0]
     assert row.planned_on.day == date(2026, 10, 26)
+
+
+JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 64
+
+
+def test_create_meal_with_photo(client, seeded):
+    r = client.post("/meals", data={"name": "Chili", "image_url": ""}, files={"photo": ("photo.jpg", JPEG, "image/jpeg")},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    meal = seeded.scalar(select(Meal))
+    photo = seeded.scalar(select(MealPhoto))
+    assert meal.image_url == f"/meals/photos/{photo.id}"
+    got = client.get(meal.image_url)
+    assert got.content == JPEG and got.headers["content-type"] == "image/jpeg"
+    assert got.headers["x-content-type-options"] == "nosniff"
+
+
+def test_photo_must_be_an_image(client, seeded):
+    r = client.post("/meals", data={"name": "Chili"}, files={"photo": ("x.jpg", b"<html>hi</html>", "image/jpeg")})
+    assert "a photo we can use" in r.text
+    assert seeded.scalar(select(Meal)) is None
+
+
+def test_empty_photo_field_is_ignored(client, seeded):
+    r = client.post("/meals", data={"name": "Chili"}, files={"photo": ("", b"", "application/octet-stream")},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    assert seeded.scalar(select(Meal)).image_url is None
+
+
+def test_new_photo_replaces_the_old_one(client, seeded):
+    client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    meal = seeded.scalar(select(Meal))
+    client.post(f"/meals/{meal.id}", data={"name": "Chili", "image_url": ""}, files={"photo": ("b.jpg", JPEG, "image/jpeg")})
+    seeded.expire_all()
+    photos = seeded.scalars(select(MealPhoto)).all()
+    assert len(photos) == 1 and meal.image_url == f"/meals/photos/{photos[0].id}"
+
+
+def test_editing_keeps_the_photo(client, seeded):
+    client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    meal = seeded.scalar(select(Meal))
+    url = meal.image_url
+    assert f'data-url="{url}"' in client.get(f"/meals/{meal.id}/edit").text
+    client.post(f"/meals/{meal.id}", data={"name": "Beef chili", "image_url": url})
+    seeded.expire_all()
+    assert meal.image_url == url and len(seeded.scalars(select(MealPhoto)).all()) == 1
+
+
+def test_removing_or_linking_drops_the_uploaded_photo(client, seeded):
+    client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    meal = seeded.scalar(select(Meal))
+    client.post(f"/meals/{meal.id}", data={"name": "Chili", "image_url": "https://example.com/chili.jpg"})
+    seeded.expire_all()
+    assert meal.image_url == "https://example.com/chili.jpg"
+    assert seeded.scalars(select(MealPhoto)).all() == []
+    client.post(f"/meals/{meal.id}", data={"name": "Chili", "image_url": ""})
+    seeded.expire_all()
+    assert meal.image_url is None
+
+
+def test_deleting_a_meal_deletes_its_photo(client, seeded):
+    client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    meal = seeded.scalar(select(Meal))
+    client.post(f"/meals/{meal.id}/delete")
+    assert seeded.scalars(select(MealPhoto)).all() == []
+
+
+def test_missing_photo_is_404(client):
+    assert client.get("/meals/photos/999").status_code == 404
