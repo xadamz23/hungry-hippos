@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from sqlalchemy import select
@@ -146,6 +147,33 @@ def test_plan_entry_route_from_pick_mode(client, seeded):
     r = client.post("/plan/entries", data={"meal_id": tacos.id, "week": "2026-10-26", "day": ""}, headers={"HX-Request": "true"})
     assert r.headers["HX-Redirect"] == "/plan?week=2026-10-26"
     assert seeded.scalar(select(PlanEntry)).day is None
+
+
+def test_pick_row_tap_shows_plan_with_undo(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    r = client.post("/plan/entries", data={"meal_id": tacos.id, "week": "2026-10-26", "day": "2026-10-28", "next": "pick"},
+                    headers={"HX-Request": "true"})
+    entry = seeded.scalar(select(PlanEntry))
+    assert r.status_code == 200 and "<h1>Plan</h1>" in r.text and "Tacos" in r.text
+    assert r.headers["HX-Push-Url"] == "/plan?week=2026-10-26"
+    toast = json.loads(r.headers["HX-Trigger-After-Settle"])["toast"]
+    assert toast["message"].startswith("Planned Tacos for ")
+    assert toast["undo"] == f"/plan/entries/{entry.id}/delete"
+    client.post(toast["undo"])
+    assert seeded.scalar(select(PlanEntry)) is None
+
+
+def test_pick_sheet_adds_to_the_chosen_day(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n2 limes")
+    html = client.get(f"/meals/{tacos.id}/pick-sheet?pick=2026-10-28&week=2026-10-26").text
+    assert "Ground beef" in html and "Limes" in html
+    assert "Add to Wednesday" in html and 'name="day" value="2026-10-28"' in html and 'value="pick"' in html
+
+
+def test_pick_sheet_without_a_day(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    html = client.get(f"/meals/{tacos.id}/pick-sheet?pick=none&week=2026-10-26").text
+    assert "Add to this week" in html and 'name="day" value=""' in html
 
 
 def test_plan_sheet_shows_taken_days(client, seeded):

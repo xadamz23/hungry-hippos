@@ -272,11 +272,18 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .ml[aria-current="true"] { background: var(--go-faint); box-shadow: inset 4px 0 0 var(--go); }
 .ml .ph { width: 54px; height: 54px; border-radius: 8px; flex: none; object-fit: cover; }
 .ml .txt { flex: 1; min-width: 0; }
-.ml h3 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-.ml h3 .star { width: 18px; height: 18px; }
-.ml p { font-size: 13px; color: var(--ink-2); margin-top: 1px; }
+.ml .h3 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.ml .h3 .star { width: 18px; height: 18px; }
+.ml .sub { display: block; font-size: 13px; color: var(--ink-2); margin-top: 1px; }
 .ml .tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
 .ml .go { margin-left: auto; flex: none; }
+/* pick mode: the whole row adds the meal; the info button sits at the end */
+.ml.pick { padding-top: 0; padding-bottom: 0; padding-right: 8px; }
+.ml .pick-row { flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; padding: 12px 0; text-align: left; }
+.ml .pick-row:active { background: var(--go-faint); }
+.ml .info { width: 44px; height: 44px; }
+.ml .info svg { width: 22px; height: 22px; }
+@media (min-width: 900px) { .ml.pick { padding-right: 14px; } .ml .pick-row:hover .h3 { color: var(--go); } }
 .ph-fallback { display: grid; place-items: center; font-weight: 800; font-size: 22px; color: rgba(255, 255, 255, .92); }
 
 .hero { height: calc(100px + var(--safe-t)); position: relative; background-size: cover; background-position: center; }
@@ -367,6 +374,16 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
   .sheet { left: 50%; right: auto; bottom: auto; top: 50%; width: 460px; transform: translate(-50%, -50%); border-radius: 18px; animation: none; }
 }
 .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--rule); margin: 0 auto 12px; }
+/* pick mode: a meal's details over the list, with the add button pinned to the bottom */
+.pick-sheet { padding-bottom: 0; }
+.pick-hero { height: 84px; border-radius: 12px; position: relative; background-size: cover; background-position: center; margin-bottom: 12px; }
+.pick-hero .close { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92); display: grid; place-items: center; }
+.pick-hero .close svg { width: 18px; height: 18px; }
+.pick-sheet h2#sheet-title { font-size: 21px; display: flex; align-items: center; gap: 6px; }
+.pick-sheet h2 .star { width: 20px; height: 20px; }
+.pick-steps { margin-top: 14px; }
+.pick-steps summary { font-weight: 700; font-size: 16px; cursor: pointer; padding: 6px 0 10px; }
+.pick-add { position: sticky; bottom: 0; background: #fff; margin: 14px -18px 0; padding: 12px 18px calc(16px + var(--safe-b)); border-top: 1px solid var(--rule); }
 @keyframes rise { from { transform: translateY(40px); opacity: 0; } }
 @keyframes fade { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sheet, .scrim { animation: none; } }
@@ -445,8 +462,10 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 60;
   transform: translateX(-50%); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: 10px;
-  font-weight: 600; font-size: 15px; box-shadow: 0 8px 24px rgba(16, 41, 28, .3); max-width: calc(100% - 32px);
+  font-weight: 600; font-size: 15px; box-shadow: 0 8px 24px rgba(16, 41, 28, .3); width: max-content; max-width: calc(100% - 32px);
 }
+.toast:has(.undo) { display: flex; align-items: center; gap: 16px; padding-right: 8px; }
+.toast .undo { color: var(--go-light); font-weight: 800; padding: 4px 8px; flex: none; }
 @media (min-width: 900px) { .toast { bottom: 24px; } }
 .htmx-request.btn, .htmx-request .btn[type="submit"] { opacity: .7; }
 

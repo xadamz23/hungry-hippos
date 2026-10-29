@@ -200,6 +200,20 @@ def test_pick_banner_shows_day_name(client, seeded):
     assert "Choose a meal for Wednesday, Oct 28" in html
 
 
+def test_pick_mode_rows_add_on_tap(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    html = client.get("/meals?pick=2026-10-28&week=2026-10-26").text
+    assert 'class="pick-row"' in html and "Add to Wednesday: " in html
+    assert f'/meals/{tacos.id}/pick-sheet?pick=2026-10-28&amp;week=2026-10-26' in html
+    assert f'href="/meals/{tacos.id}"' not in html  # the row adds instead of opening the meal
+
+
+def test_meals_rows_open_the_meal_outside_pick_mode(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    html = client.get("/meals").text
+    assert f'href="/meals/{tacos.id}"' in html and "pick-row" not in html
+
+
 def test_planned_on_shows_earliest_day(seeded):
     from app.services.planning import add_entry
 

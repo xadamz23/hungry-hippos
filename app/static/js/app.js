@@ -14,8 +14,9 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeSheet();
 });
 
+// `undo` is a URL to POST that reverses what just happened; its response replaces the plan week.
 let toastTimer;
-function toast(message) {
+function toast(message, undo) {
   const root = document.getElementById("toast-root");
   if (!root || !message) return;
   root.innerHTML = "";
@@ -23,9 +24,20 @@ function toast(message) {
   el.className = "toast";
   el.setAttribute("role", "status");
   el.textContent = message;
+  if (undo) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "undo";
+    btn.textContent = "Undo";
+    btn.addEventListener("click", () => {
+      el.remove();
+      htmx.ajax("POST", undo, { target: "#plan-week", swap: "outerHTML" });
+    });
+    el.appendChild(btn);
+  }
   root.appendChild(el);
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.remove(), 2600);
+  toastTimer = setTimeout(() => el.remove(), undo ? 6000 : 2600);
 }
 window.toast = toast;
 
@@ -38,7 +50,15 @@ function syncBodyClass() {
 document.addEventListener("htmx:afterSettle", syncBodyClass);
 document.addEventListener("htmx:historyRestore", syncBodyClass);
 
-document.addEventListener("toast", (e) => toast(e.detail.value || e.detail));
+// The page is saved for the Back button just before htmx navigates away; leave out an open sheet or toast so
+// going back doesn't bring them back (e.g. a meal's sheet after adding it to the plan from that sheet).
+document.addEventListener("htmx:beforeHistorySave", () => {
+  closeSheet();
+  document.getElementById("toast-root")?.replaceChildren();
+});
+
+// HX-Trigger sends {"toast": "text"} (detail.value) or {"toast": {"message": ..., "undo": url}}.
+document.addEventListener("toast", (e) => toast(e.detail.message || e.detail.value || e.detail, e.detail.undo));
 document.addEventListener("close-sheet", closeSheet);
 
 // [data-sortable="/url"]: drag rows by .handle, then POST ids in their new order.

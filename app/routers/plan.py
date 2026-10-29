@@ -3,12 +3,15 @@ from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse, Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.clock import today
 from app.db import get_session
+from app.models import Section
 from app.routers.list import items_response, list_context
-from app.routers.meals import get_meal
+from app.routers.meals import get_meal, pick_short
+from app.services import meals as meal_svc
 from app.services import planning
 from app.templating import templates
 
@@ -49,12 +52,15 @@ def week_response(request: Request, session: Session, ws: date, *, toast: str | 
     return response
 
 
-@router.get("/plan")
-def plan_page(request: Request, week: date | None = None, session: Session = Depends(get_session)):
-    ws = _ws(week)
+def page_response(request: Request, session: Session, ws: date):
     return templates.TemplateResponse(
         request, "plan/page.html", {"active": "plan", **plan_context(session, ws), **list_context(session)}
     )
+
+
+@router.get("/plan")
+def plan_page(request: Request, week: date | None = None, session: Session = Depends(get_session)):
+    return page_response(request, session, _ws(week))
 
 
 @router.get("/plan/day-sheet")
@@ -63,12 +69,13 @@ def day_sheet(request: Request, day: str = "none", week: date | None = None):
     return templates.TemplateResponse(request, "plan/_day_sheet.html", {"day": d, "week": _ws(d or week)})
 
 
-def _when(day: date | None, ws: date) -> str:
+def _when(day: date | None, ws: date, what: str = "") -> str:
+    planned = f"Planned {what}" if what else "Planned"
     if day:
-        return f"Planned for {day:%A}" if planning.week_start(day) == planning.current_week() else f"Planned for {day:%a %b} {day.day}"
+        return f"{planned} for {day:%A}" if planning.week_start(day) == planning.current_week() else f"{planned} for {day:%a %b} {day.day}"
     if ws == planning.current_week():
-        return "Planned for this week"
-    return f"Planned for the week of {ws:%b} {ws.day}"
+        return f"{planned} for this week"
+    return f"{planned} for the week of {ws:%b} {ws.day}"
 
 
 @router.post("/plan/entries")
@@ -91,6 +98,13 @@ def add_entry(
     if next == "week":
         return week_response(request, session, ws, close_sheet=True)
     url = f"/plan?week={ws}"
+    if next == "pick" and request.headers.get("HX-Request"):
+        # Picked from the meal list: show the plan with an Undo toast in case the tap was a slip.
+        response = page_response(request, session, ws)
+        response.headers["HX-Push-Url"] = url
+        toast = {"message": _when(d, ws, entry.meal.name), "undo": f"/plan/entries/{entry.id}/delete"}
+        response.headers["HX-Trigger-After-Settle"] = json.dumps({"toast": toast})
+        return response
     if request.headers.get("HX-Request"):
         return Response(status_code=204, headers={"HX-Redirect": url})
     return RedirectResponse(url, status_code=303)
@@ -154,6 +168,22 @@ def meal_plan_sheet(request: Request, meal_id: int, week: date | None = None, se
         "plan/_meal_sheet.html",
         {"meal": meal, "view": planning.week(session, ws), "this_week": planning.current_week(),
          "next_week": planning.current_week() + timedelta(days=7), "kind_labels": planning.KIND_LABELS},
+    )
+
+
+@router.get("/meals/{meal_id}/pick-sheet")
+def meal_pick_sheet(
+    request: Request, meal_id: int, pick: str = "none", week: date | None = None, session: Session = Depends(get_session)
+):
+    """A meal's details while choosing one for the plan, with a button to add it to the day being filled."""
+    meal = get_meal(session, meal_id)
+    last_made, times_made = meal_svc.stats_for(session, meal.id)
+    return templates.TemplateResponse(
+        request,
+        "meals/_pick_sheet.html",
+        {"meal": meal, "last_made": last_made, "times_made": times_made,
+         "sections": {s.id: s for s in session.scalars(select(Section))},
+         "pick": "none" if _parse_day(pick) is None else pick, "pick_short": pick_short(pick), "week": _ws(week)},
     )
 
 
