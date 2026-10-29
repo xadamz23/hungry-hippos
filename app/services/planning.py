@@ -59,6 +59,10 @@ def week(session: Session, ws: date) -> WeekView:
     return WeekView(start=ws, days=days, unscheduled=unscheduled, pending_count=pending)
 
 
+def entry_count(session: Session, ws: date) -> int:
+    return session.scalar(select(func.count()).select_from(PlanEntry).where(PlanEntry.week_start == ws))
+
+
 def add_entry(
     session: Session, ws: date, day: date | None, kind: str, meal_id: int | None = None, add_to_list: bool = False
 ) -> PlanEntry:

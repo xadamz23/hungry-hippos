@@ -109,9 +109,20 @@ def test_history_groups_by_week(seeded):
     assert [(d, m.name, n) for d, m, n in groups[1][1]] == [(date(2026, 10, 22), "Chili", 1), (date(2026, 10, 19), "Tacos", 2)]
 
 
-def test_plan_page_empty_state(client):
+def test_plan_page_empty_week_shows_days(client):
     html = client.get("/plan?week=2026-10-26").text
-    assert "Nothing planned yet" in html
+    assert html.count("+ Add a meal") == 8  # seven days plus "Not on a day yet"
+    assert "Same as last week?" not in html  # nothing to copy
+    assert "Everything planned this week is on the list" not in html
+
+
+def test_plan_page_empty_week_offers_copy(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    planning.add_entry(seeded, MON, WED, "meal", tacos.id)
+    planning.add_entry(seeded, MON, None, "eat_out")
+    html = client.get("/plan?week=2026-11-02").text
+    assert "Copy its 2 meals onto the same days" in html
+    assert "Same as last week?" not in client.get("/plan?week=2026-10-26").text  # this week isn't empty
 
 
 def test_plan_page_lists_entries(client, seeded):

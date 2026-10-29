@@ -32,7 +32,7 @@ def plan_context(session: Session, ws: date) -> dict:
         "view": planning.week(session, ws),
         "prev_week": prev,
         "next_week": ws + timedelta(days=7),
-        "has_prev_entries": not planning.week(session, prev).is_empty,
+        "prev_count": planning.entry_count(session, prev),
         "kind_labels": planning.KIND_LABELS,
     }
 

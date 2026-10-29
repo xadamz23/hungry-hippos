@@ -26,7 +26,7 @@ Adam and his wife use Hungry Hippos to plan family dinners and shop for them at 
 - Plan sheet (from a meal): pick a day or No day, this week or next. Checkbox "Also add ingredients to the list".
 - "Add ingredients for N meals" adds every entry in the week whose ingredients aren't on the list yet.
 - An entry can be marked cooked, which logs to history and feeds "last made".
-- Empty week: offers **Choose meals** (kid favorites least recently made appear first) and **Copy last week**.
+- Empty week: the days show as usual, and a "Same as last week?" row above Monday offers to **copy last week** onto the same days. Choosing a meal for a day lists kid favorites least recently made first.
 
 ### Shopping list
 - Items are grouped under full-width colored section headers, ordered by the store's section order. Headers show only the section name, with no number and no count.

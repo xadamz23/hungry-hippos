@@ -1,17 +1,10 @@
 <div id="plan-week">
-{% if view.is_empty %}
-<div class="empty">
-  <div class="art"><svg><use href="#i-cal"/></svg></div>
-  <h2>Nothing planned yet</h2>
-  <p>Pick a few meals for the week. Meals the kids like that you haven’t made in a while show up first.</p>
-  <a class="btn" href="/meals?pick=none&amp;week={{ view.start }}">Choose meals</a>
-  {% if has_prev_entries %}
-  <form hx-post="/plan/copy-last?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML" hx-disabled-elt="find button" style="margin-top:8px">
-    <button class="btn ghost" type="submit">Copy last week</button>
-  </form>
-  {% endif %}
-</div>
-{% else %}
+{% if view.is_empty and prev_count %}
+<form class="copy-row" hx-post="/plan/copy-last?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML" hx-disabled-elt="find button">
+  <span><b>Same as last week?</b><small>Copy its {{ prev_count }} meal{{ 's' if prev_count != 1 }} onto the same days</small></span>
+  <button class="btn ghost sm" type="submit">Copy</button>
+</form>
+{% endif %}
 {% for day, entries in view.days %}
 {% set is_today = day == today() %}
 <div class="d{% if is_today %} today{% endif %}">
@@ -28,6 +21,7 @@
 <div class="d"><div class="dn muted">Any</div><div class="entries">{% include "plan/_entry.html" %}</div><span></span></div>
 {% endfor %}
 <div class="d"><div class="dn muted">Any</div><div class="entries"><button class="add-meal" style="text-align:left" hx-get="/plan/day-sheet?day=none&amp;week={{ view.start }}" hx-target="#sheet">+ Add a meal</button></div><span></span></div>
+{% if not view.is_empty %}
 <div class="plan-cta">
   {% if view.pending_count %}
   <button class="btn" hx-post="/plan/to-list?week={{ view.start }}" hx-target="#plan-week" hx-swap="outerHTML">Add ingredients for {{ view.pending_count }} meal{{ 's' if view.pending_count != 1 }}</button>
