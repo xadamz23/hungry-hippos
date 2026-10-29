@@ -127,3 +127,10 @@ def test_clear_routes(client, seeded):
     assert len(seeded.scalars(select(ListItem)).all()) == 1
     client.post("/list/clear-all")
     assert seeded.scalars(select(ListItem)).all() == []
+
+
+def test_long_typed_item_is_cut_to_fit(client, seeded):
+    assert client.post("/list/add", data={"text": "x" * 500}).status_code == 200
+    assert client.post("/list/add", data={"text": "2 (" + "y" * 500 + ")"}).status_code == 200
+    items = seeded.scalars(select(ListItem)).all()
+    assert len(items) == 2 and all(len(i.name) <= 200 and len(i.name_key) <= 200 for i in items)

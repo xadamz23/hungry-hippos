@@ -44,6 +44,8 @@ PREP_WORDS = {
 }
 TRAILING_PHRASES = re.compile(r"\b(to taste|or to taste|as needed|for serving|for garnish|optional)\b.*$", re.I)
 
+NAME_MAX = 200  # item names and keys are VARCHAR(200)
+
 _NUM = r"\d+\s+\d+/\d+|\d+/\d+|\d+(?:\.\d+)?"
 _QTY_RE = re.compile(rf"^({_NUM})(?:\s*(?:-|–|to)\s*({_NUM}))?\s*")
 
@@ -106,7 +108,7 @@ def name_key(name: str) -> str:
         elif w.endswith("s") and not w.endswith(("ss", "us", "is")) and len(w) > 2:
             w = w[:-1]
         out.append(w)
-    return " ".join(out)
+    return " ".join(out)[:NAME_MAX]
 
 
 def parse_line(line: str, *, strip_prep: bool = True) -> ParsedIngredient:
@@ -133,5 +135,5 @@ def parse_line(line: str, *, strip_prep: bool = True) -> ParsedIngredient:
     words = name.split()
     while strip_prep and words and words[0].lower() in PREP_WORDS:
         words.pop(0)
-    name = display_name(" ".join(words).strip(" .;:-/"))
+    name = display_name(" ".join(words).strip(" .;:-/")[:NAME_MAX].rstrip())
     return ParsedIngredient(raw=raw, name=name, name_key=name_key(name), qty=qty, unit=unit)

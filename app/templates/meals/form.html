@@ -69,7 +69,9 @@
   </form>
   {% else %}
   <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}" enctype="multipart/form-data">
-    <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required autocomplete="off"></div>
+    {# Only set when a save from the import review failed; leaving it out keeps a meal's existing link #}
+    {% if v.source_url %}<input type="hidden" name="source_url" value="{{ v.source_url }}">{% endif %}
+    <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required pattern=".*\S.*" title="Give the meal a name" autocomplete="off"></div>
     <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}"
          data-units="{{ unit_words()|tojson|forceescape }}">
       <label for="add-ingredient">Ingredients</label>

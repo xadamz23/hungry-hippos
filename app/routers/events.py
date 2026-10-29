@@ -9,7 +9,7 @@ import logging
 from collections.abc import AsyncIterator
 
 import psycopg
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.engine import make_url
 
@@ -31,24 +31,32 @@ class Broker:
         self.task: asyncio.Task | None = None
         self.ready = asyncio.Event()
         self.connections_opened = 0
+        self.retry_delay = 2.0
+
+    def _changed(self) -> None:
+        for queue in list(self.subscribers):
+            if queue.empty():  # one pending "changed" is enough
+                queue.put_nowait(True)
 
     async def _listen(self) -> None:
+        reconnecting = False
         while True:
             try:
                 async with await psycopg.AsyncConnection.connect(_dsn(), autocommit=True) as conn:
                     self.connections_opened += 1
                     await conn.execute(f"LISTEN {CHANNEL}")
                     self.ready.set()
+                    if reconnecting:  # changes made while the connection was down were never heard
+                        self._changed()
                     async for _ in conn.notifies():
-                        for queue in list(self.subscribers):
-                            if queue.empty():  # one pending "changed" is enough
-                                queue.put_nowait(True)
+                        self._changed()
             except asyncio.CancelledError:
                 raise
             except Exception:
                 log.exception("list listener lost its connection; retrying")
                 self.ready.clear()
-                await asyncio.sleep(2)
+                await asyncio.sleep(self.retry_delay)
+            reconnecting = True
 
     async def subscribe(self) -> asyncio.Queue:
         if len(self.subscribers) >= MAX_SUBSCRIBERS:
@@ -77,10 +85,18 @@ class Broker:
 broker = Broker()
 
 
-async def event_stream(keepalive: float = 15.0) -> AsyncIterator[str]:
-    queue = await broker.subscribe()
+async def event_stream(keepalive: float = 15.0, resumed: bool = False) -> AsyncIterator[str]:
     try:
-        yield "retry: 3000\n\n"
+        queue = await broker.subscribe()
+    except (RuntimeError, TimeoutError):
+        # Too many open pages, or the database isn't answering: end the stream and have the browser try later
+        yield "retry: 10000\n\n"
+        return
+    try:
+        # The id makes the browser send Last-Event-ID when it reconnects by itself (see events())
+        yield "retry: 3000\nid: 0\n\n"
+        if resumed:
+            yield "event: list\ndata: changed\n\n"
         while True:
             try:
                 await asyncio.wait_for(queue.get(), keepalive)
@@ -92,9 +108,11 @@ async def event_stream(keepalive: float = 15.0) -> AsyncIterator[str]:
 
 
 @router.get("/events")
-async def events():
+async def events(request: Request):
+    # A reconnect may have missed changes, so its stream starts by telling the page to refresh
+    resumed = request.headers.get("last-event-id") is not None
     return StreamingResponse(
-        event_stream(),
+        event_stream(resumed=resumed),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

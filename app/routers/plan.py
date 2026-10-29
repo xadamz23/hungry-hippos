@@ -140,6 +140,8 @@ def to_list(request: Request, week: date | None = None, session: Session = Depen
 def copy_last(request: Request, week: date | None = None, session: Session = Depends(get_session)):
     ws = _ws(week)
     n = planning.copy_week(session, ws - timedelta(days=7), ws)
+    if n is None:
+        return week_response(request, session, ws, toast="This week already has meals")
     return week_response(request, session, ws, toast=f"Copied {n} entr{'ies' if n != 1 else 'y'} from last week")
 
 

@@ -19,6 +19,7 @@ USER_AGENT = (
 MAX_BYTES = 5_000_000
 MAX_TEXT_CHARS = 60_000
 MAX_REDIRECTS = 5
+INT_MAX = 2**31 - 1  # servings and minutes are Postgres INTEGER
 
 
 class RecipeImportError(Exception):
@@ -43,6 +44,11 @@ class RecipeExtraction(BaseModel):
     steps: list[str] = Field(description="Instructions in order, one step per item")
     servings: int | None
     total_minutes: int | None
+
+
+def _count(n) -> int | None:
+    """A positive whole number that fits the database, or None."""
+    return int(n) if isinstance(n, (int, float)) and 0 < n <= INT_MAX else None
 
 
 def ai_enabled() -> bool:
@@ -136,14 +142,14 @@ def parse_structured(html: str, url: str) -> ImportedRecipe | None:
     if not ingredients:
         return None
     yields = _safe(scraper.yields, "")
-    servings = int(m.group()) if (m := re.search(r"\d+", str(yields))) else None
+    servings = _count(int(m.group())) if (m := re.search(r"\d+", str(yields))) else None
     total = _safe(scraper.total_time)
     return ImportedRecipe(
         title=_safe(scraper.title, "Imported recipe"),
         ingredients=ingredients,
         steps=[s.strip() for s in (_safe(scraper.instructions_list, []) or []) if s and s.strip()],
         servings=servings,
-        total_minutes=int(total) if isinstance(total, (int, float)) and total > 0 else None,
+        total_minutes=_count(total),
         image_url=_safe(scraper.image),
         source_url=url,
     )
@@ -223,8 +229,8 @@ def parse_with_claude(html: str, url: str, client=None) -> ImportedRecipe:
         title=data.title or "Imported recipe",
         ingredients=[i.strip() for i in data.ingredients if i.strip()],
         steps=[s.strip() for s in data.steps if s.strip()],
-        servings=data.servings if data.servings and data.servings > 0 else None,
-        total_minutes=data.total_minutes if data.total_minutes and data.total_minutes > 0 else None,
+        servings=_count(data.servings),
+        total_minutes=_count(data.total_minutes),
         source_url=url,
     )
 

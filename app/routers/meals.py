@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -25,10 +24,13 @@ def get_meal(session: Session, meal_id: int) -> Meal:
     return meal
 
 
+INT_MAX = 2**31 - 1  # Postgres INTEGER
+
+
 def _int_or_none(value) -> int | None:
     try:
         n = int(str(value).strip())
-        return n if n > 0 else None
+        return n if 0 < n <= INT_MAX else None
     except (TypeError, ValueError):
         return None
 
@@ -79,13 +81,10 @@ def _http_url(value) -> str:
     return url if url.lower().startswith(("http://", "https://")) else ""
 
 
-OWN_PHOTO = re.compile(r"/meals/photos/\d+")
-
-
 def _image_url(value) -> str:
-    """A web link, or the address of a photo uploaded here."""
+    """A web link, or the address of a photo uploaded here (save_meal checks it's this meal's)."""
     url = str(value or "").strip()
-    return url if OWN_PHOTO.fullmatch(url) else _http_url(url)
+    return url if meal_svc.photo_id_from_url(url) is not None else _http_url(url)
 
 
 async def _read_photo(form) -> tuple[bytes, str] | str | None:
@@ -113,7 +112,18 @@ def _form_kwargs(form) -> dict:
             if form.get(f"guess_{i}") != value:
                 overrides[int(i)] = int(value)
     lines = form.getlist("ingredient_lines")
-    ingredients = "\n".join(str(x) for x in lines) if lines else str(form.get("ingredients", ""))
+    if lines:
+        # One field is one ingredient: fold its whitespace, including characters splitlines() would break on.
+        # save_meal skips blank lines, so number the overrides by position among the non-blank ones.
+        lines = [" ".join(str(x).split()) for x in lines]
+        positions = {}
+        for i, line in enumerate(lines):
+            if line:
+                positions[i] = len(positions)
+        overrides = {positions[i]: sid for i, sid in overrides.items() if i in positions}
+        ingredients = "\n".join(lines)
+    else:
+        ingredients = str(form.get("ingredients", ""))
     return dict(
         name=str(form.get("name", "")),
         ingredients_text=ingredients,
@@ -129,9 +139,21 @@ def _form_kwargs(form) -> dict:
     )
 
 
-def _retry_values(form, kwargs) -> dict:
+def _retry_values(form, kwargs, meal: Meal | None, photo) -> dict:
     # dict(form) keeps only the last of the repeated ingredient_lines, so put the joined lines back
-    return {**dict(form), "ingredients": kwargs["ingredients_text"]}
+    values = {**dict(form), "ingredients": kwargs["ingredients_text"]}
+    if photo is not None:
+        # A picked photo sends image_url empty, and the browser can't re-attach the file to the retry form.
+        # Show the current picture again so saving the retry doesn't remove it.
+        values["image_url"] = meal.image_url if meal and meal.image_url else ""
+    return values
+
+
+def _error(photo, kwargs) -> str | None:
+    if not kwargs["name"].strip():
+        error = "Give the meal a name."
+        return error + " Your new photo wasn't saved, so add it again." if isinstance(photo, tuple) else error
+    return photo if isinstance(photo, str) else None
 
 
 def _form_page(request, session, meal=None, values=None, error=None, mode="manual"):
@@ -153,13 +175,10 @@ async def create(request: Request, session: Session = Depends(get_session)):
     form = await request.form()
     kwargs = _form_kwargs(form)
     photo = await _read_photo(form)
-    error = photo if isinstance(photo, str) else None
-    if not kwargs["name"].strip():
-        error = "Give the meal a name."
-    if error:
-        return _form_page(request, session, values=_retry_values(form, kwargs), error=error)
+    if error := _error(photo, kwargs):
+        return _form_page(request, session, values=_retry_values(form, kwargs, None, photo), error=error)
     meal = meal_svc.save_meal(session, meal=None, **kwargs)
-    if photo:
+    if isinstance(photo, tuple):
         meal_svc.set_photo(session, meal, *photo)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
 
@@ -210,13 +229,10 @@ async def update(request: Request, meal_id: int, session: Session = Depends(get_
     form = await request.form()
     kwargs = _form_kwargs(form)
     photo = await _read_photo(form)
-    error = photo if isinstance(photo, str) else None
-    if not kwargs["name"].strip():
-        error = "Give the meal a name."
-    if error:
-        return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs), error=error)
+    if error := _error(photo, kwargs):
+        return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs, meal, photo), error=error)
     meal_svc.save_meal(session, meal=meal, **kwargs)
-    if photo:
+    if isinstance(photo, tuple):
         meal_svc.set_photo(session, meal, *photo)
     return RedirectResponse(f"/meals/{meal.id}", status_code=303)
 

@@ -279,3 +279,98 @@ def test_deleting_a_meal_deletes_its_photo(client, seeded):
 
 def test_missing_photo_is_404(client):
     assert client.get("/meals/photos/999").status_code == 404
+
+
+def test_cleared_review_line_does_not_shift_sections(client, seeded):
+    from app.models import ItemSectionMap
+
+    deli, frozen = section(seeded, "Deli").id, section(seeded, "Frozen").id
+    client.post("/meals", data={"name": "A", "ingredient_lines": ["1 cup parmesan", "", "2 cups peas"],
+                                "section_0": deli, "section_2": frozen})
+    meal = seeded.scalar(select(Meal))
+    assert [(i.name, i.section_id) for i in meal.ingredients] == [("Parmesan", deli), ("Peas", frozen)]
+    assert seeded.get(ItemSectionMap, "pea").section_id == frozen
+
+
+def test_review_line_with_a_line_separator_stays_one_ingredient(client, seeded):
+    frozen = section(seeded, "Frozen").id
+    client.post("/meals", data={"name": "A", "ingredient_lines": ["heavy cream", "2 cups peas"], "section_1": frozen})
+    meal = seeded.scalar(select(Meal))
+    assert [(i.raw, i.section_id == frozen) for i in meal.ingredients] == [("heavy cream", False), ("2 cups peas", True)]
+
+
+def test_unknown_section_override_is_ignored(client, seeded):
+    from app.models import ItemSectionMap
+
+    r = client.post("/meals", data={"name": "A", "ingredient_lines": ["2 cups heavy cream"], "section_0": "999999"},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    meal = seeded.scalar(select(Meal))
+    assert meal.ingredients[0].section.name == "Dairy & Eggs"
+    assert seeded.scalars(select(ItemSectionMap)).all() == []
+
+
+def test_long_text_is_cut_to_fit(client, seeded):
+    r = client.post("/meals", data={"name": "m" * 500, "tags": "t" * 100, "ingredient_lines": ["y" * 500, "1 (" + "z" * 500 + ")"]},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    meal = seeded.scalar(select(Meal))
+    assert len(meal.name) == 200 and [len(t.name) for t in meal.tags] == [60]
+    assert all(len(i.name) <= 200 and len(i.name_key) <= 200 for i in meal.ingredients)
+    client.post(f"/meals/{meal.id}/to-list")
+    assert len(seeded.scalars(select(ListItem)).all()) == 2
+
+
+def test_huge_numbers_are_dropped(client, seeded):
+    r = client.post("/meals", data={"name": "A", "servings": "1000000000000", "total_minutes": "99999999999"},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    meal = seeded.scalar(select(Meal))
+    assert (meal.servings, meal.total_minutes) == (None, None)
+
+
+def test_huge_id_is_a_client_error(client, seeded):
+    assert client.get("/meals/99999999999").status_code == 400
+    seeded.rollback()  # the test client shares one session; in the app each request gets its own
+    assert client.post("/list/99999999999/toggle").status_code == 400
+
+
+def test_failed_save_keeps_the_existing_photo(client, seeded):
+    client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    meal = seeded.scalar(select(Meal))
+    url = meal.image_url
+    # A new photo was picked, so the form sends image_url empty, but the name is blank
+    r = client.post(f"/meals/{meal.id}", data={"name": " ", "image_url": ""}, files={"photo": ("b.jpg", JPEG, "image/jpeg")})
+    assert "Give the meal a name." in r.text and "add it again" in r.text
+    assert f'data-url="{url}"' in r.text
+    client.post(f"/meals/{meal.id}", data={"name": "Chili", "image_url": url})
+    seeded.expire_all()
+    assert meal.image_url == url and len(seeded.scalars(select(MealPhoto)).all()) == 1
+
+
+def test_failed_save_from_review_keeps_the_source_link(client, seeded):
+    src = "https://example.com/recipes/alfredo"
+    r = client.post("/meals", data={"name": " ", "source_url": src, "image_url": "", "ingredient_lines": ["1 lime"]})
+    assert f'name="source_url" value="{src}"' in r.text
+    edit = client.get(f"/meals/{make_meal(seeded, 'Tacos').id}/edit").text
+    assert 'name="source_url"' not in edit
+
+
+def test_name_inputs_reject_only_spaces(client, seeded):
+    assert r'pattern=".*\S.*"' in client.get("/meals/new").text
+
+
+def test_cannot_borrow_another_meals_photo(client, seeded):
+    client.post("/meals", data={"name": "A"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
+    client.post("/meals", data={"name": "B"}, files={"photo": ("b.jpg", JPEG, "image/jpeg")})
+    a, b = seeded.scalars(select(Meal).order_by(Meal.id)).all()
+    a_url, b_url = a.image_url, b.image_url
+    client.post(f"/meals/{a.id}", data={"name": "A", "image_url": b_url})
+    seeded.expire_all()
+    assert a.image_url == a_url
+    client.post("/meals", data={"name": "C", "image_url": b_url})
+    c = seeded.scalar(select(Meal).where(Meal.name == "C"))
+    assert c.image_url is None
+    client.post(f"/meals/{b.id}/delete")
+    seeded.expire_all()
+    assert client.get(a.image_url).status_code == 200

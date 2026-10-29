@@ -120,7 +120,10 @@ def mark_cooked(session: Session, entry_id: int, on: date) -> PlanEntry:
     return entry
 
 
-def copy_week(session: Session, from_ws: date, to_ws: date) -> int:
+def copy_week(session: Session, from_ws: date, to_ws: date) -> int | None:
+    """Copy from_ws's entries into to_ws. None when to_ws already has entries (a second tap of Copy)."""
+    if session.scalar(select(PlanEntry.id).where(PlanEntry.week_start == to_ws).limit(1)) is not None:
+        return None
     source = session.scalars(select(PlanEntry).where(PlanEntry.week_start == from_ws).order_by(PlanEntry.position)).all()
     offset = to_ws - from_ws
     for pos, e in enumerate(source):

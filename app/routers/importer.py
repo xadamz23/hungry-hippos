@@ -6,7 +6,7 @@ from app.db import get_session
 from app.models import Section
 from app.services import importer, meals as meal_svc
 from app.services.ingredients import parse_line
-from app.services.sections import OTHER, guess_section
+from app.services.sections import OTHER, guess_section, staple_index
 from app.templating import templates
 
 router = APIRouter()
@@ -23,9 +23,10 @@ def import_recipe(request: Request, url: str = Form(""), session: Session = Depe
              "tags": meal_svc.all_tags(session)},
         )
     lines = []
+    staples = staple_index(session)
     for raw in recipe.ingredients:
         parsed = parse_line(raw)
-        section = guess_section(session, parsed.name_key)
+        section = guess_section(session, parsed.name_key, staples)
         lines.append({"raw": raw, "parsed": parsed, "section": section, "unsure": section.name == OTHER})
     sections = session.scalars(select(Section).order_by(Section.position)).all()
     return templates.TemplateResponse(

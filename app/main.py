@@ -1,9 +1,11 @@
+import logging
 from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import DataError
 
 from app.db import SessionLocal
 from app.routers import events
@@ -22,6 +24,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Hungry Hippos", lifespan=lifespan, docs_url=None, redoc_url=None)
+
+
+log = logging.getLogger(__name__)
+
+
+@app.exception_handler(DataError)
+async def data_error(request: Request, exc: DataError):
+    """A value the database can't store (an id or number too big for its column) is the request's fault."""
+    log.warning("rejected %s %s: %s", request.method, request.url.path, exc.orig)
+    return PlainTextResponse("That value is too big.", status_code=400)
 
 
 UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}

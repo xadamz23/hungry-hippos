@@ -179,3 +179,18 @@ def test_list_page_shows_plan_aside(client, seeded):
     planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
     html = client.get("/list").text
     assert 'id="aside"' in html and "Tacos" in html
+
+
+def test_copy_last_twice_copies_once(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    planning.add_entry(seeded, MON, WED, "meal", tacos.id)
+    client.post("/plan/copy-last?week=2026-11-02")
+    r = client.post("/plan/copy-last?week=2026-11-02")
+    assert "already has meals" in r.headers["HX-Trigger"]
+    assert len(seeded.scalars(select(PlanEntry).where(PlanEntry.week_start == date(2026, 11, 2))).all()) == 1
+
+
+def test_copy_last_button_disables_while_sending(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    planning.add_entry(seeded, MON, WED, "meal", tacos.id)
+    assert 'hx-disabled-elt="find button"' in client.get("/plan?week=2026-11-02").text

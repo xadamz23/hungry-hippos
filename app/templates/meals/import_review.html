@@ -15,7 +15,7 @@
     {% if recipe.image_url %}<img src="{{ recipe.image_url }}" alt="" referrerpolicy="no-referrer">{% else %}<span class="ph" style="background:linear-gradient(135deg,#F4E3B5,#C9A35B)"></span>{% endif %}
     <div style="flex:1;min-width:0">
       <label class="sr-only" for="name">Name</label>
-      <input id="name" class="input" name="name" value="{{ recipe.title }}" style="font-weight:700;padding:6px 9px" required>
+      <input id="name" class="input" name="name" value="{{ recipe.title }}" style="font-weight:700;padding:6px 9px" required pattern=".*\S.*" title="Give the meal a name">
       <p class="meta" style="margin-top:4px">{% if recipe.servings %}Serves {{ recipe.servings }}. {% endif %}{% if recipe.total_minutes %}{{ recipe.total_minutes }} min. {% endif %}{{ lines|length }} ingredients.</p>
     </div>
   </div>

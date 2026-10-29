@@ -1,19 +1,24 @@
+import re
 from dataclasses import dataclass
 from datetime import date
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import CookLog, Ingredient, Meal, MealPhoto, PlanEntry, Tag, meal_tags
+from app.models import CookLog, Ingredient, Meal, MealPhoto, PlanEntry, Section, Tag, meal_tags
 from app.services.amounts import fmt, scale
-from app.services.ingredients import display_name, name_key, parse_line
-from app.services.sections import guess_section, remember
+from app.services.ingredients import NAME_MAX, display_name, name_key, parse_line
+from app.services.sections import guess_section, remember, staple_index
+
+
+MEAL_NAME_MAX = 200
+TAG_MAX = 60
 
 
 def _tags(session: Session, names: list[str]) -> list[Tag]:
     out = []
     for raw in names:
-        name = raw.strip()
+        name = raw.strip()[:TAG_MAX].rstrip()
         if not name or any(t.name.lower() == name.lower() for t in out):
             continue
         tag = session.scalar(select(Tag).where(Tag.name.ilike(name)))
@@ -29,6 +34,23 @@ PHOTO_MAX_BYTES = 10 * 1024 * 1024
 
 def photo_url(photo: MealPhoto) -> str:
     return f"/meals/photos/{photo.id}"
+
+
+PHOTO_URL = re.compile(r"/meals/photos/(\d+)")
+
+
+def photo_id_from_url(url: str | None) -> int | None:
+    """The id in an uploaded photo's address, or None for anything else (a web link, empty)."""
+    m = PHOTO_URL.fullmatch(url or "")
+    return int(m.group(1)) if m else None
+
+
+def _owns_photo(session: Session, meal: Meal, url: str) -> bool:
+    photo_id = photo_id_from_url(url)
+    if photo_id is None:
+        return True  # not an uploaded photo
+    photo = session.get(MealPhoto, photo_id) if meal.id is not None and photo_id <= 2**31 - 1 else None
+    return photo is not None and photo.meal_id == meal.id
 
 
 def sniff_image(data: bytes) -> str | None:
@@ -81,7 +103,7 @@ def save_meal(
     if meal is None:
         meal = Meal()
         session.add(meal)
-    meal.name = name.strip() or "Untitled meal"
+    meal.name = name.strip()[:MEAL_NAME_MAX].rstrip() or "Untitled meal"
     meal.steps = "\n".join(s.strip() for s in steps_text.splitlines() if s.strip())
     meal.notes = notes.strip()
     meal.tags = _tags(session, tags)
@@ -90,27 +112,32 @@ def save_meal(
     meal.favorite = favorite
     if source_url is not None:
         meal.source_url = source_url or None
-    if image_url is not None:
+    # Another meal's uploaded photo is ignored: it would break when that meal changes or drops it
+    if image_url is not None and _owns_photo(session, meal, image_url):
         meal.image_url = image_url or None
         _drop_unused_photos(session, meal)
 
     overrides = section_overrides or {}
+    if overrides:
+        sections = set(session.scalars(select(Section.id)))
+        overrides = {pos: sid for pos, sid in overrides.items() if sid in sections}
     meal.ingredients.clear()
     session.flush()
     lines = [line.strip() for line in ingredients_text.splitlines() if line.strip()]
+    staples = staple_index(session) if lines else None
     for pos, line in enumerate(lines):
         parsed = parse_line(line)
         if pos in overrides:
             section_id = overrides[pos]
             remember(session, parsed.name_key, section_id)
         else:
-            section_id = guess_section(session, parsed.name_key).id
+            section_id = guess_section(session, parsed.name_key, staples).id
         meal.ingredients.append(
             Ingredient(
                 position=pos,
                 raw=parsed.raw,
-                name=parsed.name or display_name(parsed.raw),
-                name_key=parsed.name_key or parsed.raw.lower(),
+                name=(parsed.name or display_name(parsed.raw))[:NAME_MAX],
+                name_key=(parsed.name_key or parsed.raw.lower())[:NAME_MAX],
                 amounts=[{"qty": parsed.qty, "unit": parsed.unit}] if parsed.qty is not None else [],
                 section_id=section_id,
             )

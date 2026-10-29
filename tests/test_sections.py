@@ -112,3 +112,16 @@ def test_meal_ingredient_follows_staple_section(seeded):
     _staple(seeded, "Hamburger meat (family pack)", "Meat & Seafood")
     meal = make_meal(seeded, "Tacos", "Hamburger meat (family pack)\nSalsa")
     assert [i.section.name for i in meal.ingredients] == ["Meat & Seafood", "Pasta & Mexican"]
+
+
+def test_staple_index_guesses_the_same(seeded):
+    from app.services.sections import staple_index
+
+    _staple(seeded, "Hamburger meat (family pack)", "Meat & Seafood")
+    _staple(seeded, "Hamburger meat", "Frozen")  # newer staple with a shared key: the older one wins
+    _staple(seeded, "Oat milk", "Deli")
+    remember(seeded, "oat milk", __import__("tests.factories", fromlist=["section"]).section(seeded, "Bakery").id)
+    index = staple_index(seeded)
+    keys = [name_key(n) for n in ["hamburger meat", "hamburger meat family pack", "oat milk", "milk", "bananas",
+                                   "zorblax", "yellow onions", "frozen peas"]]
+    assert [guess_section(seeded, k, index).name for k in keys] == [guess_section(seeded, k).name for k in keys]

@@ -5,7 +5,7 @@ from functools import cache
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models import ItemSectionMap, Section, Staple
 from app.services.ingredients import name_key, parse_line
@@ -109,18 +109,32 @@ def staple_keys(staple: Staple) -> set[str]:
     return {k for k in (staple.name_key, parse_line(staple.name).name_key) if k}
 
 
-def staple_section(session: Session, key: str) -> Section | None:
+def staple_index(session: Session) -> dict[str, Section]:
+    """Every staple key mapped to its section, built once for guessing many lines. The oldest staple wins a
+    shared key, as in staple_section."""
+    index: dict[str, Section] = {}
+    stmt = select(Staple).where(Staple.section_id.is_not(None)).options(selectinload(Staple.section)).order_by(Staple.id)
+    for staple in session.scalars(stmt):
+        for key in staple_keys(staple):
+            index.setdefault(key, staple.section)
+    return index
+
+
+def staple_section(session: Session, key: str, staples: dict[str, Section] | None = None) -> Section | None:
+    if staples is not None:
+        return staples.get(key)
     for staple in session.scalars(select(Staple).where(Staple.section_id.is_not(None)).order_by(Staple.id)):
         if key in staple_keys(staple):
             return staple.section
     return None
 
 
-def guess_section(session: Session, key: str) -> Section:
+def guess_section(session: Session, key: str, staples: dict[str, Section] | None = None) -> Section:
+    """`staples` is a staple_index(), for callers guessing many lines in a row."""
     learned = session.get(ItemSectionMap, key)
     if learned is not None:
         return learned.section
-    from_staple = staple_section(session, key)
+    from_staple = staple_section(session, key, staples)
     if from_staple is not None:
         return from_staple
     wanted = keyword_section(key)

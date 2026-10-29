@@ -145,3 +145,9 @@ def test_saving_staple_without_changing_section_remembers_nothing(client, seeded
     milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
     client.post(f"/more/staples/{milk.id}", data={"name": "Milk", "amount": "", "section_id": milk.section_id})
     assert seeded.scalars(select(ItemSectionMap)).all() == []
+
+
+def test_long_staple_is_cut_to_fit(client, seeded):
+    assert client.post("/more/staples", data={"text": "z" * 500}).status_code == 200
+    staple = seeded.scalar(select(Staple).where(Staple.name.startswith("Z")))
+    assert len(staple.name) == 200 and len(staple.name_key) <= 200

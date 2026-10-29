@@ -188,3 +188,15 @@ def test_fetch_rejects_private_peer_after_connect():
 def test_fetch_allows_public_peer():
     t = httpx.MockTransport(lambda r: httpx.Response(200, text="<p>hi</p>", extensions={"network_stream": _Stream("93.184.215.14")}))
     assert importer.fetch_html(URL, transport=t) == "<p>hi</p>"
+
+
+def test_structured_ignores_huge_yield():
+    html = (FIX / "recipe_jsonld.html").read_text().replace('"4 servings"', '"Makes 99999999999 cookies"')
+    assert importer.parse_structured(html, URL).servings is None
+
+
+def test_claude_ignores_huge_numbers():
+    parsed = importer.RecipeExtraction(title="X", ingredients=["1 onion"], steps=[], servings=10**12,
+                                       total_minutes=10**12, is_recipe=True)
+    r = importer.parse_with_claude("<p>x</p>", URL, client=FakeClient(parsed))
+    assert (r.servings, r.total_minutes) == (None, None)
