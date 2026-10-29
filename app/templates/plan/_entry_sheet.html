@@ -8,6 +8,10 @@
     </div>
     <p class="meta">Move it to another day</p>
     {% with selected=(entry.day or 'none'), current_id=entry.id %}{% include "plan/_day_options.html" %}{% endwith %}
+    {% if item_count %}
+    {# Only Remove sends this: Move ignores it. #}
+    <label class="check"><input type="checkbox" name="remove_items" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span>If removed, also take its {{ item_count }} item{{ 's' if item_count != 1 }} off the list</label>
+    {% endif %}
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
       <button type="button" class="btn danger" hx-post="/plan/entries/{{ entry.id }}/delete" hx-target="#plan-week" hx-swap="outerHTML">Remove</button>
       <button type="submit" class="btn">Move</button>

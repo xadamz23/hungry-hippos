@@ -87,6 +87,63 @@ def test_move_and_remove(seeded):
     assert seeded.scalars(select(PlanEntry)).all() == []
 
 
+def _names_on_list(session):
+    return sorted(i.name for i in session.scalars(select(ListItem)))
+
+
+def test_remove_with_items_takes_the_meals_unchecked_items_off(seeded):
+    from app.services import shopping
+
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n8 tortillas\n1 onion")
+    chili = make_meal(seeded, "Chili", "1 onion")
+    e = planning.add_entry(seeded, ws, None, "meal", tacos.id, add_to_list=True)
+    planning.add_entry(seeded, ws, None, "meal", chili.id, add_to_list=True)
+    shopping.add_text(seeded, "onion")  # typed by hand: not the meal's
+    tortillas = next(i for i in seeded.scalars(select(ListItem)) if i.name == "Tortillas")
+    shopping.toggle(seeded, tortillas.id)  # already in the cart
+    assert planning.list_items_to_remove(seeded, e) == 2
+    assert planning.remove(seeded, e.id, remove_items=True) == 2
+    assert _names_on_list(seeded) == ["Onion", "Onion", "Tortillas"]  # chili's, typed, checked
+
+
+def test_remove_without_items_leaves_the_list(seeded):
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef")
+    e = planning.add_entry(seeded, ws, None, "meal", tacos.id, add_to_list=True)
+    assert planning.remove(seeded, e.id) == 0
+    assert _names_on_list(seeded) == ["Ground beef"]
+
+
+def test_no_item_offer_when_not_on_the_list_or_planned_again(seeded):
+    ws = planning.current_week()
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef")
+    chili = make_meal(seeded, "Chili", "1 onion")
+    not_added = planning.add_entry(seeded, ws, None, "meal", chili.id)
+    assert planning.list_items_to_remove(seeded, not_added) == 0
+    first = planning.add_entry(seeded, ws, ws, "meal", tacos.id, add_to_list=True)
+    planning.add_entry(seeded, ws, None, "meal", tacos.id, add_to_list=True)  # Tacos twice share one set of rows
+    assert planning.list_items_to_remove(seeded, first) == 0
+    assert planning.remove(seeded, first.id, remove_items=True) == 0
+    assert _names_on_list(seeded) == ["Ground beef"]
+
+
+def test_entry_sheet_offers_to_remove_items(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef\n8 tortillas")
+    e = planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id, add_to_list=True)
+    html = client.get(f"/plan/entries/{e.id}/sheet").text
+    assert "also take its 2 items off the list" in html and 'name="remove_items"' in html
+    r = client.post(f"/plan/entries/{e.id}/delete", data={"remove_items": "1"})
+    assert "Removed Tacos from the plan and 2 items from the list" in r.headers["HX-Trigger"]
+    assert _names_on_list(seeded) == []
+
+
+def test_entry_sheet_without_items_has_no_offer(client, seeded):
+    tacos = make_meal(seeded, "Tacos", "1 lb ground beef")
+    e = planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
+    assert 'name="remove_items"' not in client.get(f"/plan/entries/{e.id}/sheet").text
+
+
 def test_copy_last_week(seeded):
     tacos = make_meal(seeded, "Tacos", "x")
     planning.add_entry(seeded, MON, WED, "meal", tacos.id)

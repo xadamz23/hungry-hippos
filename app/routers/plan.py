@@ -115,7 +115,10 @@ def entry_sheet(request: Request, entry_id: int, session: Session = Depends(get_
     entry = planning.get_entry(session, entry_id)
     view = planning.week(session, entry.week_start)
     return templates.TemplateResponse(
-        request, "plan/_entry_sheet.html", {"entry": entry, "view": view, "kind_labels": planning.KIND_LABELS}
+        request,
+        "plan/_entry_sheet.html",
+        {"entry": entry, "view": view, "kind_labels": planning.KIND_LABELS,
+         "item_count": planning.list_items_to_remove(session, entry)},
     )
 
 
@@ -128,10 +131,14 @@ def move_entry(request: Request, entry_id: int, day: str = Form(""), session: Se
 
 
 @router.post("/plan/entries/{entry_id}/delete")
-def delete_entry(request: Request, entry_id: int, session: Session = Depends(get_session)):
-    ws = planning.get_entry(session, entry_id).week_start
-    planning.remove(session, entry_id)
-    return week_response(request, session, ws, close_sheet=True)
+def delete_entry(
+    request: Request, entry_id: int, remove_items: str | None = Form(None), session: Session = Depends(get_session)
+):
+    entry = planning.get_entry(session, entry_id)
+    ws, name = entry.week_start, entry.meal.name if entry.meal else planning.KIND_LABELS.get(entry.kind, "")
+    n = planning.remove(session, entry_id, remove_items=bool(remove_items))
+    toast = f"Removed {name} from the plan and {n} item{'s' if n != 1 else ''} from the list" if n else None
+    return week_response(request, session, ws, toast=toast, close_sheet=True)
 
 
 @router.post("/plan/entries/{entry_id}/cooked")

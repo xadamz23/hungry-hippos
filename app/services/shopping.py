@@ -82,6 +82,29 @@ def add_meal(session: Session, meal: Meal, factor: float = 1.0) -> int:
     return len(meal.ingredients)
 
 
+def meal_items(session: Session, meal_id: int) -> list[ListItem]:
+    """Unchecked items a meal put on the list. Checked ones are already in the cart, so they stay."""
+    return session.scalars(
+        select(ListItem)
+        .where(ListItem.checked.is_(False), ListItem.sources.any(ListItemSource.meal_id == meal_id))
+        .options(selectinload(ListItem.sources))
+    ).all()
+
+
+def remove_meal_items(session: Session, meal_id: int) -> int:
+    """Take a meal's unchecked items off the list. A row older lists merged with another meal keeps that meal's
+    share and only loses this source."""
+    n = 0
+    for item in meal_items(session, meal_id):
+        if all(s.meal_id == meal_id for s in item.sources):
+            session.delete(item)
+            n += 1
+        else:
+            item.sources = [s for s in item.sources if s.meal_id != meal_id]
+    _commit(session)
+    return n
+
+
 def all_staples(session: Session) -> list[Staple]:
     # Most-added first; the manual order on More > Staples breaks ties.
     return session.scalars(

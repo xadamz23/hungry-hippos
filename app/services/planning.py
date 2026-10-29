@@ -93,9 +93,31 @@ def move(session: Session, entry_id: int, day: date | None) -> PlanEntry:
     return entry
 
 
-def remove(session: Session, entry_id: int) -> None:
-    session.delete(get_entry(session, entry_id))
+def list_items_to_remove(session: Session, entry: PlanEntry) -> int:
+    """How many list items removing this entry could also take off the list: its meal's unchecked items, as long
+    as no other plan entry from this week on still needs them (the list keeps one set of rows per meal)."""
+    if entry.meal_id is None or not entry.added_to_list:
+        return 0
+    others = session.scalar(
+        select(PlanEntry.id).where(
+            PlanEntry.meal_id == entry.meal_id,
+            PlanEntry.id != entry.id,
+            PlanEntry.added_to_list.is_(True),
+            PlanEntry.week_start >= current_week(),
+        ).limit(1)
+    )
+    if others is not None:
+        return 0
+    return sum(1 for i in shopping.meal_items(session, entry.meal_id) if all(s.meal_id == entry.meal_id for s in i.sources))
+
+
+def remove(session: Session, entry_id: int, remove_items: bool = False) -> int:
+    """Delete a plan entry, and with remove_items its meal's unchecked list items. Returns how many items went."""
+    entry = get_entry(session, entry_id)
+    meal_id = entry.meal_id if remove_items and list_items_to_remove(session, entry) else None
+    session.delete(entry)
     session.commit()
+    return shopping.remove_meal_items(session, meal_id) if meal_id is not None else 0
 
 
 def add_week_to_list(session: Session, ws: date) -> int:
