@@ -167,11 +167,6 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .star.off { fill: none; stroke: var(--faint); stroke-width: 1.6; }
 
 /* ---------- list ---------- */
-.staples { display: flex; align-items: center; gap: 6px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
-.staples::-webkit-scrollbar { display: none; }
-.staples .lbl { font-size: 14px; color: var(--ink-2); flex: none; margin-right: 2px; }
-.staples button { flex: none; font-size: 14px; font-weight: 700; padding: 6px 10px; border-radius: 6px; background: var(--wash); }
-.staples button:active { background: var(--go-faint); }
 .staples-wrap { position: relative; }
 .suggest {
   position: absolute; top: 6px; left: 0; right: 0; z-index: 20; background: #fff;

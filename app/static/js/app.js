@@ -179,7 +179,7 @@ document.addEventListener("alpine:init", () => {
 
   // List: checked items are hidden by default; the choice is remembered on this device.
   Alpine.data("listView", () => ({
-    // Section headings stick below the header, so track its height (it shrinks while typing hides the staples).
+    // Section headings stick below the header, so track its height.
     init() {
       const top = this.$el.querySelector(".top");
       this._ro = new ResizeObserver(() => this.$el.style.setProperty("--list-top-h", top.offsetHeight + "px"));
