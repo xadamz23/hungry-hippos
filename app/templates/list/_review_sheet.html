@@ -5,7 +5,7 @@
    go with nothing ticked (the week's meals still count as added). #}
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="scrim" onclick="closeSheet()"></div>
-  <form class="sheet review-sheet" hx-post="{{ action }}" hx-target="{{ target }}" hx-swap="{{ swap }}" x-data="listReview"
+  <form class="sheet review-sheet glass-strong" hx-post="{{ action }}" hx-target="{{ target }}" hx-swap="{{ swap }}" x-data="listReview"
         data-allow-none="{{ '1' if allow_none }}">
     <div class="grab"></div>
     <h2 id="sheet-title" style="font-size:20px">Add to the list</h2>
@@ -29,7 +29,7 @@
     </div>
     {% endfor %}
     <div class="rv-add">
-      <button class="btn" type="submit" :disabled="!n && !allowNone" x-text="label()">Add to the list</button>
+      <button class="btn accent" type="submit" :disabled="!n && !allowNone" x-text="label()">Add to the list</button>
     </div>
   </form>
 </div>

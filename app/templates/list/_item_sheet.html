@@ -1,7 +1,7 @@
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title" x-data="itemSheet"
      data-amount="{{ item.amounts|amounts }}">
   <div class="scrim" onclick="closeSheet()"></div>
-  <form class="sheet" hx-post="/list/{{ item.id }}" hx-target="#list-body">
+  <form class="sheet glass-strong" hx-post="/list/{{ item.id }}" hx-target="#list-body">
     <div class="grab"></div>
     <div class="row">
       <h2 id="sheet-title" style="font-size:20px">{{ item.name|cap }}</h2>
@@ -9,19 +9,19 @@
     </div>
     <div class="field" style="margin-top:12px">
       <label for="amt">Amount</label>
-      <div class="add">
-        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(-1)" aria-label="Less">−</button>
+      <div class="add glass-input">
+        <button type="button" class="stepper" @click="bump(-1)" aria-label="Less">−</button>
         <input id="amt" name="amount" x-model="amt" placeholder="e.g. 2 lb" style="text-align:center;font-weight:700">
-        <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
+        <button type="button" class="stepper" @click="bump(1)" aria-label="More">+</button>
       </div>
     </div>
     <div class="field">
       <label for="note">Note</label>
-      <textarea id="note" name="note" class="input" style="min-height:70px" placeholder="e.g. the big tub, ripe ones">{{ item.note or '' }}</textarea>
+      <textarea id="note" name="note" class="input glass-input" style="min-height:70px" placeholder="e.g. the big tub, ripe ones">{{ item.note or '' }}</textarea>
     </div>
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
-      <button type="button" class="btn danger" hx-post="/list/{{ item.id }}/delete" hx-target="#list-body">Remove</button>
-      <button type="submit" class="btn">Save</button>
+      <button type="button" class="btn btn-glass danger" hx-post="/list/{{ item.id }}/delete" hx-target="#list-body">Remove</button>
+      <button type="submit" class="btn accent">Save</button>
     </div>
   </form>
 </div>

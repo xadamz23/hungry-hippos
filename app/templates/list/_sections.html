@@ -28,7 +28,7 @@
 <div class="{{ part_class(meal_groups) }}">
   {% if labels %}<h2 class="grp">Meals</h2>{% endif %}
   {% for meal_name, items in meal_groups %}
-  <section aria-label="{{ meal_name }}">
+  <section class="card glass" aria-label="{{ meal_name }}">
     <div class="sign meal"><svg><use href="#i-meals"/></svg>{{ meal_name }}<span class="cnt">{{ items|rejectattr('checked')|list|length }} left</span></div>
     {% for item in items %}{{ row(item, aisle=True) }}{% endfor %}
   </section>
@@ -39,8 +39,8 @@
 <div class="{{ part_class(groups) }}">
   {% if labels %}<h2 class="grp">Everything else</h2>{% endif %}
   {% for section, items in groups %}
-  <section aria-label="{{ section.name }}">
-    <div class="sign" style="background:{{ section.color }};color:{{ section.color|text_color }}">{{ section.name }}</div>
+  <section class="card glass" aria-label="{{ section.name }}">
+    <div class="sign" style="background:{{ section.color|sign_bg }}">{{ section.name }}</div>
     {% for item in items %}{{ row(item) }}{% endfor %}
   </section>
   {% endfor %}
@@ -51,7 +51,7 @@
   <div class="art"><svg><use href="#i-bag"/></svg></div>
   <h2>Your list is empty</h2>
   <p>Add this week’s meals from the Plan tab, or type an item to get started.</p>
-  <button class="btn" hx-get="/plan/to-list/review?target=list" hx-target="#sheet">Add ingredients from the plan</button>
-  <a class="btn ghost" href="/more/staples">Manage favorites</a>
+  <button class="btn accent" hx-get="/plan/to-list/review?target=list" hx-target="#sheet">Add ingredients from the plan</button>
+  <a class="btn btn-glass" href="/more/staples">Manage favorites</a>
 </div>
 {% endif %}

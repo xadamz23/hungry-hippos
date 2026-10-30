@@ -1,4 +1,4 @@
-<div id="section-rows" data-sortable="/more/sections/order">
+<div id="section-rows" class="card glass inset" data-sortable="/more/sections/order">
   {% for s in sections %}
   <form class="ord" data-id="{{ s.id }}" hx-post="/more/sections/{{ s.id }}" hx-trigger="change" hx-swap="none">
     <input class="sw" type="color" name="color" value="{{ s.color|lower }}" aria-label="Color for {{ s.name }}">

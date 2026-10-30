@@ -2,16 +2,16 @@
 {% for r in rows %}
 {% set h, sub = ('span', 'span') if pick is not none else ('h3', 'p') %}{# a button can't hold headings or paragraphs #}
 {% set txt %}
-    <span class="ph" style="background:{{ r.meal|meal_bg }}" aria-hidden="true"></span>
+    <span class="ph" style="background:{{ r.meal|meal_bg }}">{% if r.meal.favorite %}<span class="fav glass-chip"><svg class="star on" role="img" aria-label="Kids like it"><use href="#i-star"/></svg></span>{% endif %}</span>
     <span class="txt">
-      <{{ h }} class="h3">{{ r.meal.name }}{% if r.meal.favorite %} <svg class="star on" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}</{{ h }}>
+      <{{ h }} class="h3">{{ r.meal.name }}</{{ h }}>
       <{{ sub }} class="sub">{% if r.planned_on and r.planned_on.day %}Planned for {{ r.planned_on.day.strftime('%a') }}{% elif r.planned_on %}Planned this week{% elif r.last_made %}Last made {{ r.last_made|ago }}{% else %}Never made yet{% endif %}</{{ sub }}>
       {% if r.meal.tags %}<span class="tags">{% for t in r.meal.tags %}<span class="tag">{{ t.name }}</span>{% endfor %}</span>{% endif %}
     </span>
 {% endset %}
 {% if pick is not none %}
 {# Choosing for the plan: tapping the meal adds it; the info button shows it first. #}
-<form class="ml pick" hx-post="/plan/entries" hx-target="body">
+<form class="ml pick glass glass-card" hx-post="/plan/entries" hx-target="body">
   <input type="hidden" name="meal_id" value="{{ r.meal.id }}">
   <input type="hidden" name="week" value="{{ week }}">
   <input type="hidden" name="day" value="{{ '' if pick == 'none' else pick }}">
@@ -21,24 +21,24 @@
           aria-label="About {{ r.meal.name }}" title="About this meal"><svg><use href="#i-info"/></svg></button>
 </form>
 {% else %}
-<div class="ml" {% if selected == r.meal.id %}aria-current="true"{% endif %}>
+<div class="ml glass glass-card" {% if selected == r.meal.id %}aria-current="true"{% endif %}>
   <a href="/meals/{{ r.meal.id }}" style="display:contents">{{ txt }}</a>
   {% if r.planned_on %}
-  <span class="go chip soft">Planned</span>
+  <span class="go badge-planned">Planned</span>
   {% else %}
-  <button class="go btn ghost sm" hx-get="/meals/{{ r.meal.id }}/plan" hx-target="#sheet">+ Plan</button>
+  <button class="go btn btn-glass sm" hx-get="/meals/{{ r.meal.id }}/plan" hx-target="#sheet">+ Plan</button>
   {% endif %}
 </div>
 {% endif %}
 {% endfor %}
 {% elif filtered %}
-<div class="empty"><h2>No matches</h2><p>Try a different word, or clear the filters.</p><a class="btn ghost" href="/meals">Show all meals</a></div>
+<div class="empty"><h2>No matches</h2><p>Try a different word, or clear the filters.</p><a class="btn btn-glass" href="/meals">Show all meals</a></div>
 {% else %}
 <div class="empty">
   <div class="art"><svg><use href="#i-bowl"/></svg></div>
   <h2>No meals yet</h2>
   <p>Add the dinners your family eats, by hand or from a recipe link.</p>
-  <a class="btn" href="/meals/new">Add a meal</a>
-  <a class="btn ghost" href="/meals/new?mode=link" style="margin-top:8px">Import from a link</a>
+  <a class="btn accent" href="/meals/new">Add a meal</a>
+  <a class="btn btn-glass" href="/meals/new?mode=link" style="margin-top:8px">Import from a link</a>
 </div>
 {% endif %}

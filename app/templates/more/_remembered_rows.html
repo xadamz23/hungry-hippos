@@ -1,4 +1,4 @@
-<div id="remembered-rows">
+<div id="remembered-rows" {% if rows %}class="card glass inset"{% endif %}>
   {% for r in rows %}
   <div class="ord">
     <span style="flex:1">{{ r.name_key|cap }}</span>

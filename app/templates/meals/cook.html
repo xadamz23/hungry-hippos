@@ -24,18 +24,18 @@
   <details class="all"><summary>All ingredients</summary>
     <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
   </details>
-  <div class="ctl">
-    <button class="btn ghost" type="button" @click="prev()" :disabled="i === 0">Back</button>
+  <div class="ctl glass-strong">
+    <button class="btn btn-glass" type="button" @click="prev()" :disabled="i === 0">Back</button>
     {# Finish logs the meal as cooked (marking it on this week's plan) and goes back to it. #}
-    <button class="btn" type="button" @click="next()" x-show="i < count - 1" {% if steps|length == 1 %}x-cloak{% endif %}>Next step</button>
+    <button class="btn accent" type="button" @click="next()" x-show="i < count - 1" {% if steps|length == 1 %}x-cloak{% endif %}>Next step</button>
     <form method="post" action="/meals/{{ meal.id }}/finish" x-show="i === count - 1" {% if steps|length > 1 %}x-cloak{% endif %}>
-      <button class="btn" type="submit">Finish</button>
+      <button class="btn accent" type="submit">Finish</button>
     </form>
   </div>
   {% else %}
   <p class="stepn" style="margin-top:20px">No steps saved for this meal. Here’s what goes in it:</p>
   <div class="uses">{% for name, amt in scaled %}<div><span>{{ name|cap }}</span><span>{{ amt }}</span></div>{% endfor %}</div>
-  <form class="ctl solo" method="post" action="/meals/{{ meal.id }}/finish"><button class="btn" type="submit">Finish</button></form>
+  <form class="ctl solo glass-strong" method="post" action="/meals/{{ meal.id }}/finish"><button class="btn accent" type="submit">Finish</button></form>
   {% endif %}
 </div>
 {% endblock %}

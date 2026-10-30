@@ -1,23 +1,23 @@
-<div class="top">
+<div class="top glass-strong">
   <div class="row">
     <h1>Meals</h1>
-    <a class="btn sm" href="/meals/new">+ New meal</a>
+    <a class="btn accent sm" href="/meals/new">+ New meal</a>
   </div>
   {% if pick is not none %}
   <div class="note" style="margin:12px 0 0">Choose a meal for {{ pick_label }}. <a class="link" href="/plan?week={{ week }}">Cancel</a></div>
   {% endif %}
   <form style="margin-top:12px" hx-get="/meals" hx-target="#meal-rows" hx-trigger="input changed delay:250ms from:input, submit" hx-push-url="true">
     <label class="sr-only" for="meal-q">Search meals</label>
-    <input id="meal-q" class="input" type="search" name="q" value="{{ q }}" placeholder="Search meals or ingredients" autocomplete="off">
+    <input id="meal-q" class="input glass-input" type="search" name="q" value="{{ q }}" placeholder="Search meals or ingredients" autocomplete="off">
     {% if fav %}<input type="hidden" name="fav" value="true">{% endif %}
     {% if tag %}<input type="hidden" name="tag" value="{{ tag }}">{% endif %}
     {% if pick is not none %}<input type="hidden" name="pick" value="{{ pick }}"><input type="hidden" name="week" value="{{ week }}">{% endif %}
   </form>
   {% set pickq = ('&pick=' ~ pick ~ '&week=' ~ week) if pick is not none else '' %}
-  <div class="chips scroll" style="margin-top:10px">
+  <div class="chips scroll glass" style="margin-top:10px">
     <a class="chip" href="/meals?fav=true{{ pickq }}" aria-pressed="{{ 'true' if fav else 'false' }}">★ Kids like it</a>
     <a class="chip" href="/meals?{{ pickq[1:] }}" aria-pressed="{{ 'true' if not fav and not tag else 'false' }}">All</a>
     {% for t in tags %}<a class="chip" href="/meals?tag={{ t|urlencode }}{{ pickq }}" aria-pressed="{{ 'true' if tag == t else 'false' }}">{{ t }}</a>{% endfor %}
   </div>
 </div>
-<div id="meal-rows">{% include "meals/_rows.html" %}</div>
+<div id="meal-rows" class="meal-grid">{% include "meals/_rows.html" %}</div>

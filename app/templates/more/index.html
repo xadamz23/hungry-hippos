@@ -2,15 +2,21 @@
 {% block title %}More · Hungry Hippos{% endblock %}
 {% block main_class %}narrow-on-desktop{% endblock %}
 {% block main %}
-<div class="top"><h1>More</h1></div>
+<div class="top glass-strong"><h1>More</h1></div>
 <div class="grp">Store</div>
+<div class="card glass inset">
 <a class="mrow" href="/more/sections"><span class="ic"><svg><use href="#i-store"/></svg></span>Section order<span class="r">{{ section_count }} sections<svg class="ch"><use href="#i-chev"/></svg></span></a>
 <a class="mrow" href="/more/staples"><span class="ic"><svg><use href="#i-bolt"/></svg></span>Favorites<span class="r">{{ staple_count }} item{{ 's' if staple_count != 1 }}<svg class="ch"><use href="#i-chev"/></svg></span></a>
 <a class="mrow" href="/more/remembered"><span class="ic"><svg><use href="#i-pin"/></svg></span>Remembered sections<span class="r">{{ remembered_count }}<svg class="ch"><use href="#i-chev"/></svg></span></a>
+</div>
 <div class="grp">Meals</div>
+<div class="card glass inset">
 <a class="mrow" href="/more/history"><span class="ic"><svg><use href="#i-clock"/></svg></span>History<span class="r"><svg class="ch"><use href="#i-chev"/></svg></span></a>
 <div class="mrow"><span class="ic"><svg><use href="#i-spark"/></svg></span>Recipe import with AI<span class="r">{% if ai %}<span class="ok">On</span>{% else %}Off{% endif %}</span></div>
+</div>
 <div class="grp">List</div>
+<div class="card glass inset">
 <button class="mrow" hx-post="/list/clear-checked" hx-swap="none"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear checked items<span class="r">{{ checked_count }}</span></button>
 <button class="mrow warn" hx-post="/list/clear-all" hx-swap="none" hx-confirm="Clear every item off the shopping list?"><span class="ic"><svg><use href="#i-broom"/></svg></span>Clear the whole list</button>
+</div>
 {% endblock %}

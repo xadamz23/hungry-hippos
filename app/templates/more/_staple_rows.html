@@ -1,4 +1,4 @@
-<div id="staple-rows" data-sortable="/more/staples/order">
+<div id="staple-rows" {% if staples %}class="card glass inset"{% endif %} data-sortable="/more/staples/order">
   {% for s in staples %}
   <div class="ord" data-id="{{ s.id }}" data-name="{{ s.name }}" :hidden="!shows($el.dataset.name)">
     <span class="dot" style="background:{{ s.section.color if s.section else '#757575' }}" title="{{ s.section.name if s.section else 'Other' }}"></span>

@@ -168,3 +168,13 @@ def text_color(hex_color: str) -> str:
     white_contrast = 1.05 / (lum + 0.05)
     ink_contrast = (lum + 0.05) / (ink + 0.05)
     return "#fff" if white_contrast >= ink_contrast else "#10291C"
+
+
+def sign_bg(hex_color: str) -> str:
+    """A section's color as a dark tinted heading bar, darkened further if white text wouldn't pass WCAG AA on it."""
+    channels = [int(hex_color.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
+    for share in (0.62, 0.5, 0.4, 0.3):
+        mixed = "#" + "".join(f"{round(c * share + d * (1 - share)):02x}" for c, d in zip(channels, (10, 13, 15)))
+        if 1.05 / (_luminance(mixed) + 0.05) >= 4.5:
+            break
+    return mixed

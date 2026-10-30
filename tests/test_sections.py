@@ -1,7 +1,7 @@
 import pytest
 
 from app.services.ingredients import name_key
-from app.services.sections import guess_section, remember, text_color
+from app.services.sections import _luminance, guess_section, remember, sign_bg, text_color
 
 
 @pytest.mark.parametrize(
@@ -125,3 +125,9 @@ def test_staple_index_guesses_the_same(seeded):
     keys = [name_key(n) for n in ["hamburger meat", "hamburger meat family pack", "oat milk", "milk", "bananas",
                                    "zorblax", "yellow onions", "frozen peas"]]
     assert [guess_section(seeded, k, index).name for k in keys] == [guess_section(seeded, k).name for k in keys]
+
+
+def test_sign_bg_keeps_white_text_readable():
+    for color in ("#2E7D32", "#DB2777", "#FFEB3B", "#FFFFFF"):
+        assert 1.05 / (_luminance(sign_bg(color)) + 0.05) >= 4.5
+    assert sign_bg("#000000") != "#000000"  # still tinted toward the dark bar, not the raw color

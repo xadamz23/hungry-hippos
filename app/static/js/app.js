@@ -22,7 +22,7 @@ function toast(message, undo) {
   if (!root || !message) return;
   root.innerHTML = "";
   const el = document.createElement("div");
-  el.className = "toast";
+  el.className = "toast glass-strong";
   el.setAttribute("role", "status");
   el.textContent = message;
   if (undo) {

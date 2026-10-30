@@ -2,18 +2,18 @@
 {% block title %}Favorites · Hungry Hippos{% endblock %}
 {% block main_class %}narrow-on-desktop{% endblock %}
 {% block main %}
-<div class="top">
+<div class="top glass-strong">
   <a class="back" href="/more"><svg><use href="#i-back"/></svg>More</a>
   <h1 style="margin-top:10px">Favorites</h1>
   <p class="meta">Things you buy all the time. They show up as quick-add buttons on the list.</p>
 </div>
 <div x-data="stapleFilter">
 <form class="body" hx-post="/more/staples" hx-target="#staple-rows" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
-  <div class="add"><label class="sr-only" for="new-staple">New favorite</label><input id="new-staple" name="text" placeholder="Add a favorite, e.g. 1 gal milk" autocomplete="off"><button type="submit">Add</button></div>
+  <div class="add glass-input"><label class="sr-only" for="new-staple">New favorite</label><input id="new-staple" name="text" placeholder="Add a favorite, e.g. 1 gal milk" autocomplete="off"><button class="accent" type="submit">Add</button></div>
 </form>
 <div class="body" style="padding-top:0">
   <label class="sr-only" for="staple-q">Filter favorites</label>
-  <input id="staple-q" class="input" type="search" x-model="q" placeholder="Filter favorites" autocomplete="off">
+  <input id="staple-q" class="input glass-input" type="search" x-model="q" placeholder="Filter favorites" autocomplete="off">
 </div>
 {% include "more/_staple_rows.html" %}
 </div>

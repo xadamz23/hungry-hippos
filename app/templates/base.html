@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10291C">
+<meta name="theme-color" content="#050C14">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Hungry Hippos">
 <title>{% block title %}Hungry Hippos{% endblock %}</title>
 <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
@@ -25,11 +25,12 @@
 {% set body_class %}{% block body_class %}{% endblock %}{% if bare %} bare{% endif %}{% endset %}
 <body class="{{ body_class|trim }}" hx-boost="true">
 {% include "_icons.html" %}
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 {# Boosted navigation swaps only the body's contents, so app.js copies this onto <body> after each swap.
    The bare x-data is needed: Alpine only cleans up removed nodes it has marked, and on first load it marks only x-data
    roots. Without it, swapping out the first page's .shell never runs its components' destroy(). #}
 <div class="shell{% if aside_html|trim %} has-aside{% endif %}" data-body-class="{{ body_class|trim }}" x-data>
-  <nav class="side" aria-label="Main">
+  <nav class="side glass-strong" aria-label="Main">
     <a class="brand" href="/list"><img src="{{ static_url('icons/icon-192.png') }}" alt="">Hungry Hippos</a>
     {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}
     <a class="nav" href="/{{ key }}" {% if active == key %}aria-current="page"{% endif %}><svg class="i"><use href="#i-{{ key }}"/></svg>{{ label }}</a>
@@ -39,7 +40,7 @@
   {% if aside_html|trim %}<aside class="aside" id="aside">{{ aside_html }}</aside>{% endif %}
 </div>
 {% block after_shell %}{% endblock %}
-<nav class="tabs" aria-label="Main">
+<nav class="tabs glass-strong" aria-label="Main">
   {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}
   <a href="/{{ key }}" {% if active == key %}aria-current="page"{% endif %}><span class="pill"><svg class="i"><use href="#i-{{ key }}"/></svg></span>{{ label }}</a>
   {% endfor %}

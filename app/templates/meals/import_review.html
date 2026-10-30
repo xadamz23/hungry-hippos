@@ -3,7 +3,7 @@
 {% block main_class %}narrow-on-desktop{% endblock %}
 {% block main %}
 <form method="post" action="/meals">
-<div class="top">
+<div class="top glass-strong">
   <div class="row">
     <a class="back" href="/meals/new?mode=link"><svg><use href="#i-back"/></svg>Cancel</a>
     <button class="link" type="submit">Save meal</button>
@@ -11,11 +11,11 @@
   <h1 style="margin-top:10px">Review import</h1>
 </div>
 <div class="body">
-  <div class="src">
+  <div class="src glass">
     {% if recipe.image_url %}<img src="{{ recipe.image_url }}" alt="" referrerpolicy="no-referrer">{% else %}<span class="ph" style="background:linear-gradient(135deg,#F4E3B5,#C9A35B)"></span>{% endif %}
     <div style="flex:1;min-width:0">
       <label class="sr-only" for="name">Name</label>
-      <input id="name" class="input" name="name" value="{{ recipe.title }}" style="font-weight:700;padding:6px 9px" required pattern=".*\S.*" title="Give the meal a name">
+      <input id="name" class="input glass-input" name="name" value="{{ recipe.title }}" style="font-weight:700;padding:6px 9px" required pattern=".*\S.*" title="Give the meal a name">
       <p class="meta" style="margin-top:4px">{% if recipe.servings %}Serves {{ recipe.servings }}. {% endif %}{% if recipe.total_minutes %}{{ recipe.total_minutes }} min. {% endif %}{{ lines|length }} ingredients.</p>
     </div>
   </div>
@@ -44,15 +44,15 @@
 
   <details style="margin-top:16px">
     <summary class="label" style="cursor:pointer">Steps ({{ recipe.steps|length }})</summary>
-    <textarea class="input" name="steps" rows="8" style="margin-top:8px">{{ recipe.steps|join('\n') }}</textarea>
+    <textarea class="input glass-input" name="steps" rows="8" style="margin-top:8px">{{ recipe.steps|join('\n') }}</textarea>
   </details>
   <div class="field" style="margin-top:14px">
     <label for="tags">Tags</label>
-    <input id="tags" class="input" name="tags" placeholder="Crockpot, 30 min" autocomplete="off">
+    <input id="tags" class="input glass-input" name="tags" placeholder="Crockpot, 30 min" autocomplete="off">
     {% if tags %}<div class="chips" style="margin-top:8px">{% for t in tags %}<button type="button" class="chip soft" data-name="{{ t }}" onclick="addTag(this)">+ {{ t }}</button>{% endfor %}</div>{% endif %}
   </div>
   <label class="check"><input type="checkbox" name="favorite" value="1"><span class="cb"><svg><use href="#i-check"/></svg></span>Kids like it</label>
-  <button class="btn" type="submit">Save meal</button>
+  <button class="btn accent" type="submit">Save meal</button>
   {% if recipe.source_url %}<p class="hint" style="margin-top:10px">From {{ recipe.source_url }}</p>{% endif %}
 </div>
 </form>

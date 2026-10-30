@@ -1,15 +1,15 @@
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="scrim" onclick="closeSheet()"></div>
-  <div class="sheet">
+  <div class="sheet glass-strong">
     <div class="grab"></div>
     <h2 id="sheet-title" style="font-size:20px">{% if day %}{{ day.strftime('%A') }}, {{ day.strftime('%b') }} {{ day.day }}{% else %}Sometime this week{% endif %}</h2>
     <div style="display:grid;gap:8px;margin-top:14px">
-      <a class="btn" href="/meals?pick={{ day or 'none' }}&amp;week={{ week }}">Choose a meal</a>
+      <a class="btn accent" href="/meals?pick={{ day or 'none' }}&amp;week={{ week }}">Choose a meal</a>
       {% for kind, label in [("leftovers", "Leftovers"), ("eat_out", "Eating out")] %}
       <form hx-post="/plan/entries" hx-target="#plan-week" hx-swap="outerHTML">
         <input type="hidden" name="kind" value="{{ kind }}"><input type="hidden" name="day" value="{{ day or '' }}">
         <input type="hidden" name="week" value="{{ week }}"><input type="hidden" name="next" value="week">
-        <button class="btn ghost" type="submit">{{ label }}</button>
+        <button class="btn btn-glass" type="submit">{{ label }}</button>
       </form>
       {% endfor %}
     </div>

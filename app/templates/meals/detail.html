@@ -3,8 +3,8 @@
 {% block body_class %}meals-split has-actions{% endblock %}
 {% block main %}
 <div class="hero" style="background:{{ meal|meal_bg }}">
-  <a class="back" href="/meals"><svg><use href="#i-back"/></svg>Meals</a>
-  <a class="edit" href="/meals/{{ meal.id }}/edit">Edit</a>
+  <a class="back glass-chip" href="/meals"><svg><use href="#i-back"/></svg>Meals</a>
+  <a class="edit glass-chip" href="/meals/{{ meal.id }}/edit">Edit</a>
 </div>
 <div class="body">
   <div class="row" style="align-items:flex-start">
@@ -21,14 +21,14 @@
   {% if meal.tags %}<div class="chips" style="margin-top:10px">{% for t in meal.tags %}<a class="chip soft" href="/meals?tag={{ t.name|urlencode }}">{{ t.name }}</a>{% endfor %}</div>{% endif %}
   {% if meal.notes %}<div class="note">{{ meal.notes }}</div>{% endif %}
 
-  <div class="detail-actions">
-    <button class="btn ghost" hx-get="/meals/{{ meal.id }}/plan" hx-target="#sheet">+ Plan</button>
-    <button class="btn ghost" hx-get="/meals/{{ meal.id }}/to-list/review" hx-target="#sheet">Add to list</button>
-    <a class="btn" href="/meals/{{ meal.id }}/cook">Cook</a>
+  <div class="detail-actions glass-strong">
+    <button class="btn btn-glass" hx-get="/meals/{{ meal.id }}/plan" hx-target="#sheet">+ Plan</button>
+    <button class="btn btn-glass" hx-get="/meals/{{ meal.id }}/to-list/review" hx-target="#sheet">Add to list</button>
+    <a class="btn accent" href="/meals/{{ meal.id }}/cook">Cook</a>
   </div>
 
   <div class="two" style="margin-top:6px">
-    <div>
+    <div class="panel glass">
       <div class="section-title"><h2>Ingredients</h2></div>
       {% for ing in meal.ingredients %}
       {% set sec = sections.get(ing.section_id) %}
@@ -40,7 +40,7 @@
       <p class="muted">No ingredients yet. <a class="link" href="/meals/{{ meal.id }}/edit">Add some</a></p>
       {% endfor %}
     </div>
-    <div>
+    <div class="panel glass">
       <div class="section-title"><h2>Steps</h2></div>
       {% if meal.step_list %}
       <ol class="steps">{% for s in meal.step_list %}<li>{{ s }}</li>{% endfor %}</ol>

@@ -1,6 +1,6 @@
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="scrim" onclick="closeSheet()"></div>
-  <form class="sheet" hx-post="/plan/entries/{{ entry.id }}/move" hx-target="#plan-week" hx-swap="outerHTML">
+  <form class="sheet glass-strong" hx-post="/plan/entries/{{ entry.id }}/move" hx-target="#plan-week" hx-swap="outerHTML">
     <div class="grab"></div>
     <div class="row">
       <h2 id="sheet-title" style="font-size:20px">{{ entry.meal.name if entry.meal else kind_labels.get(entry.kind, '') }}</h2>
@@ -13,8 +13,8 @@
     <label class="check"><input type="checkbox" name="remove_items" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span>If removed, also take its {{ item_count }} item{{ 's' if item_count != 1 }} off the list</label>
     {% endif %}
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
-      <button type="button" class="btn danger" hx-post="/plan/entries/{{ entry.id }}/delete" hx-target="#plan-week" hx-swap="outerHTML">Remove</button>
-      <button type="submit" class="btn">Move</button>
+      <button type="button" class="btn btn-glass danger" hx-post="/plan/entries/{{ entry.id }}/delete" hx-target="#plan-week" hx-swap="outerHTML">Remove</button>
+      <button type="submit" class="btn accent">Move</button>
     </div>
   </form>
 </div>

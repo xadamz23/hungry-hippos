@@ -8,9 +8,9 @@
 {% set fallback_bg = meal_gradient(meal.name if meal else '') %}
 <div class="photo-banner" x-data="mealPhoto" data-url="{{ v.image_url or '' }}" data-bg="{{ fallback_bg }}"
      style="background:{{ meal|meal_bg if meal else fallback_bg }}" :style="{ background: background() }">
-  <a class="pill p-cancel" href="{{ cancel_url }}"><svg><use href="#i-back"/></svg>Cancel</a>
-  <button class="pill p-save" type="submit" form="meal-form">Save</button>
-  <button class="pill p-photo" :class="{ big: !url }" type="button" @click="openSheet()">
+  <a class="pill p-cancel glass-chip" href="{{ cancel_url }}"><svg><use href="#i-back"/></svg>Cancel</a>
+  <button class="pill p-save accent" type="submit" form="meal-form">Save</button>
+  <button class="pill p-photo glass-chip" :class="{ big: !url }" type="button" @click="openSheet()">
     <svg><use href="#i-camera"/></svg><span x-text="url ? 'Change photo' : 'Add photo'">{{ 'Change photo' if v.image_url else 'Add photo' }}</span>
   </button>
   <input type="hidden" name="image_url" form="meal-form" :value="file ? '' : url" value="{{ v.image_url or '' }}">
@@ -21,7 +21,7 @@
   <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="photo-sheet-title" x-show="sheet" x-cloak
        @keydown.escape.window="sheet && (sheet = false)">
     <div class="scrim" @click="sheet = false"></div>
-    <div class="sheet" x-ref="sheet" tabindex="-1" style="outline:none">
+    <div class="sheet glass-strong" x-ref="sheet" tabindex="-1" style="outline:none">
       <div class="grab"></div>
       <h2 id="photo-sheet-title" style="font-size:20px" x-text="url ? 'Photo' : 'Add a photo'">Add a photo</h2>
       <div class="ways">
@@ -30,11 +30,11 @@
         <button type="button" class="way" @click="showLink()"><span class="ic"><svg><use href="#i-link"/></svg></span><span>Use a link<small>Paste the address of a picture online</small></span></button>
         <button type="button" class="way danger" x-show="url" @click="remove()"><span class="ic"><svg><use href="#i-trash"/></svg></span>Remove photo</button>
       </div>
-      <div class="add" x-show="linking" style="margin-top:14px">
+      <div class="add glass-input" x-show="linking" style="margin-top:14px">
         <label class="sr-only" for="photo-link">Picture link</label>
         <input id="photo-link" x-ref="link" x-model="link" type="url" inputmode="url" placeholder="https://…/photo.jpg" autocomplete="off"
                @keydown.enter.prevent="useLink()">
-        <button type="button" @click="useLink()">Use</button>
+        <button class="accent" type="button" @click="useLink()">Use</button>
       </div>
       <p class="hint" x-show="linkError" x-text="linkError" style="color:var(--warn)"></p>
     </div>
@@ -43,14 +43,14 @@
 <div class="top under-banner">
   <h1>{{ 'Edit meal' if meal else 'New meal' }}</h1>
 {% else %}
-<div class="top">
+<div class="top glass-strong">
   <div class="row">
     <a class="back" href="{{ cancel_url }}"><svg><use href="#i-back"/></svg>Cancel</a>
   </div>
   <h1 style="margin-top:10px">{{ 'Edit meal' if meal else 'New meal' }}</h1>
 {% endif %}
   {% if not meal %}
-  <nav class="seg" aria-label="How to add">
+  <nav class="seg glass" aria-label="How to add">
     <a href="/meals/new" aria-current="{{ 'true' if mode == 'manual' else 'false' }}">Type it in</a>
     <a href="/meals/new?mode=link" aria-current="{{ 'true' if mode == 'link' else 'false' }}">From a link</a>
   </nav>
@@ -62,27 +62,27 @@
   <form method="post" action="/meals/import">
     <div class="field">
       <label for="url">Recipe link</label>
-      <input id="url" class="input" type="url" name="url" value="{{ v.url or '' }}" placeholder="https://www.allrecipes.com/recipe/…" required inputmode="url" autocomplete="off">
+      <input id="url" class="input glass-input" type="url" name="url" value="{{ v.url or '' }}" placeholder="https://www.allrecipes.com/recipe/…" required inputmode="url" autocomplete="off">
       <p class="hint">Paste a link to a recipe page. You can check everything before it’s saved.</p>
     </div>
-    <button class="btn" type="submit">Get recipe</button>
+    <button class="btn accent" type="submit">Get recipe</button>
   </form>
   {% else %}
   <form id="meal-form" method="post" action="{{ '/meals/%d' % meal.id if meal else '/meals' }}" enctype="multipart/form-data">
     {# Only set when a save from the import review failed; leaving it out keeps a meal's existing link #}
     {% if v.source_url %}<input type="hidden" name="source_url" value="{{ v.source_url }}">{% endif %}
-    <div class="field"><label for="name">Name</label><input id="name" class="input" name="name" value="{{ v.name or '' }}" required pattern=".*\S.*" title="Give the meal a name" autocomplete="off"></div>
+    <div class="field"><label for="name">Name</label><input id="name" class="input glass-input" name="name" value="{{ v.name or '' }}" required pattern=".*\S.*" title="Give the meal a name" autocomplete="off"></div>
     <div class="field" x-data="ingredientRows" data-lines="{{ (v.ingredients or '').splitlines()|map('trim')|select|list|tojson|forceescape }}"
          data-units="{{ unit_words()|tojson|forceescape }}">
       <label for="add-ingredient">Ingredients</label>
-      <div class="add">
+      <div class="add glass-input">
         <input id="add-ingredient" x-ref="add" placeholder="Add an ingredient" autocomplete="off" enterkeyhint="enter" x-model="q"
                role="combobox" aria-autocomplete="list" aria-controls="add-suggest" aria-expanded="false"
                :aria-expanded="isOpen()" :aria-activedescendant="activeId()"
                @focus="open = true" @blur="open = false" @input="open = true"
                @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
                @keydown.enter="enter($event)" @keydown.tab="pick($event)" @keydown.escape="open = false">
-        <button type="button" @click="add(q)">Add</button>
+        <button class="accent" type="button" @click="add(q)">Add</button>
       </div>
       {% if staples %}
       <div class="staples-wrap">
@@ -115,42 +115,42 @@
       <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="ing-sheet-title" x-show="editing !== null" x-cloak
            @keydown.escape.window="editing !== null && close()">
         <div class="scrim" @click="close()"></div>
-        <div class="sheet" x-ref="sheet" tabindex="-1" style="outline:none">
+        <div class="sheet glass-strong" x-ref="sheet" tabindex="-1" style="outline:none">
           <div class="grab"></div>
           <h2 id="ing-sheet-title" style="font-size:20px" x-text="draft.name || 'Ingredient'"></h2>
           <div class="field" style="margin-top:12px">
             <label for="ing-amt">Amount</label>
-            <div class="add">
-              <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(-1)" aria-label="Less">−</button>
+            <div class="add glass-input">
+              <button type="button" class="stepper" @click="bump(-1)" aria-label="Less">−</button>
               <input id="ing-amt" x-model="draft.amt" placeholder="e.g. 2 lb" autocomplete="off" style="text-align:center;font-weight:700"
                      @keydown.enter.prevent="save()">
-              <button type="button" style="background:#fff;color:var(--ink);font-size:22px;padding:0 16px" @click="bump(1)" aria-label="More">+</button>
+              <button type="button" class="stepper" @click="bump(1)" aria-label="More">+</button>
             </div>
           </div>
           <div class="field">
             <label for="ing-name">Name</label>
-            <input id="ing-name" class="input" x-model="draft.name" autocomplete="off" @keydown.enter.prevent="save()">
+            <input id="ing-name" class="input glass-input" x-model="draft.name" autocomplete="off" @keydown.enter.prevent="save()">
           </div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
-            <button type="button" class="btn danger" @click="removeEditing()">Remove</button>
-            <button type="button" class="btn" @click="save()">Save</button>
+            <button type="button" class="btn btn-glass danger" @click="removeEditing()">Remove</button>
+            <button type="button" class="btn accent" @click="save()">Save</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="field"><label for="steps">Steps</label><textarea id="steps" class="input" name="steps" rows="5" placeholder="Optional. One step per line.">{{ v.steps or '' }}</textarea></div>
-    <div class="field"><label for="notes">Notes</label><textarea id="notes" class="input" name="notes" rows="2" style="min-height:64px" placeholder="Kids want the cheese on the side">{{ v.notes or '' }}</textarea></div>
+    <div class="field"><label for="steps">Steps</label><textarea id="steps" class="input glass-input" name="steps" rows="5" placeholder="Optional. One step per line.">{{ v.steps or '' }}</textarea></div>
+    <div class="field"><label for="notes">Notes</label><textarea id="notes" class="input glass-input" name="notes" rows="2" style="min-height:64px" placeholder="Kids want the cheese on the side">{{ v.notes or '' }}</textarea></div>
     <div class="field">
       <label for="tags">Tags</label>
-      <input id="tags" class="input" name="tags" value="{{ v.tags or '' }}" placeholder="Crockpot, 30 min" autocomplete="off">
+      <input id="tags" class="input glass-input" name="tags" value="{{ v.tags or '' }}" placeholder="Crockpot, 30 min" autocomplete="off">
       {% if tags %}<div class="chips" style="margin-top:8px">{% for t in tags %}<button type="button" class="chip soft" data-name="{{ t }}" onclick="addTag(this)">+ {{ t }}</button>{% endfor %}</div>{% endif %}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="field"><label for="servings">Serves</label><input id="servings" class="input" name="servings" inputmode="numeric" value="{{ v.servings or '' }}" placeholder="4"></div>
-      <div class="field"><label for="total_minutes">Minutes</label><input id="total_minutes" class="input" name="total_minutes" inputmode="numeric" value="{{ v.total_minutes or '' }}" placeholder="30"></div>
+      <div class="field"><label for="servings">Serves</label><input id="servings" class="input glass-input" name="servings" inputmode="numeric" value="{{ v.servings or '' }}" placeholder="4"></div>
+      <div class="field"><label for="total_minutes">Minutes</label><input id="total_minutes" class="input glass-input" name="total_minutes" inputmode="numeric" value="{{ v.total_minutes or '' }}" placeholder="30"></div>
     </div>
     <label class="check"><input type="checkbox" name="favorite" value="1" {% if v.favorite %}checked{% endif %}><span class="cb"><svg><use href="#i-check"/></svg></span>Kids like it</label>
-    <button class="btn" type="submit">Save meal</button>
+    <button class="btn accent" type="submit">Save meal</button>
   </form>
   {% endif %}
 </div>

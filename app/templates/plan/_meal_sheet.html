@@ -1,6 +1,6 @@
 <div class="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
   <div class="scrim" onclick="closeSheet()"></div>
-  <form class="sheet" hx-post="/plan/entries">
+  <form class="sheet glass-strong" hx-post="/plan/entries">
     <div class="grab"></div>
     <h2 id="sheet-title" style="font-size:20px">Plan {{ meal.name }}</h2>
     <div class="row" style="margin-top:2px">
@@ -16,6 +16,6 @@
     <input type="hidden" name="week" value="{{ view.start }}">
     <input type="hidden" name="next" value="stay">
     <label class="check"><input type="checkbox" name="add_to_list" value="1" checked><span class="cb"><svg><use href="#i-check"/></svg></span>Also add ingredients to the list</label>
-    <button class="btn" type="submit">Plan it</button>
+    <button class="btn accent" type="submit">Plan it</button>
   </form>
 </div>

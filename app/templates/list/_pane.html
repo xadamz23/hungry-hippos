@@ -1,5 +1,5 @@
 <div class="list-view" hx-ext="sse" sse-connect="/events" x-data="listView" :class="{ 'show-checked': showChecked }">
-  <div class="top static" x-data="quickAdd">
+  <div class="top static glass-strong" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
       {# The Plan page shows this pane too, but only the List page itself keeps the screen on. #}
@@ -7,7 +7,7 @@
       <button type="button" class="switch" role="switch" @click="setShowChecked(!showChecked)"
               :aria-checked="showChecked" aria-checked="false">Show checked<span class="track"></span></button>
     </div>
-    <form class="add" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">
+    <form class="add glass-input" style="margin-top:12px" hx-post="/list/add" hx-target="#list-body" hx-on::after-request="if(event.detail.successful) this.reset()" @reset="q = ''">
       <label class="sr-only" for="add-text">Add an item</label>
       <input id="add-text" name="text" placeholder="Add item, e.g. 2 lb apples" autocomplete="off" enterkeyhint="done" x-model="q"
              role="combobox" aria-autocomplete="list" aria-controls="add-suggest" aria-expanded="false"
@@ -15,7 +15,7 @@
              @focus="open = true" @blur="open = false" @input="open = true"
              @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
              @keydown.enter="pick($event)" @keydown.tab="pick($event)" @keydown.escape="open = false">
-      <button type="submit">Add</button>
+      <button class="accent" type="submit">Add</button>
     </form>
     {% include "list/_staples.html" %}
   </div>
