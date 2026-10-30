@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 
 from app.db import get_session
@@ -112,6 +113,14 @@ async def _read_photo(form) -> tuple[bytes, str] | str | None:
     return data, content_type
 
 
+async def _download_linked_photo(kwargs) -> tuple[bytes, str] | None:
+    """Fetch a pasted web image so it doesn't break when the other site moves it. The link stays if this fails."""
+    url = kwargs["image_url"]
+    if not url or meal_svc.photo_id_from_url(url) is not None:
+        return None
+    return await run_in_threadpool(meal_svc.download_photo, url)
+
+
 def _form_kwargs(form) -> dict:
     # section_<i> overrides line i's section; when guess_<i> is sent too, only a changed value counts
     overrides = {}
@@ -186,6 +195,8 @@ async def create(request: Request, session: Session = Depends(get_session)):
     photo = await _read_photo(form)
     if error := _error(photo, kwargs):
         return _form_page(request, session, values=_retry_values(form, kwargs, None, photo), error=error)
+    if photo is None:
+        photo = await _download_linked_photo(kwargs)
     meal = meal_svc.save_meal(session, meal=None, **kwargs)
     if isinstance(photo, tuple):
         meal_svc.set_photo(session, meal, *photo)
@@ -240,6 +251,8 @@ async def update(request: Request, meal_id: int, session: Session = Depends(get_
     photo = await _read_photo(form)
     if error := _error(photo, kwargs):
         return _form_page(request, session, meal=meal, values=_retry_values(form, kwargs, meal, photo), error=error)
+    if photo is None:
+        photo = await _download_linked_photo(kwargs)
     meal_svc.save_meal(session, meal=meal, **kwargs)
     if isinstance(photo, tuple):
         meal_svc.set_photo(session, meal, *photo)

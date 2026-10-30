@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models import CookLog, Ingredient, Meal, MealPhoto, PlanEntry, Section, Tag, meal_tags
 from app.services.amounts import fmt, scale
+from app.services.importer import RecipeImportError, fetch
 from app.services.ingredients import NAME_MAX, display_name, name_key, parse_line
 from app.services.sections import guess_section, remember, staple_index
 
@@ -62,6 +63,16 @@ def sniff_image(data: bytes) -> str | None:
     if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
     return None
+
+
+def download_photo(url: str, transport=None) -> tuple[bytes, str] | None:
+    """A pasted image link's picture as (data, content type), so it's kept here; None if it can't be fetched or used."""
+    try:
+        data, _ = fetch(url, "image/jpeg,image/png,image/webp", PHOTO_MAX_BYTES, transport)
+    except RecipeImportError:
+        return None
+    content_type = sniff_image(data)
+    return (data, content_type) if content_type else None
 
 
 def _drop_unused_photos(session: Session, meal: Meal) -> None:

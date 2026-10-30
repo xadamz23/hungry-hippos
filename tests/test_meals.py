@@ -305,6 +305,44 @@ def test_removing_or_linking_drops_the_uploaded_photo(client, seeded):
     assert meal.image_url is None
 
 
+def test_pasted_image_link_is_downloaded(client, seeded, monkeypatch):
+    monkeypatch.setattr(meals, "download_photo", lambda url: (JPEG, "image/jpeg"))
+    client.post("/meals", data={"name": "Chili", "image_url": "https://example.com/chili.jpg"})
+    meal = seeded.scalar(select(Meal))
+    photo = seeded.scalar(select(MealPhoto))
+    assert meal.image_url == f"/meals/photos/{photo.id}" and photo.data == JPEG
+    # Editing a meal that still has an old web link downloads it then too
+    meal.image_url = "https://example.com/old.jpg"
+    seeded.commit()
+    client.post(f"/meals/{meal.id}", data={"name": "Chili", "image_url": meal.image_url})
+    seeded.refresh(meal)
+    photos = seeded.scalars(select(MealPhoto)).all()
+    assert len(photos) == 1 and meal.image_url == f"/meals/photos/{photos[0].id}"
+
+
+def test_image_link_that_cant_be_downloaded_is_kept(client, seeded, monkeypatch):
+    monkeypatch.setattr(meals, "download_photo", lambda url: None)
+    client.post("/meals", data={"name": "Chili", "image_url": "https://example.com/chili.jpg"})
+    assert seeded.scalar(select(Meal)).image_url == "https://example.com/chili.jpg"
+    assert seeded.scalar(select(MealPhoto)) is None
+
+
+def test_download_photo(monkeypatch):
+    import httpx
+
+    from app.services import importer
+    monkeypatch.setattr(importer, "_resolve_host", lambda host: ["93.184.215.14"])
+
+    def transport(body):
+        return httpx.MockTransport(lambda request: httpx.Response(200, content=body))
+    assert meals.download_photo("https://example.com/a.jpg", transport(JPEG)) == (JPEG, "image/jpeg")
+    assert meals.download_photo("https://example.com/a.jpg", transport(b"<html>not a picture</html>")) is None
+    big = JPEG + b"\x00" * meals.PHOTO_MAX_BYTES
+    assert meals.download_photo("https://example.com/a.jpg", transport(big)) is None
+    monkeypatch.setattr(importer, "_resolve_host", lambda host: ["10.0.0.5"])
+    assert meals.download_photo("https://example.com/a.jpg", transport(JPEG)) is None
+
+
 def test_deleting_a_meal_deletes_its_photo(client, seeded):
     client.post("/meals", data={"name": "Chili"}, files={"photo": ("a.jpg", JPEG, "image/jpeg")})
     meal = seeded.scalar(select(Meal))

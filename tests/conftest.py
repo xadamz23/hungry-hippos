@@ -31,6 +31,16 @@ Base.metadata.create_all(engine)
 TestSession = sessionmaker(bind=engine, expire_on_commit=False)
 
 
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """Web links never resolve, so saving a meal with a pasted image link keeps the link. Tests fake DNS where needed."""
+    from app.services import importer
+
+    def resolve(host):
+        raise OSError("no network in tests")
+    monkeypatch.setattr(importer, "_resolve_host", resolve)
+
+
 @pytest.fixture
 def session():
     tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)

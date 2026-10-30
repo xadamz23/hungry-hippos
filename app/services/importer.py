@@ -83,24 +83,25 @@ def _check_peer(response: httpx.Response) -> None:
         raise RecipeImportError("That link points to a private address, so it can’t be imported.")
 
 
-def _read_capped(response: httpx.Response) -> bytes:
+def _read_capped(response: httpx.Response, max_bytes: int) -> bytes:
     too_big = RecipeImportError("That page is too big to import. Add the recipe by hand instead.")
     length = response.headers.get("content-length", "")
-    if length.isdigit() and int(length) > MAX_BYTES:
+    if length.isdigit() and int(length) > max_bytes:
         raise too_big
     body = bytearray()
     for chunk in response.iter_bytes():
         body.extend(chunk)
-        if len(body) > MAX_BYTES:
+        if len(body) > max_bytes:
             raise too_big
     return bytes(body)
 
 
-def fetch_html(url: str, transport: httpx.BaseTransport | None = None) -> str:
+def fetch(url: str, accept: str, max_bytes: int, transport: httpx.BaseTransport | None = None) -> tuple[bytes, str | None]:
+    """A public web address's body and text encoding, refusing private addresses and anything over max_bytes."""
     url = url.strip()
     with httpx.Client(
         transport=transport, timeout=15.0, follow_redirects=False,
-        headers={"User-Agent": USER_AGENT, "Accept": "text/html,application/xhtml+xml"},
+        headers={"User-Agent": USER_AGENT, "Accept": accept},
     ) as client:
         for _ in range(MAX_REDIRECTS + 1):
             _check_url(url)
@@ -112,13 +113,17 @@ def fetch_html(url: str, transport: httpx.BaseTransport | None = None) -> str:
                         continue
                     if response.status_code >= 400:
                         raise RecipeImportError(f"Couldn’t load that page (HTTP {response.status_code}).")
-                    body = _read_capped(response)
-                    return body.decode(response.encoding or "utf-8", errors="replace")
+                    return _read_capped(response, max_bytes), response.encoding
             except httpx.TimeoutException:
                 raise RecipeImportError("That page took too long to load. Try again in a bit.") from None
             except httpx.HTTPError:
                 raise RecipeImportError("Couldn’t load that page. Check the link and try again.") from None
     raise RecipeImportError("That link redirects too many times.")
+
+
+def fetch_html(url: str, transport: httpx.BaseTransport | None = None) -> str:
+    body, encoding = fetch(url, "text/html,application/xhtml+xml", MAX_BYTES, transport)
+    return body.decode(encoding or "utf-8", errors="replace")
 
 
 # ---------- structured data ----------
