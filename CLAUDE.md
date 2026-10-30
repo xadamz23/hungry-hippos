@@ -12,7 +12,7 @@ Glass classes are defined once, in the "glass components" block at the end of `a
 |---|---|
 | `.aurora` | The fixed glow layer, rendered once in `base.html`. `body` must stay transparent or it hides the layer. |
 | `.glass` | Cards, panels, segmented controls. `.card.glass` is a rounded group of rows; add `.inset` for page margins. |
-| `.glass-strong` | Chrome: header, bottom nav, sidebar, sheets, toasts. |
+| `.glass-strong` | Chrome: header, floating nav, sidebar, sheets, toasts. |
 | `.glass-chip` | Small chips and buttons on top of images. |
 | `.glass-input` | Inputs and the `.add` input-and-button row. |
 | `.accent` | Primary buttons. "On" states (active nav, pressed chips, switches, ticks) share its rule, so add new ones to that selector list. |
@@ -20,6 +20,8 @@ Glass classes are defined once, in the "glass components" block at the end of `a
 | `.pill-radio` | Radio groups: `<label class="pill-radio"><input type="radio">…</label>`. |
 | `.glass-card` | Hover lift for meal cards. Off under `prefers-reduced-motion`. |
 | `.badge-planned` | Example of a badge on an image: dark tinted glass with a ring, legible over bright photos. |
+
+The phone nav (`.tabs`) is a floating bar that hides while the keyboard is up; desktop uses the sidebar. Anything pinned to the bottom sits above it using `--nav-h` and `--nav-bottom`, as `.detail-actions` and `.toast` do.
 
 Gotchas:
 

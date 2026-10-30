@@ -21,7 +21,10 @@
   --sticker: #ffd84a;
   --note: rgba(255, 216, 74, .11);
   --warn: #ffa294;
-  --nav-h: 72px;
+  --nav-h: 68px;
+  /* Space under the floating nav: clear of the screen edge, or of the home indicator. */
+  --nav-bottom: max(12px, calc(var(--safe-b) + 6px));
+  --float-x: max(8px, calc(50% - 304px));
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   color-scheme: dark;
@@ -47,21 +50,26 @@ svg.i { width: 24px; height: 24px; flex: none; }
 /* ---------- shell ---------- */
 .shell { min-height: 100dvh; }
 .side, .aside { display: none; }
-.main { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px); }
+.main { padding-bottom: calc(var(--nav-h) + var(--nav-bottom) + 32px); }
 
 .tabs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  height: calc(var(--nav-h) + var(--safe-b));
-  padding: 8px 6px calc(10px + var(--safe-b));
-  border-top: 1px solid var(--rule);
-  display: flex;
+  position: fixed; left: var(--float-x); right: var(--float-x); bottom: var(--nav-bottom); z-index: 20;
+  height: var(--nav-h); padding: 0 8px;
+  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  border: 1px solid rgba(255, 255, 255, .10); border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 12px 40px rgba(0, 0, 0, .45);
 }
 .tabs a {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 12.5px; font-weight: 700; color: var(--ink-2);
+  display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px;
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
 }
-.tabs .pill { width: 58px; height: 32px; border-radius: 99px; display: grid; place-items: center; }
+.tabs .pill { width: 48px; height: 28px; border-radius: 99px; display: grid; place-items: center; }
+.tabs svg.i { width: 22px; height: 22px; }
 .tabs a[aria-current="page"] { color: #fff; }
+/* Keep the nav from riding on top of the phone keyboard. */
+@media (pointer: coarse) {
+  body:has(input:not([type="radio"], [type="checkbox"]):focus, textarea:focus, select:focus) .tabs { display: none; }
+}
 
 @media (min-width: 900px) {
   .tabs { display: none; }
@@ -355,15 +363,16 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .steps { padding-left: 22px; }
 .steps li { font-size: 16px; line-height: 1.5; margin-bottom: 10px; padding-left: 4px; }
 .detail-actions {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b)); z-index: 15;
-  border-top: 1px solid var(--rule); padding: 10px 14px;
+  position: fixed; left: var(--float-x); right: var(--float-x); bottom: calc(var(--nav-h) + var(--nav-bottom) + 8px); z-index: 15;
+  padding: 8px; border: 1px solid rgba(255, 255, 255, .10); border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 12px 40px rgba(0, 0, 0, .45);
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
 }
 .detail-actions .btn { padding: 11px 6px; font-size: 15px; }
-.has-actions .main { padding-bottom: calc(var(--nav-h) + var(--safe-b) + 90px); }
-.has-actions .toast { bottom: calc(var(--nav-h) + var(--safe-b) + 84px); } /* above the pinned actions */
+.has-actions .main { padding-bottom: calc(var(--nav-h) + var(--nav-bottom) + 96px); }
+.has-actions .toast { bottom: calc(var(--nav-h) + var(--nav-bottom) + 84px); } /* above the pinned actions */
 @media (min-width: 900px) {
-  .detail-actions.glass-strong { position: static; border: 0; padding: 0; margin-top: 14px; display: flex; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .detail-actions.glass-strong { position: static; border: 0; border-radius: 0; box-shadow: none; padding: 0; margin-top: 14px; display: flex; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .detail-actions .btn { width: auto; padding: 9px 16px; }
   .has-actions .main { padding-bottom: 32px; }
   .has-actions .toast { bottom: 24px; }
@@ -489,7 +498,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .empty p { font-size: 15.5px; color: var(--ink-2); margin: 8px 0 18px; line-height: 1.45; }
 .empty :is(.btn, form) + :is(.btn, form) { margin-top: 8px; }
 .toast {
-  position: fixed; left: 50%; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 60;
+  position: fixed; left: 50%; bottom: calc(var(--nav-h) + var(--nav-bottom) + 12px); z-index: 60;
   transform: translateX(-50%); color: #fff; padding: 11px 16px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .14);
   font-weight: 600; font-size: 15px; box-shadow: 0 8px 32px rgba(0, 0, 0, .45); width: max-content; max-width: calc(100% - 32px);
 }
