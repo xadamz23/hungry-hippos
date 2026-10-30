@@ -2,6 +2,8 @@
   <div class="top static" x-data="quickAdd">
     <div class="row">
       <h1>List</h1>
+      {# The Plan page shows this pane too, but only the List page itself keeps the screen on. #}
+      {% if list_is_main %}<span class="awake" x-data="screenAwake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen on</span>{% endif %}
       <button type="button" class="switch" role="switch" @click="setShowChecked(!showChecked)"
               :aria-checked="showChecked" aria-checked="false">Show checked<span class="track"></span></button>
     </div>

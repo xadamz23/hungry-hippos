@@ -25,8 +25,10 @@
 {% set body_class %}{% block body_class %}{% endblock %}{% if bare %} bare{% endif %}{% endset %}
 <body class="{{ body_class|trim }}" hx-boost="true">
 {% include "_icons.html" %}
-{# Boosted navigation swaps only the body's contents, so app.js copies this onto <body> after each swap. #}
-<div class="shell{% if aside_html|trim %} has-aside{% endif %}" data-body-class="{{ body_class|trim }}">
+{# Boosted navigation swaps only the body's contents, so app.js copies this onto <body> after each swap.
+   The bare x-data is needed: Alpine only cleans up removed nodes it has marked, and on first load it marks only x-data
+   roots. Without it, swapping out the first page's .shell never runs its components' destroy(). #}
+<div class="shell{% if aside_html|trim %} has-aside{% endif %}" data-body-class="{{ body_class|trim }}" x-data>
   <nav class="side" aria-label="Main">
     <a class="brand" href="/list"><img src="{{ static_url('icons/icon-192.png') }}" alt="">Hungry Hippos</a>
     {% for key, label in [("list","List"),("plan","Plan"),("meals","Meals"),("more","More")] %}

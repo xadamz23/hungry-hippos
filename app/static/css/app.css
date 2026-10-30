@@ -423,6 +423,8 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .cook .back { color: #a9c2b3; }
 .awake { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--go-light); background: rgba(155, 227, 181, .12); padding: 5px 10px; border-radius: 99px; }
 .awake svg { width: 14px; height: 14px; }
+/* Cook mode is dark; the List header is light. */
+.top .awake { color: var(--go); background: rgba(155, 227, 181, .28); white-space: nowrap; }
 .serv { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #a9c2b3; margin-top: 6px; }
 .serv a, .serv b { background: rgba(255, 255, 255, .1); border-radius: 8px; padding: 3px 11px; color: #fff; font-size: 16px; font-weight: 700; }
 .prog { display: flex; gap: 4px; margin: 18px 0 10px; }

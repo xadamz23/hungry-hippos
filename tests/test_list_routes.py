@@ -155,3 +155,15 @@ def test_clear_checked_route_offers_undo(client, seeded):
     assert toast["message"] == "Cleared 1 checked item"
     client.post(toast["undo"])
     assert sorted(i.name for i in seeded.scalars(select(ListItem))) == ["Eggs", "Milk"]
+
+
+def test_only_the_list_page_keeps_the_screen_on(client):
+    assert 'x-data="screenAwake"' in client.get("/list").text
+    html = client.get("/plan").text
+    assert 'x-data="listView"' in html  # the Plan page's aside shows the list pane too
+    assert 'x-data="screenAwake"' not in html
+
+
+def test_page_shell_is_an_alpine_root(client):
+    # Without this, Alpine never destroys the first-loaded page's components, so the screen would stay on after leaving.
+    assert re.search(r'<div class="shell[^>]*\bx-data>', client.get("/list").text)

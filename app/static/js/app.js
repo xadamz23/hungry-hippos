@@ -421,30 +421,42 @@ window.addTag = (btn) => {
 };
 
 document.addEventListener("alpine:init", () => {
-  // Cook mode: one step at a time, and keep the screen awake while open.
-  Alpine.data("cookMode", () => ({
-    i: 0,
-    count: 0,
+  // Keeps the screen awake while on the page. The browser drops the lock when the page is hidden, so take it again
+  // on return. Put it on the badge that says so: awake is only true while the lock is really held.
+  Alpine.data("screenAwake", () => ({
     awake: false,
     lock: null,
-    async init() {
-      this.count = parseInt(this.$el.dataset.count || "0", 10);
-      await this.keepAwake();
+    destroyed: false,
+    init() {
       this._onVisible = () => document.visibilityState === "visible" && this.keepAwake();
       document.addEventListener("visibilitychange", this._onVisible);
+      this.keepAwake();
     },
     destroy() {
+      this.destroyed = true;
       document.removeEventListener("visibilitychange", this._onVisible);
       if (this.lock) this.lock.release();
     },
     async keepAwake() {
       try {
-        this.lock = await navigator.wakeLock.request("screen");
+        const lock = await navigator.wakeLock.request("screen");
+        // Left the page while the request was pending: don't hold the screen on for the rest of the app.
+        if (this.destroyed) return lock.release();
+        this.lock = lock;
         this.awake = true;
-        this.lock.addEventListener("release", () => (this.awake = false));
+        lock.addEventListener("release", () => (this.awake = false));
       } catch {
         this.awake = false;
       }
+    },
+  }));
+
+  // Cook mode: one step at a time.
+  Alpine.data("cookMode", () => ({
+    i: 0,
+    count: 0,
+    init() {
+      this.count = parseInt(this.$el.dataset.count || "0", 10);
     },
     next() {
       if (this.i < this.count - 1) this.i++;

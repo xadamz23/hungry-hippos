@@ -4,7 +4,7 @@
 <div class="cook" x-data="cookMode" data-count="{{ steps|length }}">
   <div class="row">
     <a class="back" href="/meals/{{ meal.id }}"><svg><use href="#i-back"/></svg>Done</a>
-    <span class="awake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen stays on</span>
+    <span class="awake" x-data="screenAwake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen stays on</span>
   </div>
   <h2 style="margin-top:16px;font-size:20px">{{ meal.name }}</h2>
   <div class="serv">
