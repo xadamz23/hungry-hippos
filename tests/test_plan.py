@@ -207,18 +207,14 @@ def test_plan_entry_route_from_pick_mode(client, seeded):
     assert seeded.scalar(select(PlanEntry)).day is None
 
 
-def test_pick_row_tap_shows_plan_with_undo(client, seeded):
+def test_pick_row_tap_shows_plan_without_a_toast(client, seeded):
     tacos = make_meal(seeded, "Tacos", "x")
     r = client.post("/plan/entries", data={"meal_id": tacos.id, "week": "2026-10-26", "day": "2026-10-28", "next": "pick"},
                     headers={"HX-Request": "true"})
-    entry = seeded.scalar(select(PlanEntry))
+    assert seeded.scalar(select(PlanEntry)) is not None
     assert r.status_code == 200 and "<h1>Plan</h1>" in r.text and "Tacos" in r.text
     assert r.headers["HX-Push-Url"] == "/plan?week=2026-10-26"
-    toast = json.loads(r.headers["HX-Trigger-After-Settle"])["toast"]
-    assert toast["message"].startswith("Planned Tacos for ")
-    assert toast["undo"] == f"/plan/entries/{entry.id}/delete"
-    client.post(toast["undo"])
-    assert seeded.scalar(select(PlanEntry)) is None
+    assert "HX-Trigger-After-Settle" not in r.headers and "HX-Trigger" not in r.headers
 
 
 def test_pick_sheet_adds_to_the_chosen_day(client, seeded):

@@ -69,13 +69,12 @@ def day_sheet(request: Request, day: str = "none", week: date | None = None):
     return templates.TemplateResponse(request, "plan/_day_sheet.html", {"day": d, "week": _ws(d or week)})
 
 
-def _when(day: date | None, ws: date, what: str = "") -> str:
-    planned = f"Planned {what}" if what else "Planned"
+def _when(day: date | None, ws: date) -> str:
     if day:
-        return f"{planned} for {day:%A}" if planning.week_start(day) == planning.current_week() else f"{planned} for {day:%a %b} {day.day}"
+        return f"Planned for {day:%A}" if planning.week_start(day) == planning.current_week() else f"Planned for {day:%a %b} {day.day}"
     if ws == planning.current_week():
-        return f"{planned} for this week"
-    return f"{planned} for the week of {ws:%b} {ws.day}"
+        return "Planned for this week"
+    return f"Planned for the week of {ws:%b} {ws.day}"
 
 
 @router.post("/plan/entries")
@@ -99,12 +98,9 @@ def add_entry(
         return week_response(request, session, ws, close_sheet=True)
     url = f"/plan?week={ws}"
     if next == "pick" and request.headers.get("HX-Request"):
-        # Picked from the meal list: show the plan with an Undo toast in case the tap was a slip.
+        # Picked from the meal list: show the plan. No toast, since it would sit on the Add ingredients button.
         response = page_response(request, session, ws)
         response.headers["HX-Push-Url"] = url
-        toast = {"message": _when(d, ws, entry.meal.name), "undo": f"/plan/entries/{entry.id}/delete",
-                 "target": "#plan-week", "swap": "outerHTML"}
-        response.headers["HX-Trigger-After-Settle"] = json.dumps({"toast": toast})
         return response
     if request.headers.get("HX-Request"):
         return Response(status_code=204, headers={"HX-Redirect": url})
