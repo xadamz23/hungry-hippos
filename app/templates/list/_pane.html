@@ -7,12 +7,13 @@
       {# Show checked and Clear checked share one small menu, so the header row still fits beside Screen on. #}
       <div class="checked-menu" x-data="{ open: false }" @click.outside="open = false"
            @keydown.escape="if (open) { open = false; $refs.btn.focus() }">
-        <button type="button" class="menu-btn btn-glass" x-ref="btn" aria-haspopup="true" aria-controls="checked-menu"
+        <button type="button" class="menu-btn btn-glass" x-ref="btn" aria-haspopup="true"
                 aria-expanded="false" :aria-expanded="open"
                 @click="open = !open; if (open) $nextTick(() => $refs.first.focus())">
           <span x-text="checked">{{ (total - left) if total is defined else 0 }}</span> checked<svg><use href="#i-chev"/></svg>
         </button>
-        <div id="checked-menu" class="menu-pop" x-show="open" x-cloak>
+        {# No id: the Plan page has this pane too, and htmx settling between same-id elements would undo x-show's display:none. #}
+        <div class="menu-pop" x-show="open" x-cloak>
           <button type="button" class="switch" role="switch" x-ref="first" @click="setShowChecked(!showChecked)"
                   :aria-checked="showChecked" aria-checked="false">Show checked<span class="track"></span></button>
           <button type="button" class="danger" hx-post="/list/clear-checked" hx-target="#list-body"
