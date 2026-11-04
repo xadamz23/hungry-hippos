@@ -212,8 +212,14 @@ document.addEventListener("alpine:init", () => {
       // With checked items hidden, a row checked off stays in view briefly so the tick registers before it goes.
       // The row's own hx-on:click has already toggled .done by the time the click reaches here.
       // Swaps of the list (the toggle's response and the SSE refresh it causes) wait until the pause is over.
+      // The header's "N checked" count is read off the rows: on load, after each list swap, and right after a tick.
+      this.countChecked();
+      this.$el.addEventListener("htmx:afterSettle", (e) => {
+        if (e.detail.target.id === "list-body") this.countChecked();
+      });
       this.$el.addEventListener("click", (e) => {
         const row = e.target.closest(".tick")?.closest(".it");
+        if (row) this.countChecked();
         if (!row || this.showChecked || !row.classList.contains("done")) return;
         row.classList.add("lingering");
         this.lingerUntil = Date.now() + 450;
@@ -224,6 +230,10 @@ document.addEventListener("alpine:init", () => {
       });
     },
     lingerUntil: 0,
+    checked: 0,
+    countChecked() {
+      this.checked = this.$el.querySelectorAll("#list-body .it.done").length;
+    },
     destroy() {
       this._ro?.disconnect();
     },

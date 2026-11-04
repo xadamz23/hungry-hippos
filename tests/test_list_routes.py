@@ -13,6 +13,7 @@ def test_list_page_renders_sections_without_counts(client, seeded):
     html = client.get("/list").text
     assert "left</small>" not in html
     assert 'role="switch"' in html and "Show checked" in html
+    assert re.search(r'<span x-text="checked">0</span> checked', html)
     assert "All checked off" not in html
     assert "checked-strip" not in html
     sign = re.search(r'<div class="sign"[^>]*>(.*?)</div>', html, re.S).group(1)
@@ -118,6 +119,10 @@ def test_checked_strip_counts_checked_items(client, seeded):
     html = client.get("/list/items").text
     assert "2 checked off" in html
     assert 'hx-post="/list/clear-checked"' in html
+    # The header menu starts with the same count and its own Clear, so it works with checked items hidden.
+    page = client.get("/list").text
+    assert '<span x-text="checked">2</span> checked' in page
+    assert "Clear checked items" in page
 
 
 def test_clear_routes(client, seeded):
