@@ -246,6 +246,25 @@ document.addEventListener("alpine:init", () => {
     },
   }));
 
+  // The List header's "N checked" menu. While it's open, a tap outside only closes it: the capture-phase
+  // listeners stop that tap before it reaches what's underneath, so it doesn't open an item's sheet or
+  // tick a row. mousedown is stopped too, so a tap on the add box doesn't focus it and raise the keyboard.
+  Alpine.data("checkedMenu", () => ({
+    open: false,
+    init() {
+      this._outside = (e) => {
+        if (!this.open || this.$el.contains(e.target)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "click") this.open = false;
+      };
+      for (const type of ["mousedown", "click"]) window.addEventListener(type, this._outside, true);
+    },
+    destroy() {
+      for (const type of ["mousedown", "click"]) window.removeEventListener(type, this._outside, true);
+    },
+  }));
+
   // Staples page: the filter box hides rows whose name doesn't contain the typed text. Drag handles hide
   // while filtering, since reordering a partial list is confusing.
   Alpine.data("stapleFilter", () => ({

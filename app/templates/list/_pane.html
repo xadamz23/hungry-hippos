@@ -5,8 +5,7 @@
       {# The Plan page shows this pane too, but only the List page itself keeps the screen on. #}
       {% if list_is_main %}<span class="awake" x-data="screenAwake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen on</span>{% endif %}
       {# Show checked and Clear checked share one small menu, so the header row still fits beside Screen on. #}
-      <div class="checked-menu" x-data="{ open: false }" @click.outside="open = false"
-           @keydown.escape="if (open) { open = false; $refs.btn.focus() }">
+      <div class="checked-menu" x-data="checkedMenu" @keydown.escape="if (open) { open = false; $refs.btn.focus() }">
         <button type="button" class="menu-btn btn-glass" x-ref="btn" aria-haspopup="true"
                 aria-expanded="false" :aria-expanded="open"
                 @click="open = !open; if (open) $nextTick(() => $refs.first.focus())">
