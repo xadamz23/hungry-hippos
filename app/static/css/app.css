@@ -248,10 +248,12 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .checked-strip .clr svg { width: 17px; height: 17px; }
 /* The List header's "N checked" menu: Show checked and Clear checked items. */
 .checked-menu { position: relative; flex: none; }
+/* 34px to sit level with the Screen on pill; the ::before keeps the tap target 44px tall. */
 .menu-btn {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px 0 14px; border-radius: 99px;
-  font-size: 14.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  position: relative; display: inline-flex; align-items: center; gap: 5px; height: 34px; padding: 0 10px 0 12px; border-radius: 99px;
+  font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
+.menu-btn::before { content: ""; position: absolute; inset: -5px 0; }
 .menu-btn svg { width: 16px; height: 16px; color: var(--ink-2); transform: rotate(90deg); transition: transform .18s; }
 .menu-btn[aria-expanded="true"] svg { transform: rotate(-90deg); }
 /* Near-opaque: it sits inside the glass header, so a backdrop blur here couldn't see the list behind it. */
