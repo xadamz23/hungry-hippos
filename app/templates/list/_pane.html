@@ -4,7 +4,8 @@
       <h1>List</h1>
       {# The Plan page shows this pane too, but only the List page itself keeps the screen on. #}
       {% if list_is_main %}<span class="awake" x-data="screenAwake" x-show="awake" x-cloak><svg><use href="#i-sun"/></svg>Screen on</span>{% endif %}
-      {# Show checked and Clear checked share one small menu, so the header row still fits beside Screen on. #}
+      {# Show checked and Clear checked share one small menu, so the header row still fits beside Screen on.
+         Both close it: while it's open a tap elsewhere only closes it, which would eat the next tap on a row. #}
       <div class="checked-menu" x-data="checkedMenu" @keydown.escape="if (open) { open = false; $refs.btn.focus() }">
         <button type="button" class="menu-btn btn-glass" x-ref="btn" aria-haspopup="true"
                 aria-expanded="false" :aria-expanded="open"
@@ -13,7 +14,7 @@
         </button>
         {# No id: the Plan page has this pane too, and htmx settling between same-id elements would undo x-show's display:none. #}
         <div class="menu-pop" x-show="open" x-cloak>
-          <button type="button" class="switch" role="switch" x-ref="first" @click="setShowChecked(!showChecked)"
+          <button type="button" class="switch" role="switch" x-ref="first" @click="setShowChecked(!showChecked); open = false; $refs.btn.focus()"
                   :aria-checked="showChecked" aria-checked="false">Show checked<span class="track"></span></button>
           <button type="button" class="danger" hx-post="/list/clear-checked" hx-target="#list-body"
                   :disabled="!checked" @click="open = false"><svg><use href="#i-trash"/></svg>Clear checked items</button>
