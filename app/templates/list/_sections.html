@@ -1,11 +1,10 @@
 {% macro row(item, aisle=False) %}
   <div class="it{% if item.checked %} done{% endif %}">
-    <button class="tick" hx-post="/list/{{ item.id }}/toggle" hx-target="#list-body"
+    {# Tap checks it off (or back on); a long press or right-click opens the edit sheet (app.js listView). #}
+    <button class="what" hx-post="/list/{{ item.id }}/toggle" hx-target="#list-body"
             hx-on:click="this.closest('.it').classList.toggle('done')"
-            aria-label="{% if item.checked %}Uncheck{% else %}Check off{% endif %} {{ item.name }}">
-      <span class="cb"><svg><use href="#i-check"/></svg></span>
-    </button>
-    <button class="what" hx-get="/list/{{ item.id }}/edit" hx-target="#sheet">
+            data-edit="/list/{{ item.id }}/edit" aria-pressed="{{ 'true' if item.checked else 'false' }}"
+            aria-description="Long press to edit">
       <span>
         <span class="n" style="display:block">{{ item.name|cap }}{% if item.note %}<svg class="note-ic" role="img" aria-label="Has a note"><title>{{ item.note }}</title><use href="#i-note"/></svg>{% endif %}</span>
         {% if aisle and item.section %}<span class="aisle"><i style="background:{{ item.section.color }}"></i>{{ item.section.name }}</span>{% endif %}

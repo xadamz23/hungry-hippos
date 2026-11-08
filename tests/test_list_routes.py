@@ -58,6 +58,35 @@ def test_toggle_route(client, seeded):
     r = client.post(f"/list/{item.id}/toggle")
     assert 'class="it done"' in r.text
     assert "All checked off" in r.text
+    toast = json.loads(r.headers["HX-Trigger"])["toast"]
+    assert toast["message"] == "Checked off Milk"
+    assert toast["undo"] == f"/list/{item.id}/uncheck" and toast["target"] == "#list-body" and toast["ms"] == 3000
+
+
+def test_untoggle_sends_no_toast(client, seeded):
+    item = shopping.add_text(seeded, "milk")
+    shopping.toggle(seeded, item.id)
+    r = client.post(f"/list/{item.id}/toggle")
+    assert 'class="it done"' not in r.text
+    assert "HX-Trigger" not in r.headers
+
+
+def test_uncheck_route_is_idempotent(client, seeded):
+    item = shopping.add_text(seeded, "milk")
+    shopping.toggle(seeded, item.id)
+    for _ in range(2):
+        r = client.post(f"/list/{item.id}/uncheck")
+        assert r.status_code == 200 and 'class="it done"' not in r.text
+    seeded.refresh(item)
+    assert not item.checked and item.checked_at is None
+    assert client.post("/list/9999/uncheck").status_code == 404
+
+
+def test_rows_tap_to_check_and_long_press_to_edit(client, seeded):
+    item = shopping.add_text(seeded, "milk")
+    html = client.get("/list").text
+    assert 'class="tick"' not in html
+    assert f'hx-post="/list/{item.id}/toggle"' in html and f'data-edit="/list/{item.id}/edit"' in html
 
 
 def test_staple_route(client, seeded):

@@ -147,12 +147,18 @@ def add_staple(session: Session, staple_id: int) -> ListItem:
     return item
 
 
+def set_checked(session: Session, item_id: int, checked: bool) -> ListItem:
+    item = get_item(session, item_id)
+    if item.checked != checked:
+        item.checked = checked
+        item.checked_at = datetime.now(UTC) if checked else None
+        _commit(session)
+    return item
+
+
 def toggle(session: Session, item_id: int) -> ListItem:
     item = get_item(session, item_id)
-    item.checked = not item.checked
-    item.checked_at = datetime.now(UTC) if item.checked else None
-    _commit(session)
-    return item
+    return set_checked(session, item_id, not item.checked)
 
 
 def update(session: Session, item_id: int, amount_text: str, note: str) -> ListItem:

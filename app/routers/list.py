@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.services import shopping
-from app.templating import templates
+from app.templating import cap, templates
 
 router = APIRouter(prefix="/list")
 
@@ -87,7 +87,18 @@ def clear_all(request: Request, session: Session = Depends(get_session)):
 
 @router.post("/{item_id}/toggle")
 def toggle(request: Request, item_id: int, session: Session = Depends(get_session)):
-    shopping.toggle(session, item_id)
+    item = shopping.toggle(session, item_id)
+    toast = None
+    if item.checked:
+        toast = {"message": f"Checked off {cap(item.name)}", "undo": f"/list/{item.id}/uncheck",
+                 "target": "#list-body", "swap": "innerHTML", "ms": 3000}
+    return items_response(request, session, toast=toast)
+
+
+@router.post("/{item_id}/uncheck")
+def uncheck(request: Request, item_id: int, session: Session = Depends(get_session)):
+    """The Undo on the "Checked off" toast. Idempotent, so a second tap can't check the item off again."""
+    shopping.set_checked(session, item_id, False)
     return items_response(request, session)
 
 

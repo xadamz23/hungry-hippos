@@ -17,7 +17,7 @@ document.addEventListener("keydown", (e) => {
 // `undo` ({url, target, swap}) is a URL to POST that reverses what just happened; its response goes into `target`
 // when that's on the page, and is otherwise ignored (or reloads the page itself with HX-Refresh).
 let toastTimer;
-function toast(message, undo) {
+function toast(message, undo, ms) {
   const root = document.getElementById("toast-root");
   if (!root || !message) return;
   root.innerHTML = "";
@@ -39,7 +39,7 @@ function toast(message, undo) {
   }
   root.appendChild(el);
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.remove(), undo ? 6000 : 2600);
+  toastTimer = setTimeout(() => el.remove(), ms ?? (undo ? 6000 : 2600));
 }
 window.toast = toast;
 
@@ -59,10 +59,10 @@ document.addEventListener("htmx:beforeHistorySave", () => {
   document.getElementById("toast-root")?.replaceChildren();
 });
 
-// HX-Trigger sends {"toast": "text"} (detail.value) or {"toast": {"message", "undo": url, "target", "swap"}}.
+// HX-Trigger sends {"toast": "text"} (detail.value) or {"toast": {"message", "undo": url, "target", "swap", "ms"}}.
 document.addEventListener("toast", (e) => {
   const d = e.detail;
-  toast(d.message || d.value || d, d.undo && { url: d.undo, target: d.target, swap: d.swap });
+  toast(d.message || d.value || d, d.undo && { url: d.undo, target: d.target, swap: d.swap }, d.ms);
 });
 document.addEventListener("close-sheet", closeSheet);
 
@@ -135,7 +135,7 @@ function quickAddBase() {
     },
     // How many typed words, counting back from the last, each start a word in the name. 0 means no match.
     score(name, terms) {
-      const parts = name.toLowerCase().split(/\s+/);
+      const parts = name.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
       let n = 0;
       for (const t of terms) {
         if (!parts.some((part) => part.startsWith(t))) break;
@@ -217,8 +217,9 @@ document.addEventListener("alpine:init", () => {
       this.$el.addEventListener("htmx:afterSettle", (e) => {
         if (e.detail.target.id === "list-body") this.countChecked();
       });
+      this.initLongPress();
       this.$el.addEventListener("click", (e) => {
-        const row = e.target.closest(".tick")?.closest(".it");
+        const row = e.target.closest("#list-body .it .what")?.closest(".it");
         if (row) this.countChecked();
         if (!row || this.showChecked || !row.classList.contains("done")) return;
         row.classList.add("lingering");
@@ -227,6 +228,53 @@ document.addEventListener("alpine:init", () => {
       this.$el.addEventListener("htmx:beforeSwap", (e) => {
         const wait = this.lingerUntil - Date.now();
         if (wait > 0 && e.detail.target.id === "list-body") e.detail.swapOverride = `innerHTML swap:${wait}ms`;
+      });
+    },
+    // A tap on a row checks it off; holding it for LONG_PRESS ms (or right-click / the menu key) opens its edit
+    // sheet instead. The click that ends a long press is swallowed in the capture phase, before htmx and the
+    // row's hx-on:click see it. Moving the finger (a scroll) cancels the press.
+    initLongPress() {
+      const LONG_PRESS = 500;
+      let timer, pressing = false, startX, startY, suppressUntil = 0;
+      const cancel = () => clearTimeout(timer);
+      const openSheet = (btn) => {
+        suppressUntil = Date.now() + 800;
+        htmx.ajax("GET", btn.dataset.edit, { target: "#sheet" });
+      };
+      this.$el.addEventListener("pointerdown", (e) => {
+        const btn = e.target.closest("#list-body .it .what");
+        // A new press starts a new gesture: only the click that ends a long press is swallowed, not this one's.
+        // (The sheet usually covers the row before the finger lifts, so that click often never comes.)
+        suppressUntil = 0;
+        if (!btn || e.button > 0) return;
+        pressing = true;
+        startX = e.clientX; startY = e.clientY;
+        cancel();
+        timer = setTimeout(() => { pressing = false; navigator.vibrate?.(15); openSheet(btn); }, LONG_PRESS);
+      });
+      // A press that moves is neither a tap nor a long press, so the click it may end with is swallowed too.
+      this.$el.addEventListener("pointermove", (e) => {
+        if (!pressing || Math.hypot(e.clientX - startX, e.clientY - startY) <= 10) return;
+        pressing = false;
+        cancel();
+        suppressUntil = Date.now() + 800;
+      });
+      for (const type of ["pointerup", "pointercancel", "pointerleave"]) {
+        this.$el.addEventListener(type, () => { pressing = false; cancel(); });
+      }
+      this.$el.addEventListener("scroll", cancel, true);
+      this.$el.addEventListener("click", (e) => {
+        if (Date.now() > suppressUntil || !e.target.closest("#list-body .it .what")) return;
+        suppressUntil = 0;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }, true);
+      this.$el.addEventListener("contextmenu", (e) => {
+        const btn = e.target.closest("#list-body .it .what");
+        if (!btn) return;
+        e.preventDefault();
+        cancel();
+        if (Date.now() > suppressUntil) openSheet(btn);
       });
     },
     lingerUntil: 0,
