@@ -29,7 +29,7 @@
 <div class="plan-cta">
   {% if view.pending_count %}
   <button class="btn accent" hx-get="/plan/to-list/review?week={{ view.start }}" hx-target="#sheet">Add ingredients for {{ view.pending_count }} meal{{ 's' if view.pending_count != 1 }}</button>
-  {% else %}
+  {% elif view.has_meals %}
   <p class="muted small" style="text-align:center">Everything planned this week is on the list.</p>
   {% endif %}
 </div>

@@ -36,7 +36,6 @@ def plan_context(session: Session, ws: date) -> dict:
         "prev_week": prev,
         "next_week": ws + timedelta(days=7),
         "prev_count": planning.entry_count(session, prev),
-        "kind_labels": planning.KIND_LABELS,
     }
 
 
@@ -84,13 +83,14 @@ def add_entry(
     day: str = Form(""),
     kind: str = Form("meal"),
     meal_id: int | None = Form(None),
+    title: str | None = Form(None),
     add_to_list: str | None = Form(None),
     next: str = Form("plan"),
     session: Session = Depends(get_session),
 ):
     d = _parse_day(day)
     ws = _ws(d or week)
-    entry = planning.add_entry(session, ws, d, kind, meal_id, add_to_list=bool(add_to_list))
+    entry = planning.add_entry(session, ws, d, kind, meal_id, add_to_list=bool(add_to_list), title=title)
     message = _when(d, ws) + (" and added to the list" if entry.added_to_list else "")
     if next == "stay":
         return Response(status_code=204, headers={"HX-Trigger": json.dumps({"toast": message, "close-sheet": True})})
@@ -114,16 +114,21 @@ def entry_sheet(request: Request, entry_id: int, session: Session = Depends(get_
     return templates.TemplateResponse(
         request,
         "plan/_entry_sheet.html",
-        {"entry": entry, "view": view, "kind_labels": planning.KIND_LABELS,
-         "item_count": planning.list_items_to_remove(session, entry)},
+        {"entry": entry, "view": view, "item_count": planning.list_items_to_remove(session, entry)},
     )
 
 
 @router.post("/plan/entries/{entry_id}/move")
-def move_entry(request: Request, entry_id: int, day: str = Form(""), session: Session = Depends(get_session)):
+def move_entry(
+    request: Request,
+    entry_id: int,
+    day: str = Form(""),
+    title: str | None = Form(None),
+    session: Session = Depends(get_session),
+):
     entry = planning.get_entry(session, entry_id)
     original_week = entry.week_start
-    planning.move(session, entry_id, _parse_day(day))
+    planning.move(session, entry_id, _parse_day(day), title=title)
     return week_response(request, session, original_week, close_sheet=True)
 
 
@@ -132,7 +137,7 @@ def delete_entry(
     request: Request, entry_id: int, remove_items: str | None = Form(None), session: Session = Depends(get_session)
 ):
     entry = planning.get_entry(session, entry_id)
-    ws, name = entry.week_start, entry.meal.name if entry.meal else planning.KIND_LABELS.get(entry.kind, "")
+    ws, name = entry.week_start, entry.label
     n = planning.remove(session, entry_id, remove_items=bool(remove_items))
     toast = f"Removed {name} from the plan and {n} item{'s' if n != 1 else ''} from the list" if n else None
     return week_response(request, session, ws, toast=toast, close_sheet=True)
@@ -200,7 +205,7 @@ def meal_plan_sheet(request: Request, meal_id: int, week: date | None = None, se
         request,
         "plan/_meal_sheet.html",
         {"meal": meal, "view": planning.week(session, ws), "this_week": planning.current_week(),
-         "next_week": planning.current_week() + timedelta(days=7), "kind_labels": planning.KIND_LABELS},
+         "next_week": planning.current_week() + timedelta(days=7)},
     )
 
 

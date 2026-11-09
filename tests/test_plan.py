@@ -2,6 +2,8 @@ import json
 import re
 from datetime import date
 
+import pytest
+from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.models import CookLog, ListItem, PlanEntry
@@ -165,7 +167,50 @@ def test_history_groups_by_week(seeded):
     seeded.commit()
     groups = planning.history(seeded, on=date(2026, 10, 27))
     assert [label for label, _ in groups] == ["This week", "Last week"]
-    assert [(d, m.name, n) for d, m, n in groups[1][1]] == [(date(2026, 10, 22), "Chili", 1), (date(2026, 10, 19), "Tacos", 2)]
+    assert [(d, m.name, name, n) for d, m, name, n in groups[1][1]] == [
+        (date(2026, 10, 22), "Chili", "Chili", 1), (date(2026, 10, 19), "Tacos", "Tacos", 2)]
+
+
+def test_other_entry_is_cooked_into_history(seeded):
+    e = planning.add_entry(seeded, MON, WED, "other", title="  Tacos at\nGrandma's ")
+    assert (e.title, e.label, e.meal_id) == ("Tacos at Grandma's", "Tacos at Grandma's", None)
+    assert planning.week(seeded, MON).pending_count == 0  # nothing to shop for
+    planning.mark_cooked(seeded, e.id, WED)
+    log = seeded.scalars(select(CookLog)).one()
+    assert (log.meal_id, log.title, log.cooked_on) == (None, "Tacos at Grandma's", WED)
+    planning.mark_cooked(seeded, e.id, WED)
+    assert seeded.scalars(select(CookLog)).all() == []
+
+
+def test_other_entry_needs_a_title(seeded):
+    with pytest.raises(HTTPException):
+        planning.add_entry(seeded, MON, WED, "other", title="   ")
+
+
+def test_history_counts_typed_meals_by_name(seeded):
+    tacos = make_meal(seeded, "Tacos", "x")
+    seeded.add_all([CookLog(title="Pizza night", cooked_on=date(2026, 10, 26)),
+                    CookLog(meal_id=tacos.id, cooked_on=date(2026, 10, 24)),
+                    CookLog(title="pizza NIGHT", cooked_on=date(2026, 10, 17))])
+    seeded.commit()
+    rows = [r for _, rs in planning.history(seeded, on=date(2026, 10, 27)) for r in rs]
+    assert [(m.name if m else None, name, n) for _, m, name, n in rows] == [
+        (None, "Pizza night", 2), ("Tacos", "Tacos", 1), (None, "pizza NIGHT", 2)]
+
+
+def test_rename_other_entry_renames_its_history(seeded):
+    e = planning.add_entry(seeded, MON, WED, "other", title="Pizza")
+    planning.mark_cooked(seeded, e.id, WED)
+    planning.move(seeded, e.id, date(2026, 10, 29), title="Pizza night")
+    assert (e.title, e.day) == ("Pizza night", date(2026, 10, 29))
+    assert seeded.scalars(select(CookLog.title)).one() == "Pizza night"
+
+
+def test_copy_week_keeps_typed_meals(seeded):
+    planning.add_entry(seeded, MON, WED, "other", title="Pizza night")
+    planning.copy_week(seeded, MON, date(2026, 11, 2))
+    view = planning.week(seeded, date(2026, 11, 2))
+    assert [e.label for e in dict(view.days)[date(2026, 11, 4)]] == ["Pizza night"]
 
 
 def test_plan_page_empty_week_shows_days(client):
@@ -397,3 +442,18 @@ def test_week_review_from_the_list_targets_the_list(client, seeded):
     planning.add_entry(seeded, planning.current_week(), None, "meal", tacos.id)
     html = client.get("/plan/to-list/review?target=list").text
     assert 'hx-target="#list-body"' in html
+
+
+def test_other_entry_routes(client, seeded):
+    sheet = client.get("/plan/day-sheet?day=2026-10-28").text
+    assert 'name="kind" value="other"' in sheet
+    html = client.post("/plan/entries", data={"kind": "other", "title": "Tacos at Grandma's", "week": "2026-10-26",
+                                              "day": "2026-10-28", "next": "week"}).text
+    assert "Tacos at Grandma&#39;s" in html
+    assert "Everything planned this week is on the list" not in html  # there's nothing to shop for
+    e = seeded.scalars(select(PlanEntry)).one()
+    sheet = client.get(f"/plan/entries/{e.id}/sheet").text
+    assert 'name="title"' in sheet and "/meals/new?name=Tacos%20at%20Grandma%27s" in sheet
+    client.post(f"/plan/entries/{e.id}/cooked")
+    assert "Tacos at Grandma&#39;s" in client.get("/more/history").text
+    assert 'value="Tacos at Grandma&#39;s"' in client.get("/meals/new?name=Tacos at Grandma's").text

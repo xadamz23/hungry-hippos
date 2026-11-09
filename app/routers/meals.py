@@ -184,8 +184,9 @@ def _form_page(request, session, meal=None, values=None, error=None, mode="manua
 
 
 @router.get("/new")
-def new(request: Request, mode: str = "manual", session: Session = Depends(get_session)):
-    return _form_page(request, session, mode="link" if mode == "link" else "manual")
+def new(request: Request, mode: str = "manual", name: str = "", session: Session = Depends(get_session)):
+    # name: prefilled from a typed meal on the plan ("Save as a meal")
+    return _form_page(request, session, values={"name": name[:200]} if name else None, mode="link" if mode == "link" else "manual")
 
 
 @router.post("")

@@ -9,12 +9,13 @@
 {% for label, rows in groups %}
 <div class="hwk">{{ label }}</div>
 <div class="card glass inset">
-{% for d, meal, n in rows %}
-<a class="hrow" href="/meals/{{ meal.id }}">
+{% for d, meal, name, n in rows %}
+{% set tag = 'a' if meal else 'div' %}
+<{{ tag }} class="hrow"{% if meal %} href="/meals/{{ meal.id }}"{% endif %}>
   <div class="dt">{{ d.strftime('%a') }}<b>{{ d.day }}</b></div>
-  <div class="nm">{{ meal.name }}<small>{% if n == 1 %}First time{% else %}Made {{ n }} times{% endif %}</small></div>
-  {% if meal.favorite %}<svg class="star on" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}
-</a>
+  <div class="nm">{{ name }}<small>{% if n == 1 %}First time{% else %}Made {{ n }} times{% endif %}</small></div>
+  {% if meal and meal.favorite %}<svg class="star on" aria-label="Kids like it"><use href="#i-star"/></svg>{% endif %}
+</{{ tag }}>
 {% endfor %}
 </div>
 {% else %}

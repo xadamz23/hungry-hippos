@@ -3,7 +3,7 @@
   {% set taken = entries|selectattr('id', 'ne', current_id)|list %}
   <label class="dy pill-radio{% if taken %} taken{% endif %}">
     <input type="radio" name="day" value="{{ d }}" {% if selected == d %}checked{% endif %} required>
-    <span>{{ d.strftime('%a') }}<small>{% if taken %}{% set e = taken[0] %}{{ e.meal.name if e.meal else kind_labels.get(e.kind, '') }}{% else %}Open{% endif %}</small></span>
+    <span>{{ d.strftime('%a') }}<small>{% if taken %}{% set e = taken[0] %}{{ e.label }}{% else %}Open{% endif %}</small></span>
   </label>
   {% endfor %}
   <label class="dy pill-radio"><input type="radio" name="day" value="none" {% if selected == 'none' %}checked{% endif %} required><span>No day<small>Sometime</small></span></label>

@@ -3,10 +3,17 @@
   <form class="sheet glass-strong" hx-post="/plan/entries/{{ entry.id }}/move" hx-target="#plan-week" hx-swap="outerHTML">
     <div class="grab"></div>
     <div class="row">
-      <h2 id="sheet-title" style="font-size:20px">{{ entry.meal.name if entry.meal else kind_labels.get(entry.kind, '') }}</h2>
-      {% if entry.meal %}<a class="link" href="/meals/{{ entry.meal.id }}">Open meal</a>{% endif %}
+      <h2 id="sheet-title" style="font-size:20px">{{ entry.label }}</h2>
+      {% if entry.meal %}<a class="link" href="/meals/{{ entry.meal.id }}">Open meal</a>
+      {% elif entry.kind == 'other' %}<a class="link" href="/meals/new?name={{ entry.title|urlencode }}">Save as a meal</a>{% endif %}
     </div>
+    {% if entry.kind == 'other' %}
+    <input class="input glass-input" style="margin-top:12px" name="title" value="{{ entry.title }}" maxlength="80" required pattern=".*\S.*"
+           aria-label="What you're having" autocomplete="off" enterkeyhint="done">
+    <p class="meta">Rename it or move it to another day</p>
+    {% else %}
     <p class="meta">Move it to another day</p>
+    {% endif %}
     {% with selected=(entry.day or 'none'), current_id=entry.id %}{% include "plan/_day_options.html" %}{% endwith %}
     {% if item_count %}
     {# Only Remove sends this: Move ignores it. #}
@@ -14,7 +21,7 @@
     {% endif %}
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
       <button type="button" class="btn btn-glass danger" hx-post="/plan/entries/{{ entry.id }}/delete" hx-target="#plan-week" hx-swap="outerHTML">Remove</button>
-      <button type="submit" class="btn accent">Move</button>
+      <button type="submit" class="btn accent">{{ 'Save' if entry.kind == 'other' else 'Move' }}</button>
     </div>
   </form>
 </div>

@@ -13,5 +13,12 @@
       </form>
       {% endfor %}
     </div>
+    <p class="meta" style="margin-top:16px">Or type one that isn't on the meal list</p>
+    <form class="add glass-input" style="margin-top:8px" hx-post="/plan/entries" hx-target="#plan-week" hx-swap="outerHTML">
+      <input type="hidden" name="kind" value="other"><input type="hidden" name="day" value="{{ day or '' }}">
+      <input type="hidden" name="week" value="{{ week }}"><input type="hidden" name="next" value="week">
+      <input name="title" maxlength="80" required pattern=".*\S.*" placeholder="e.g. Tacos at Grandma's" aria-label="Meal" autocomplete="off" enterkeyhint="done">
+      <button class="accent" type="submit">Add</button>
+    </form>
   </div>
 </div>

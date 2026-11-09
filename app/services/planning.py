@@ -4,15 +4,15 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 
 from fastapi import HTTPException
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.clock import today, week_label
 from app.models import CookLog, Meal, PlanEntry
 from app.services import shopping
 
-KINDS = {"meal", "leftovers", "eat_out"}
-KIND_LABELS = {"leftovers": "Leftovers", "eat_out": "Eating out"}
+KINDS = {"meal", "other", "leftovers", "eat_out"}
+TITLE_MAX = 80
 
 
 @dataclass
@@ -21,6 +21,7 @@ class WeekView:
     days: list[tuple[date, list[PlanEntry]]]
     unscheduled: list[PlanEntry]
     pending_count: int
+    has_meals: bool = False  # any saved meals, so "everything is on the list" means something
 
     @property
     def is_empty(self) -> bool:
@@ -56,18 +57,34 @@ def week(session: Session, ws: date) -> WeekView:
     for e in entries:
         (by_day[e.day] if e.day in by_day else unscheduled).append(e)
     pending = sum(1 for e in entries if e.kind == "meal" and e.meal is not None and not e.added_to_list)
-    return WeekView(start=ws, days=days, unscheduled=unscheduled, pending_count=pending)
+    has_meals = any(e.meal is not None for e in entries)
+    return WeekView(start=ws, days=days, unscheduled=unscheduled, pending_count=pending, has_meals=has_meals)
 
 
 def entry_count(session: Session, ws: date) -> int:
     return session.scalar(select(func.count()).select_from(PlanEntry).where(PlanEntry.week_start == ws))
 
 
+def clean_title(title: str | None) -> str:
+    """A typed meal name for an "other" entry, on one line and trimmed. 400 if blank."""
+    title = " ".join((title or "").split())[:TITLE_MAX]
+    if not title:
+        raise HTTPException(400, "Type what you're having.")
+    return title
+
+
 def add_entry(
-    session: Session, ws: date, day: date | None, kind: str, meal_id: int | None = None, add_to_list: bool = False
+    session: Session,
+    ws: date,
+    day: date | None,
+    kind: str,
+    meal_id: int | None = None,
+    add_to_list: bool = False,
+    title: str | None = None,
 ) -> PlanEntry:
     if kind not in KINDS:
         raise HTTPException(400, "Unknown plan entry type.")
+    title = clean_title(title) if kind == "other" else None
     meal = None
     if kind == "meal":
         meal = session.get(Meal, meal_id) if meal_id else None
@@ -75,7 +92,7 @@ def add_entry(
             raise HTTPException(404, "That meal doesn't exist anymore.")
     ws = week_start(day) if day else ws
     position = session.scalar(select(func.coalesce(func.max(PlanEntry.position), -1)).where(PlanEntry.week_start == ws)) + 1
-    entry = PlanEntry(week_start=ws, day=day, kind=kind, meal_id=meal.id if meal else None, position=position)
+    entry = PlanEntry(week_start=ws, day=day, kind=kind, meal_id=meal.id if meal else None, title=title, position=position)
     session.add(entry)
     if meal is not None and add_to_list:
         entry.added_to_list = True
@@ -84,8 +101,12 @@ def add_entry(
     return entry
 
 
-def move(session: Session, entry_id: int, day: date | None) -> PlanEntry:
+def move(session: Session, entry_id: int, day: date | None, title: str | None = None) -> PlanEntry:
+    """Move an entry to another day. For an "other" entry, a title renames it too."""
     entry = get_entry(session, entry_id)
+    if entry.kind == "other" and title is not None:
+        entry.title = clean_title(title)
+        session.execute(update(CookLog).where(CookLog.plan_entry_id == entry.id).values(title=entry.title))
     entry.day = day
     if day is not None:
         entry.week_start = week_start(day)
@@ -148,8 +169,8 @@ def mark_cooked(session: Session, entry_id: int, on: date) -> PlanEntry:
         entry.cooked_on = None
     else:
         entry.cooked_on = entry.day or on
-        if entry.meal_id is not None:
-            session.add(CookLog(meal_id=entry.meal_id, cooked_on=entry.cooked_on, plan_entry_id=entry.id))
+        if entry.meal_id is not None or entry.kind == "other":
+            session.add(CookLog(meal_id=entry.meal_id, title=entry.title, cooked_on=entry.cooked_on, plan_entry_id=entry.id))
     session.commit()
     return entry
 
@@ -197,6 +218,7 @@ def copy_week(session: Session, from_ws: date, to_ws: date) -> int | None:
                 day=e.day + offset if e.day else None,
                 kind=e.kind,
                 meal_id=e.meal_id,
+                title=e.title,
                 position=pos,
             )
         )
@@ -205,8 +227,19 @@ def copy_week(session: Session, from_ws: date, to_ws: date) -> int | None:
 
 
 def history(session: Session, on: date | None = None, limit: int = 200) -> list[tuple[str, list]]:
+    """Cook log grouped by week, newest first. Each row is (day, meal or None, name, times made). Typed meals
+    count by name, ignoring case."""
     now_ws = week_start(on or today())
-    times = dict(session.execute(select(CookLog.meal_id, func.count()).group_by(CookLog.meal_id)).all())
+    times = dict(
+        session.execute(
+            select(CookLog.meal_id, func.count()).where(CookLog.meal_id.is_not(None)).group_by(CookLog.meal_id)
+        ).all()
+    )
+    title_times = dict(
+        session.execute(
+            select(func.lower(CookLog.title), func.count()).where(CookLog.meal_id.is_(None)).group_by(func.lower(CookLog.title))
+        ).all()
+    )
     logs = session.scalars(
         select(CookLog).options(selectinload(CookLog.meal)).order_by(CookLog.cooked_on.desc(), CookLog.id.desc()).limit(limit)
     ).all()
@@ -221,5 +254,8 @@ def history(session: Session, on: date | None = None, limit: int = 200) -> list[
             label = week_label(ws)
         if not groups or groups[-1][0] != label:
             groups.append((label, []))
-        groups[-1][1].append((log.cooked_on, log.meal, times.get(log.meal_id, 0)))
+        if log.meal is not None:
+            groups[-1][1].append((log.cooked_on, log.meal, log.meal.name, times.get(log.meal_id, 0)))
+        else:
+            groups[-1][1].append((log.cooked_on, None, log.title or "", title_times.get((log.title or "").lower(), 0)))
     return groups

@@ -107,30 +107,41 @@ class ItemSectionMap(Base):
     section: Mapped[Section] = relationship()
 
 
+KIND_LABELS = {"leftovers": "Leftovers", "eat_out": "Eating out"}
+
+
 class PlanEntry(Base):
     __tablename__ = "plan_entries"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     week_start: Mapped[date] = mapped_column(Date, index=True)
     day: Mapped[date | None] = mapped_column(Date)
-    kind: Mapped[str] = mapped_column(String(20), default="meal")  # meal | leftovers | eat_out
+    kind: Mapped[str] = mapped_column(String(20), default="meal")  # meal | other | leftovers | eat_out
     meal_id: Mapped[int | None] = mapped_column(ForeignKey("meals.id", ondelete="CASCADE"))
+    title: Mapped[str | None] = mapped_column(String(80))  # what "other" entries say, for meals not on the meal list
     position: Mapped[int] = mapped_column(Integer, default=0)
     added_to_list: Mapped[bool] = mapped_column(Boolean, default=False)
     cooked_on: Mapped[date | None] = mapped_column(Date)
 
     meal: Mapped[Meal | None] = relationship()
 
+    @property
+    def label(self) -> str:
+        if self.meal is not None:
+            return self.meal.name
+        return self.title or KIND_LABELS.get(self.kind, "")
+
 
 class CookLog(Base):
     __tablename__ = "cook_log"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    meal_id: Mapped[int] = mapped_column(ForeignKey("meals.id", ondelete="CASCADE"), index=True)
+    meal_id: Mapped[int | None] = mapped_column(ForeignKey("meals.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str | None] = mapped_column(String(80))  # set instead of meal_id for an "other" plan entry
     cooked_on: Mapped[date] = mapped_column(Date)
     plan_entry_id: Mapped[int | None] = mapped_column(ForeignKey("plan_entries.id", ondelete="SET NULL"))
 
-    meal: Mapped[Meal] = relationship()
+    meal: Mapped[Meal | None] = relationship()
 
 
 class ListItem(Base):
