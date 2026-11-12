@@ -100,7 +100,7 @@ def test_staples_ordered_by_times_added(seeded):
     shopping.clear_all(seeded)
     seeded.expire_all()
     assert (bananas.add_count, milk.add_count) == (2, 1)
-    staples = shopping.available_staples(seeded)
+    staples = shopping.all_staples(seeded)
     assert staples[:2] == [bananas, milk]
     rest = staples[2:]
     assert rest == sorted(rest, key=lambda s: (s.position, s.id))
@@ -113,11 +113,11 @@ def test_meal_ingredients_do_not_count_as_staple_adds(seeded):
     assert milk.add_count == 0
 
 
-def test_staple_chip_hidden_when_on_list(seeded):
+def test_add_staple_puts_it_on_the_list(seeded):
     milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
-    assert milk in shopping.available_staples(seeded)
+    assert milk.name_key not in shopping.unchecked_keys(seeded)
     shopping.add_staple(seeded, milk.id)
-    assert milk not in shopping.available_staples(seeded)
+    assert milk.name_key in shopping.unchecked_keys(seeded)
     item = seeded.scalar(select(ListItem))
     assert (item.name, item.amounts, item.section.name) == ("Milk", [{"qty": 1, "unit": "gal"}], "Dairy & Eggs")
 

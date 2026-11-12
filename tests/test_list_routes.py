@@ -106,9 +106,21 @@ def test_typing_shows_staple_suggestions(client, seeded):
 
 
 def test_add_refreshes_staple_suggestions(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
     r = client.post("/list/add", data={"text": "milk"})
     assert 'id="list-staples"' in r.text and 'hx-swap-oob="true"' in r.text
-    assert 'data-name="Milk"' not in r.text
+    # Still in the search, but marked "On list" and not tappable.
+    row = re.search(r'<div role="option" id="sug-%d"[^>]*>.*?</div>' % milk.id, r.text, re.S).group(0)
+    assert 'aria-disabled="true"' in row and "On list" in row
+    assert f'hx-post="/list/staple/{milk.id}"' not in r.text
+
+
+def test_checked_off_staple_is_tappable_again(client, seeded):
+    milk = seeded.scalar(select(Staple).where(Staple.name == "Milk"))
+    item = shopping.add_staple(seeded, milk.id)
+    shopping.set_checked(seeded, item.id, True)
+    html = client.get("/list").text
+    assert f'hx-post="/list/staple/{milk.id}"' in html
 
 
 def test_edit_sheet_and_save_note(client, seeded):

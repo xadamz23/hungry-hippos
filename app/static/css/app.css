@@ -195,7 +195,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
   border: 1px solid rgba(255, 255, 255, .16); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, .45);
   display: flex; flex-direction: column;
 }
-.suggest button {
+.suggest button, .suggest .on-list {
   display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; padding: 10px 14px;
   font-size: 16px; text-align: left; border-top: 1px solid var(--rule); margin-top: -1px;
 }
@@ -203,6 +203,17 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .suggest[hidden], .suggest [hidden] { display: none; }
 .suggest .nm { flex: 1; font-weight: 600; }
 .suggest .amt { color: var(--ink-2); font-size: 14.5px; }
+/* A favorite already on the list: dimmed, no press or highlight, and a quiet "On list" tag in place of the amount.
+   The dimmed name stays about 5:1 on the dropdown, so it's still readable. */
+.suggest .on-list { cursor: default; }
+.suggest .on-list .nm { font-weight: 500; opacity: .58; }
+.suggest .on-list .dot { opacity: .45; }
+.on-list-tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 3px 9px 3px 6px; border-radius: 99px;
+  font-size: 13px; font-weight: 700; color: var(--ink-2);
+  background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+}
+.on-list-tag svg { width: 15px; height: 15px; color: var(--go); }
 
 /* app.js measures the pinned List header so section headings stick just below it. */
 @media (max-width: 899px) { .list-view { --sign-top: var(--list-top-h, 0px); } }

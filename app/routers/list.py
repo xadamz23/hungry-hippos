@@ -17,7 +17,9 @@ def list_context(session: Session) -> dict:
         "groups": shopping.grouped(session),
         "left": left,
         "total": total,
-        "staples": shopping.available_staples(session),
+        # Favorites already on the list still show in the search, marked "On list" and not tappable.
+        "staples": shopping.all_staples(session),
+        "on_list_keys": shopping.unchecked_keys(session),
     }
 
 

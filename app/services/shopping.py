@@ -132,11 +132,6 @@ def unchecked_keys_by_meal(session: Session) -> dict[int, set[str]]:
     return out
 
 
-def available_staples(session: Session) -> list[Staple]:
-    on_list = unchecked_keys(session)
-    return [s for s in all_staples(session) if s.name_key not in on_list]
-
-
 def add_staple(session: Session, staple_id: int) -> ListItem:
     staple = session.get(Staple, staple_id)
     if staple is None:

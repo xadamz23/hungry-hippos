@@ -155,7 +155,10 @@ function quickAddBase() {
       return this.hits().includes(name);
     },
     options() {
-      return [...this.$root.querySelectorAll("#add-suggest [data-name]")].filter((b) => this.shown(b.dataset.name));
+      // Rows the arrow keys and Enter can land on: shown, and not marked "On list".
+      return [...this.$root.querySelectorAll("#add-suggest [data-name]:not([aria-disabled='true'])")].filter((b) =>
+        this.shown(b.dataset.name),
+      );
     },
     isOpen() {
       return this.open && this.hits().length > 0;

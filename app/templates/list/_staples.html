@@ -2,6 +2,15 @@
   {% if staples %}
   <div id="add-suggest" class="suggest" role="listbox" aria-label="Favorites" :hidden="!isOpen()" hidden>
     {% for s in staples %}
+    {% if s.name_key in on_list_keys %}
+    {# Already on the list (and not checked off): shown so you can see it's there, but not tappable, and the arrow keys skip it. #}
+    <div role="option" id="sug-{{ s.id }}" class="on-list" aria-disabled="true" aria-selected="false" data-name="{{ s.name }}"
+         :hidden="!shown($el.dataset.name)" @mousedown.prevent>
+      {% if s.section %}<span class="dot" style="background:{{ s.section.color }}"></span>{% endif %}
+      <span class="nm">{{ s.name }}</span>
+      <span class="on-list-tag"><svg aria-hidden="true"><use href="#i-done"/></svg>On list</span>
+    </div>
+    {% else %}
     <button type="button" role="option" id="sug-{{ s.id }}" tabindex="-1" data-name="{{ s.name }}"
             hx-post="/list/staple/{{ s.id }}" hx-target="#list-body"
             :hidden="!shown($el.dataset.name)" :class="{ active: isActive($el) }" :aria-selected="isActive($el)"
@@ -10,6 +19,7 @@
       <span class="nm">{{ s.name }}</span>
       {% if s.amounts|amounts %}<span class="amt">{{ s.amounts|amounts }}</span>{% endif %}
     </button>
+    {% endif %}
     {% endfor %}
   </div>
   {% endif %}
