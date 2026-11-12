@@ -208,6 +208,8 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .suggest .on-list { cursor: default; }
 .suggest .on-list .nm { font-weight: 500; opacity: .58; }
 .suggest .on-list .dot { opacity: .45; }
+/* .65 keeps the tag's text about 5:1, still AA at 13px. */
+.suggest .on-list .on-list-tag { opacity: .65; }
 .on-list-tag {
   display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 3px 9px 3px 6px; border-radius: 99px;
   font-size: 13px; font-weight: 700; color: var(--ink-2);
