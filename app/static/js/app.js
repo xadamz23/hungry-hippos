@@ -115,11 +115,11 @@ function splitAmount(raw, units) {
   return rest.trim() ? { amt, name: rest.trim() } : { amt: "", name: raw.trim() };
 }
 
-// List quick-add: typing opens a dropdown of matching staples. Typed words are matched against the start of
-// each word in a staple's name, counting back from the last word typed and skipping amounts. Only the staples
-// that match the most words are shown, so "sour cr" finds Sour cream but not Pie crust, while "2 gal mi"
-// still finds Milk. Arrow keys move through the matches and Enter or Tab adds the highlighted one, or the
-// only one when just one matches; otherwise Enter adds the typed text.
+// List quick-add: typing opens a dropdown of matching staples. Each typed word is matched anywhere in a
+// staple's name ("bur" finds Hamburger), counting back from the last word typed and skipping amounts. Only the
+// staples that match the most words are shown, so "sour cr" finds Sour cream but not Pie crust, while
+// "2 gal mi" still finds Milk. Arrow keys move through the matches and Enter or Tab adds the highlighted one.
+// With nothing highlighted, Enter adds exactly what was typed, even when just one staple matches.
 function quickAddBase() {
   return {
     q: "",
@@ -133,12 +133,12 @@ function quickAddBase() {
     terms() {
       return this.q.toLowerCase().split(/\s+/).filter((w) => w && !/^[\d.\/½¼¾⅓⅔-]+$/.test(w)).reverse();
     },
-    // How many typed words, counting back from the last, each start a word in the name. 0 means no match.
+    // How many typed words, counting back from the last, each appear somewhere in the name. 0 means no match.
     score(name, terms) {
-      const parts = name.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+      const lower = name.toLowerCase();
       let n = 0;
       for (const t of terms) {
-        if (!parts.some((part) => part.startsWith(t))) break;
+        if (!lower.includes(t)) break;
         n++;
       }
       return n;
@@ -175,11 +175,10 @@ function quickAddBase() {
       this.open = true;
       this.active = this.active < 0 && delta < 0 ? n - 1 : (this.active + delta + n) % n;
     },
-    // The highlighted suggestion, or the only one when just one matches.
+    // The highlighted suggestion, if any. A lone match isn't picked for you: Enter adds the typed text.
     chosen() {
       if (!this.isOpen()) return null;
-      const opts = this.options();
-      return opts[this.active] || (opts.length === 1 ? opts[0] : null);
+      return this.options()[this.active] || null;
     },
     // Enter or Tab adds the chosen suggestion; otherwise the key does its usual thing.
     pick(e) {
