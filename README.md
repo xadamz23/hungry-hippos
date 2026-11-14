@@ -37,6 +37,7 @@ The image is built on the dev machine (arm64) for amd64 and pushed to Docker Hub
 
 ```sh
 ./deploy.sh              # patch bump of the newest remote tag, e.g. 1.1.9 -> 1.1.10
+./deploy.sh --patch-bump # same patch bump, without the confirmation prompt
 ./deploy.sh --minor      # 1.2.0  (--major: 2.0.0)
 ./deploy.sh 1.3.0        # explicit tag
 ```
