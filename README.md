@@ -36,10 +36,12 @@ After changing models, add a migration with `.venv/bin/alembic revision --autoge
 The image is built on the dev machine (arm64) for amd64 and pushed to Docker Hub as `docker.io/xadamz23/hungry-hippos`. Image tags follow git tags. Run the tests first, because the script doesn't. Then:
 
 ```sh
-scripts/deploy-hungry-hippos-from-arm64.sh v0.1.0
+./deploy.sh              # patch bump of the newest remote tag, e.g. 1.1.9 -> 1.1.10
+./deploy.sh --minor      # 1.2.0  (--major: 2.0.0)
+./deploy.sh 1.3.0        # explicit tag
 ```
 
-The script refuses to run with uncommitted changes. It tags HEAD and pushes the tag, then builds `:<tag>` for amd64 and pushes it (no `:latest`). Last, it SSHes to the server as root and runs `/home/dockerapps/hungry-hippos/update-app.sh <tag>`.
+The script refuses to run with uncommitted changes. It reads the newest `X.Y.Z` tag from `origin` with `git ls-remote` (so local tags don't need fetching), shows the new tag and asks for confirmation, and refuses a tag that already exists or is older than the latest. Then it tags HEAD and pushes the tag, then builds `:<tag>` for amd64 and pushes it (no `:latest`). Last, it SSHes to the server as root and runs `/home/dockerapps/hungry-hippos/update-app.sh <tag>`.
 
 ### Prod server
 

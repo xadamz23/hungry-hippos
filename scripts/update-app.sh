@@ -31,7 +31,7 @@ fi
 echo "[INFO] updating tag in compose file to $tag"
 
 cat <<EOF > docker-compose.yaml
-# Written by update-app.sh, which deploy-hungry-hippos-from-arm64.sh runs with the
+# Written by update-app.sh, which deploy.sh runs with the
 # release tag. Don't edit by hand: the next deploy overwrites it.
 # Secrets and settings come from .env next to this file.
 
