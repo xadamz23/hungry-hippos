@@ -21,7 +21,7 @@
   --sticker: #ffd84a;
   --note: rgba(255, 216, 74, .11);
   --warn: #ffa294;
-  --nav-h: 68px;
+  --nav-h: 64px;
   /* Space under the floating nav: clear of the screen edge, or of the home indicator. */
   --nav-bottom: max(12px, calc(var(--safe-b) + 6px));
   --float-x: max(8px, calc(50% - 304px));
@@ -52,20 +52,28 @@ svg.i { width: 24px; height: 24px; flex: none; }
 .side, .aside { display: none; }
 .main { padding-bottom: calc(var(--nav-h) + var(--nav-bottom) + 32px); }
 
+/* Phone nav: a floating glass bar sized to its tabs and centered. The current tab is a soft white glass tile
+   with an accent icon (as in watchlist, reconcile, macro-log and atmos). 64px tall. */
 .tabs {
-  position: fixed; left: var(--float-x); right: var(--float-x); bottom: var(--nav-bottom); z-index: 20;
-  height: var(--nav-h); padding: 0 8px;
-  display: grid; grid-template-columns: repeat(4, 1fr); align-items: center;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: var(--nav-bottom); z-index: 20;
+  height: var(--nav-h); padding: 6px;
+  display: grid; grid-template-columns: repeat(4, 68px); gap: 4px; align-items: center;
   border: 1px solid rgba(255, 255, 255, .10); border-radius: 24px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 12px 40px rgba(0, 0, 0, .45);
 }
 .tabs a {
-  display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px;
+  display: grid; justify-items: center; align-content: center; gap: 3px; height: 100%; min-width: 0;
+  border-radius: 18px; white-space: nowrap;
   font-size: 12px; font-weight: 600; color: var(--ink-2);
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s, background-color .15s, transform .15s;
 }
-.tabs .pill { width: 48px; height: 28px; border-radius: 99px; display: grid; place-items: center; }
+.tabs a:active { transform: scale(.94); }
+.tabs a:focus-visible { outline: 2px solid var(--go); outline-offset: 2px; }
+.tabs .pill { display: grid; place-items: center; }
 .tabs svg.i { width: 22px; height: 22px; }
-.tabs a[aria-current="page"] { color: #fff; }
+.tabs a[aria-current="page"] { color: #fff; background: rgba(255, 255, 255, .16); }
+.tabs a[aria-current="page"] .pill { color: var(--go); }
 /* Keep the nav from riding on top of the phone keyboard. */
 @media (pointer: coarse) {
   body:has(input:not([type="radio"], [type="checkbox"]):focus, textarea:focus, select:focus) .tabs { display: none; }
@@ -596,7 +604,6 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 }
 /* The primary accent, on .accent and on every "on" state. */
 .accent,
-.tabs a[aria-current="page"] .pill,
 .side a.nav[aria-current="page"],
 .seg a[aria-current="true"],
 .chip[aria-pressed="true"],

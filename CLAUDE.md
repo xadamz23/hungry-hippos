@@ -21,7 +21,7 @@ Glass classes are defined once, in the "glass components" block at the end of `a
 | `.glass-card` | Hover lift for meal cards. Off under `prefers-reduced-motion`. |
 | `.badge-planned` | Example of a badge on an image: dark tinted glass with a ring, legible over bright photos. |
 
-The phone nav (`.tabs`) is a floating bar that hides while the keyboard is up; desktop uses the sidebar. Anything pinned to the bottom sits above it using `--nav-h` and `--nav-bottom`, as `.detail-actions` and `.toast` do.
+The phone nav (`.tabs`) is a floating 64px bar, sized to its tabs and centered, that hides while the keyboard is up. Its current tab is a soft white glass tile (16% white) with a `--go` icon, matching the other apps, not `.accent`; desktop uses the sidebar. Anything pinned to the bottom sits above it using `--nav-h` and `--nav-bottom`, as `.detail-actions` and `.toast` do.
 
 Gotchas:
 
