@@ -246,7 +246,7 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
    (server-rendered checked rows appear already struck), and the row dims under the line. */
 .it { position: relative; }
 .it::after { content: ""; position: absolute; left: 14px; right: 14px; top: 50%; height: 2px; margin-top: -1px;
-  border-radius: 1px; background: var(--go); pointer-events: none;
+  border-radius: 1px; background: var(--faint); pointer-events: none;
   transform: scaleX(0); transform-origin: left center; transition: transform .2s ease-out; }
 .it.done::after { transform: scaleX(1); }
 /* Meal rows have a second line naming the aisle, so strike through the name, not the gap between. */
