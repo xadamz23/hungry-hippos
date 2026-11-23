@@ -237,7 +237,9 @@ def test_plan_page_lists_entries(client, seeded):
     assert "Tacos" in html and "Eating out" in html and "Add ingredients for 1 meal" in html
 
 
-def test_plan_entry_route_from_meal_sheet(client, seeded):
+def test_plan_entry_route_from_meal_sheet(client, seeded, monkeypatch):
+    # The toast names the weekday only for the current week, so pin "now" to the week being planned.
+    monkeypatch.setattr(planning, "current_week", lambda: MON)
     tacos = make_meal(seeded, "Tacos", "1 lb beef")
     r = client.post("/plan/entries", data={"meal_id": tacos.id, "week": "2026-10-26", "day": "2026-10-28", "add_to_list": "1", "next": "stay"})
     assert r.status_code == 204
