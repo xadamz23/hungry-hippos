@@ -3,7 +3,7 @@ import threading
 
 from sqlalchemy import select
 
-from app.models import ListItem, Meal, Staple
+from app.models import ItemSectionMap, ListItem, Meal, Section, Staple
 from app.services import shopping
 from tests.factories import make_meal
 
@@ -88,6 +88,24 @@ def test_update_sets_amount_and_note(seeded):
     assert item.note == "soft taco size"
     shopping.update(seeded, item.id, "2 pack", "")
     assert item.note is None
+
+
+def test_update_moves_section_and_remembers_it(seeded):
+    item = shopping.add_text(seeded, "cilantro")
+    frozen = seeded.scalar(select(Section).where(Section.name == "Frozen"))
+    shopping.update(seeded, item.id, "", "", frozen.id)
+    assert seeded.get(ListItem, item.id).section_id == frozen.id
+    assert seeded.get(ItemSectionMap, item.name_key).section_id == frozen.id
+    shopping.remove(seeded, item.id)
+    assert shopping.add_text(seeded, "cilantro").section_id == frozen.id
+
+
+def test_update_ignores_unknown_section(seeded):
+    item = shopping.add_text(seeded, "cilantro")
+    before = item.section_id
+    shopping.update(seeded, item.id, "", "", 999_999)
+    assert seeded.get(ListItem, item.id).section_id == before
+    assert seeded.get(ItemSectionMap, item.name_key) is None
 
 
 def test_staples_ordered_by_times_added(seeded):

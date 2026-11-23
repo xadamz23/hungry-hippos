@@ -3,7 +3,7 @@ import re
 
 from sqlalchemy import select
 
-from app.models import ListItem, Staple
+from app.models import ListItem, Section, Staple
 from app.services import shopping
 from tests.factories import make_meal
 
@@ -126,7 +126,7 @@ def test_checked_off_staple_is_tappable_again(client, seeded):
 def test_edit_sheet_and_save_note(client, seeded):
     item = shopping.add_text(seeded, "tortillas")
     sheet = client.get(f"/list/{item.id}/edit").text
-    assert 'name="section_id"' not in sheet and 'name="note"' in sheet
+    assert 'name="note"' in sheet
 
     r = client.post(f"/list/{item.id}", data={"amount": "2", "note": "  the big pack "})
     assert r.status_code == 200 and "#i-note" in r.text
@@ -139,6 +139,21 @@ def test_edit_sheet_and_save_note(client, seeded):
     assert "#i-note" not in r.text
     seeded.expire_all()
     assert seeded.get(ListItem, item.id).note is None
+
+
+def test_edit_sheet_moves_item_to_another_section(client, seeded):
+    item = shopping.add_text(seeded, "cilantro")
+    produce, frozen = (seeded.scalar(select(Section).where(Section.name == n)) for n in ("Produce", "Frozen"))
+    assert item.section_id == produce.id
+    sheet = client.get(f"/list/{item.id}/edit").text
+    assert re.search(rf'name="section_id" value="{produce.id}" checked', sheet)
+    assert re.search(rf'name="section_id" value="{frozen.id}" *>', sheet)
+
+    client.post(f"/list/{item.id}", data={"amount": "", "note": "", "section_id": str(frozen.id)})
+    seeded.expire_all()
+    assert seeded.get(ListItem, item.id).section_id == frozen.id
+    sign = re.findall(r'<div class="sign"[^>]*>(.*?)</div>', client.get("/list/items").text, re.S)
+    assert [s.strip() for s in sign] == ["Frozen"]
 
 
 def test_delete_route(client, seeded):

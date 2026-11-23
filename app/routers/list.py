@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.services import shopping
+from app.services import sections, shopping
 from app.templating import cap, templates
 
 router = APIRouter(prefix="/list")
@@ -107,7 +107,8 @@ def uncheck(request: Request, item_id: int, session: Session = Depends(get_sessi
 @router.get("/{item_id}/edit")
 def edit_sheet(request: Request, item_id: int, session: Session = Depends(get_session)):
     item = shopping.get_item(session, item_id)
-    return templates.TemplateResponse(request, "list/_item_sheet.html", {"item": item})
+    ctx = {"item": item, "sections": sections.all_sections(session)}
+    return templates.TemplateResponse(request, "list/_item_sheet.html", ctx)
 
 
 @router.post("/{item_id}")
@@ -116,9 +117,10 @@ def save(
     item_id: int,
     amount: str = Form(""),
     note: str = Form(""),
+    section_id: int | None = Form(None),
     session: Session = Depends(get_session),
 ):
-    shopping.update(session, item_id, amount, note)
+    shopping.update(session, item_id, amount, note, section_id)
     return items_response(request, session, close_sheet=True)
 
 

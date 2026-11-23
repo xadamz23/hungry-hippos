@@ -11,7 +11,7 @@ from app.models import ItemSectionMap, ListItem, Section, Staple
 from app.services import importer
 from app.services.amounts import parse_amount_text
 from app.services.ingredients import NAME_MAX, display_name, name_key, parse_line
-from app.services.sections import guess_section, remember, staple_keys
+from app.services.sections import all_sections, guess_section, remember, staple_keys
 from app.templating import templates
 
 router = APIRouter(prefix="/more")
@@ -33,18 +33,14 @@ def more(request: Request, session: Session = Depends(get_session)):
 
 # ---------- sections ----------
 
-def _sections(session: Session) -> list[Section]:
-    return session.scalars(select(Section).order_by(Section.position, Section.id)).all()
-
-
 @router.get("/sections")
 def sections_page(request: Request, session: Session = Depends(get_session)):
-    return templates.TemplateResponse(request, "more/sections.html", {"active": "more", "sections": _sections(session)})
+    return templates.TemplateResponse(request, "more/sections.html", {"active": "more", "sections": all_sections(session)})
 
 
 @router.post("/sections/order")
 def order_sections(ids: list[int] = Form(...), session: Session = Depends(get_session)):
-    by_id = {s.id: s for s in _sections(session)}
+    by_id = {s.id: s for s in all_sections(session)}
     for pos, sid in enumerate(i for i in ids if i in by_id):
         by_id[sid].position = pos
     session.commit()
@@ -59,7 +55,7 @@ def add_section(request: Request, name: str = Form(""), session: Session = Depen
         position = session.scalar(select(func.coalesce(func.max(Section.position), -1))) + 1
         session.add(Section(name=name, color="#6B7A72", position=position))
         session.commit()
-    return templates.TemplateResponse(request, "more/_section_rows.html", {"sections": _sections(session)})
+    return templates.TemplateResponse(request, "more/_section_rows.html", {"sections": all_sections(session)})
 
 
 @router.post("/sections/{section_id}")
@@ -124,7 +120,7 @@ def _get_staple(session: Session, staple_id: int) -> Staple:
 
 @router.get("/staples/{staple_id}/edit")
 def edit_staple_sheet(request: Request, staple_id: int, session: Session = Depends(get_session)):
-    ctx = {"staple": _get_staple(session, staple_id), "sections": _sections(session)}
+    ctx = {"staple": _get_staple(session, staple_id), "sections": all_sections(session)}
     return templates.TemplateResponse(request, "more/_staple_sheet.html", ctx)
 
 

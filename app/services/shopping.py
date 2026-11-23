@@ -156,10 +156,14 @@ def toggle(session: Session, item_id: int) -> ListItem:
     return set_checked(session, item_id, not item.checked)
 
 
-def update(session: Session, item_id: int, amount_text: str, note: str) -> ListItem:
+def update(session: Session, item_id: int, amount_text: str, note: str, section_id: int | None = None) -> ListItem:
+    """A moved item teaches its section, so the next one with that name lands there too."""
     item = get_item(session, item_id)
     item.amounts = amt.parse_amount_text(amount_text)
     item.note = note.strip() or None
+    if section_id is not None and section_id != item.section_id and session.get(Section, section_id) is not None:
+        item.section_id = section_id
+        sections.remember(session, item.name_key, section_id)
     _commit(session)
     return item
 

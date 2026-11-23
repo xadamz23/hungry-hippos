@@ -146,6 +146,11 @@ def guess_section(session: Session, key: str, staples: dict[str, Section] | None
     return section
 
 
+def all_sections(session: Session) -> list[Section]:
+    """Every section in store walk order."""
+    return session.scalars(select(Section).order_by(Section.position, Section.id)).all()
+
+
 def remember(session: Session, key: str, section_id: int) -> None:
     if not key:
         return
