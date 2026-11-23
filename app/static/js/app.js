@@ -237,7 +237,8 @@ document.addEventListener("alpine:init", () => {
     // row's hx-on:click see it. Moving the finger (a scroll) cancels the press.
     initLongPress() {
       const LONG_PRESS = 500;
-      let timer, pressing = false, startX, startY, suppressUntil = 0;
+      // downItem: the edit URL (so, the item) of the row the current press started on.
+      let timer, pressing = false, startX, startY, suppressUntil = 0, downItem = null;
       const cancel = () => clearTimeout(timer);
       const openSheet = (btn) => {
         suppressUntil = Date.now() + 800;
@@ -248,7 +249,16 @@ document.addEventListener("alpine:init", () => {
         // A new press starts a new gesture: only the click that ends a long press is swallowed, not this one's.
         // (The sheet usually covers the row before the finger lifts, so that click often never comes.)
         suppressUntil = 0;
+        downItem = btn?.dataset.edit ?? null;
         if (!btn || e.button > 0) return;
+        // A touch on a row while typing in the add box only closes the keyboard, like tapping outside a field
+        // anywhere else. A mouse click still checks the row off, since there's no keyboard to put away.
+        const field = document.activeElement;
+        if (e.pointerType !== "mouse" && field?.matches("input:not([type=checkbox]):not([type=radio]), textarea")) {
+          field.blur();
+          suppressUntil = Date.now() + 800;
+          return;
+        }
         pressing = true;
         startX = e.clientX; startY = e.clientY;
         cancel();
@@ -265,8 +275,14 @@ document.addEventListener("alpine:init", () => {
         this.$el.addEventListener(type, () => { pressing = false; cancel(); });
       }
       this.$el.addEventListener("scroll", cancel, true);
+      // Also swallowed: a pointer click that ends on a different item than it started on, because the list
+      // redrew under the finger (a change synced from another phone, an add, an Undo). Keyboard clicks
+      // (detail 0) have no press to compare against.
       this.$el.addEventListener("click", (e) => {
-        if (Date.now() > suppressUntil || !e.target.closest("#list-body .it .what")) return;
+        const btn = e.target.closest("#list-body .it .what");
+        if (!btn) return;
+        const switched = e.detail > 0 && btn.dataset.edit !== downItem;
+        if (!switched && Date.now() > suppressUntil) return;
         suppressUntil = 0;
         e.preventDefault();
         e.stopImmediatePropagation();
