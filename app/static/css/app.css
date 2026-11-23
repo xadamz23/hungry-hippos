@@ -469,8 +469,9 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 @media (min-width: 900px) {
   .sheet { left: 50%; right: auto; bottom: auto; top: 50%; width: 460px; transform: translate(-50%, -50%); border-radius: 18px; animation: none; }
 }
-/* an x in the top-right of a sheet's heading row; the negative margin lines the glyph up with the sheet's padding */
-.sheet-x { margin: -8px -10px -8px 0; }
+/* A round glass close button in the top-right of a sheet's heading row (with .btn-glass). */
+.sheet-x { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; margin: -4px 0; }
+.sheet-x svg { width: 18px; height: 18px; }
 .grab { width: 40px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .28); margin: 0 auto 12px; }
 /* pick mode: a meal's details over the list, with the add button pinned to the bottom */
 .pick-sheet { padding-bottom: 0; }
