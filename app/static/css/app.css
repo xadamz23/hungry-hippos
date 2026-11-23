@@ -242,19 +242,29 @@ textarea.input { min-height: 110px; line-height: 1.45; resize: vertical; }
 .it .note-ic { width: 15px; height: 15px; color: var(--ink-2); vertical-align: -2px; margin-left: 6px; }
 .it .f { font-size: 13px; color: var(--ink-2); }
 .it .q { margin-left: auto; }
-.it.done .n { color: var(--faint); text-decoration: line-through; }
+/* A checked row is struck through edge to edge, drawn left to right like a pen when it's tapped
+   (server-rendered checked rows appear already struck), and the row dims under the line. */
+.it { position: relative; }
+.it::after { content: ""; position: absolute; left: 14px; right: 14px; top: 50%; height: 2px; margin-top: -1px;
+  border-radius: 1px; background: var(--go); pointer-events: none;
+  transform: scaleX(0); transform-origin: left center; transition: transform .2s ease-out; }
+.it.done::after { transform: scaleX(1); }
+/* Meal rows have a second line naming the aisle, so strike through the name, not the gap between. */
+.it:has(.aisle)::after { top: 22px; }
+.it.done .what { opacity: .6; }
+.it.done .n { color: var(--ink-2); }
 .it.done .q { background: rgba(255, 255, 255, .08); color: var(--faint); }
+@media (prefers-reduced-motion: reduce) { .it::after { transition: none; } }
 /* Meal sections: an ink heading, and each item names its store section. */
 .sign.meal { background: #131c24; display: flex; align-items: center; gap: 9px; }
 .sign.meal svg { width: 18px; height: 18px; color: var(--go-light); flex: none; }
 .sign.meal .cnt { margin-left: auto; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
 .it .aisle { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--ink-2); }
 .it .aisle i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.it.done .aisle i { opacity: .45; }
 /* Checked items are hidden unless the List's Show checked switch is on.
    The "Meals" / "Everything else" labels go too once either part is all checked.
    The clear-checked strip only shows with them, next to the items it would remove.
-   A row just checked off while they're hidden lingers (app.js listView) so the tick is seen. */
+   A row just checked off while they're hidden lingers (app.js listView) so the strike is seen. */
 .list-view:not(.show-checked) #list-body .it.done:not(.lingering),
 .list-view:not(.show-checked) #list-body section:not(:has(.it:not(.done), .it.lingering)),
 .list-view:not(.show-checked) #list-body:has(.all-done) .grp,

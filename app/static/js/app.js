@@ -225,7 +225,7 @@ document.addEventListener("alpine:init", () => {
         if (row) this.countChecked();
         if (!row || this.showChecked || !row.classList.contains("done")) return;
         row.classList.add("lingering");
-        this.lingerUntil = Date.now() + 450;
+        this.lingerUntil = Date.now() + 600;
       });
       this.$el.addEventListener("htmx:beforeSwap", (e) => {
         const wait = this.lingerUntil - Date.now();
