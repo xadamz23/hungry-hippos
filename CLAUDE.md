@@ -25,6 +25,7 @@ The phone nav (`.tabs`) is a floating 64px bar, sized to its tabs and centered, 
 
 Gotchas:
 
+- `html` has `overscroll-behavior-y: none`. Android Chrome's overscroll stretch otherwise stretches the whole viewport, the fixed tab bar included. It also turns off pull-to-refresh: the List refreshes itself (SSE), and on other pages a tab tap loads a fresh copy. (`contain` on the root keeps the stretch.)
 - Write `-webkit-backdrop-filter` by hand before `backdrop-filter`, because nothing adds the prefix here and iOS before 18 needs it.
 - `backdrop-filter` makes an element a stacking context, a containing block for `position: fixed` children, and the limit of what its children can blur. So keep fixed elements and sheets out of glass parents, and make dropdowns inside glass near-opaque (see `.suggest`).
 - Round cards with `overflow: clip`, not `hidden`, which breaks the sticky section headings.

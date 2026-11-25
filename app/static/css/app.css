@@ -31,7 +31,13 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
+  /* No overscroll stretch: on Android Chrome it stretches the whole viewport, fixed tab bar
+     included. Also turns off pull-to-refresh. (contain on the root keeps the stretch.) */
+  overscroll-behavior-y: none;
+}
 body {
   font-family: Figtree, system-ui, sans-serif;
   color: var(--ink);
